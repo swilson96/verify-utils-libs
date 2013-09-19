@@ -25,31 +25,29 @@ public class CertificateChainValidatorTest {
     @Before
     public void setUp() throws Exception {
         x509Factory = CertificateFactory.getInstance("x509");
-        certificateChainValidator = new CertificateChainValidator();
+        DependentServiceSSLTrustStore trustStore = getTrustStore();
+        certificateChainValidator = new CertificateChainValidator(trustStore);
     }
 
     @Test
     public void verify_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate intermediaryCACertificate = createX509Certificate(intermediaryCACertString);
-        DependentServiceSSLTrustStore trustStore = getTrustStore();
 
-        certificateChainValidator.validate(intermediaryCACertificate, trustStore);
+        certificateChainValidator.validate(intermediaryCACertificate);
     }
 
     @Test
     public void verify_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate encryptionCertificate = createX509Certificate(this.encryptionCertString);
-        DependentServiceSSLTrustStore trustStore = getTrustStore();
 
-        certificateChainValidator.validate(encryptionCertificate, trustStore);
+        certificateChainValidator.validate(encryptionCertificate);
     }
 
     @Test(expected = CertPathValidatorException.class)
     public void verify_shouldFailACertSignedByAnUnknownRootCACert() throws Exception {
         final X509Certificate otherChildCertificate = createX509Certificate(childSignedByOtherRootCAString);
-        DependentServiceSSLTrustStore trustStore = getTrustStore();
 
-        certificateChainValidator.validate(otherChildCertificate, trustStore);
+        certificateChainValidator.validate(otherChildCertificate);
     }
 
     private X509Certificate createX509Certificate(String certificateString) throws CertificateException, UnsupportedEncodingException {
@@ -76,39 +74,6 @@ public class CertificateChainValidatorTest {
         }
         return new DependentServiceSSLTrustStore(ks);
     }
-
-    private final String rootCACertString = "-----BEGIN CERTIFICATE-----\n" +
-            "MIIFbzCCA1egAwIBAgIQLSYxPZcb2dYMnb4BZHXvKTANBgkqhkiG9w0BAQsFADBQ\n" +
-            "MQswCQYDVQQGEwJHQjEXMBUGA1UEChMOQ2FiaW5ldCBPZmZpY2UxDDAKBgNVBAsT\n" +
-            "A0dEUzEaMBgGA1UEAxMRSURBUCBUZXN0IFJvb3QgQ0EwHhcNMTMwODAyMDAwMDAw\n" +
-            "WhcNMjMwODAxMjM1OTU5WjBQMQswCQYDVQQGEwJHQjEXMBUGA1UEChMOQ2FiaW5l\n" +
-            "dCBPZmZpY2UxDDAKBgNVBAsTA0dEUzEaMBgGA1UEAxMRSURBUCBUZXN0IFJvb3Qg\n" +
-            "Q0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDB0+tAA/QdnQYFKtaO\n" +
-            "FkuRg23LesvKbS+qO4PF8EoTEVpyRlkAZVFCguUfsMVhX5UafDhvxqSRaUqBWX6Z\n" +
-            "dwH1gtyPuTavQIKKpg1y8dLn4JklZCYLipg1PH1rnOmVIIlwPuRBK/Uqw5SzzSDh\n" +
-            "keZyl26cmmuKNagUQ7pj6JQ3bVE/iMTz0SpaZCCTvmM0kbnfFDWohhnQZ/atdkzs\n" +
-            "8PNNGe6axF5wC5uW++WMRS6T+dqCSBykp51f83QzhIfkZKBslXT1qooqjAiwFqPj\n" +
-            "+IfP2FSrGjCkcoms+zv8QFG/skjRHI/zQU8np47xDb6aTrF0Z7QkJr8bAvrocyZW\n" +
-            "4TJ4lqYPpZZBJIU+pC1H1MNHDg0q+kBcFLQpD01CbqBY865NzCJOJyeECiwomxDG\n" +
-            "DH58PcILYFRW5D+azOb14QuQ1Yof7zFWQa4pgEypiXG6F6L62Jqd3V4fBRImyu8G\n" +
-            "peJQDRKfBe2ymfxZJ3NBzGYEyNPvvOJIFEQ41wnCKa8Enq0LuuVyonOpxBjJPmtw\n" +
-            "s3jpXDxQAiJ1wci2vxLA4RAz1Yy5OWfdtvznFjzNT0yeTX9EsV4ibxI5MM7wrOSJ\n" +
-            "Ran69XdLN1uRZxQxoYEU3syAakZMrBfSJx7CRG1u0hGt8DSdVpcHKP0JkzTFnnui\n" +
-            "CZgXzkxlBTBuwLjZDXNUT967cwIDAQABo0UwQzASBgNVHRMBAf8ECDAGAQH/AgEB\n" +
-            "MA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUY1DlEvzqocu7imr+k7WcwjGZRDYw\n" +
-            "DQYJKoZIhvcNAQELBQADggIBACC3RN912iDQelRAwJXNgL0jUa809zxAWKou3lF/\n" +
-            "1XkYuCTI84X2gRJ+KliLC/B1ehSr6eqjx4mvqjD02+uB+iudn1JXzabLbztEzXSq\n" +
-            "NPtqCMjiwHx9i5oXDWaUl51FHbkWBZE38NKyg8TixRiF/uzFoa+q9A8I9GwZ6SAf\n" +
-            "mPpxItPuwNbkpHj2RGUv3T2E9+8U0LGT3/LfeQhMdKbn1NLUbSNAynoGYaki9vvr\n" +
-            "/5a1ah+H53wQinrSChT1UL2r/ANUwaTi/r4TRvFm4x15zXcre/8KNu462TZoosVD\n" +
-            "7Hs5zfLPfwXzX8dCjadBph5Ixbke/L+2AzTQ9DdXGTU8qYD6EykZmz0U0+NFlDDV\n" +
-            "M04jNW0CEf82ZkeD66hwNr3LRtEocrkokMRvtZzt+rLGyrHmn3WYklLaKNv4rSAk\n" +
-            "DEKhe7KkMmFH6t6iAZS4rHyfCmmolz4z5MI4p794Gpg9hKW2NhhdtZOc74CWsTxE\n" +
-            "GlAfpZ2wiMhC9jVYtr4jfuzXN9KEWUxAJy51C5xxno2EH6VyUncoRhKTTcNtREwp\n" +
-            "uvgkA7Cu8yKYc4CD2tmo9nY9ji1yVPjKzpuC+xgUMcnXKRXVCBTSdwrR2ByGKH9T\n" +
-            "ZqwbHYF8HZ/o4+pt48kj//RdsXdG0Q3ffWk5noy628g/9JKrDJt354bYC+YKYrO4\n" +
-            "Uwtn\n" +
-            "-----END CERTIFICATE-----";
 
     private final String intermediaryCACertString = "-----BEGIN CERTIFICATE-----\n" +
             "MIIEizCCAnOgAwIBAgIQOIGzwEArw68viPqnjAjpYzANBgkqhkiG9w0BAQsFADBQ\n" +
