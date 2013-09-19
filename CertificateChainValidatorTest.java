@@ -1,58 +1,80 @@
 package uk.gov.ida.shared.rest.config.verification;
 
+import com.google.common.base.Throwables;
 import org.junit.Before;
 import org.junit.Test;
+import uk.gov.ida.shared.rest.truststore.DependentServiceSSLTrustStore;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
-import static com.google.common.collect.ImmutableList.of;
-
-public class CertificateChainVerifierTest {
+public class CertificateChainValidatorTest {
 
     public CertificateFactory x509Factory;
-    public CertificateChainVerifier certificateChainVerifier;
+    public CertificateChainValidator certificateChainValidator;
 
     @Before
     public void setUp() throws Exception {
         x509Factory = CertificateFactory.getInstance("x509");
-        certificateChainVerifier = new CertificateChainVerifier();
+        certificateChainValidator = new CertificateChainValidator();
     }
 
     @Test
-    public void verify_shouldPassACertSignedByRootCACert() throws Exception {
-        final X509Certificate rootCACertificate = createX509Certificate(rootCACertString);
+    public void verify_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate intermediaryCACertificate = createX509Certificate(intermediaryCACertString);
+        DependentServiceSSLTrustStore trustStore = getTrustStore();
 
-        certificateChainVerifier.verify(of(intermediaryCACertificate), rootCACertificate);
+        certificateChainValidator.validate(intermediaryCACertificate, trustStore);
     }
 
     @Test
-    public void verify_shouldPassACertSignedByAnIntermediarySignedByRootCACert() throws Exception {
-        final X509Certificate rootCACertificate = createX509Certificate(rootCACertString);
-        final X509Certificate intermediaryCACertificate = createX509Certificate(intermediaryCACertString);
+    public void verify_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate encryptionCertificate = createX509Certificate(this.encryptionCertString);
+        DependentServiceSSLTrustStore trustStore = getTrustStore();
 
-        certificateChainVerifier.verify(of(encryptionCertificate, intermediaryCACertificate), rootCACertificate
-        );
+        certificateChainValidator.validate(encryptionCertificate, trustStore);
     }
 
     @Test(expected = CertPathValidatorException.class)
     public void verify_shouldFailACertSignedByAnUnknownRootCACert() throws Exception {
-        final String certificateString = otherRootCACertString;
-        final X509Certificate otherRootCACertificate = createX509Certificate(certificateString);
-        final X509Certificate intermediaryCACertificate = createX509Certificate(intermediaryCACertString);
+        final X509Certificate otherChildCertificate = createX509Certificate(childSignedByOtherRootCAString);
+        DependentServiceSSLTrustStore trustStore = getTrustStore();
 
-        certificateChainVerifier.verify(of(otherRootCACertificate), intermediaryCACertificate);
+        certificateChainValidator.validate(otherChildCertificate, trustStore);
     }
 
     private X509Certificate createX509Certificate(String certificateString) throws CertificateException, UnsupportedEncodingException {
         return (X509Certificate)
                 x509Factory.generateCertificate(new ByteArrayInputStream(certificateString.getBytes("UTF-8")));
+    }
+
+    public DependentServiceSSLTrustStore getTrustStore() {
+        KeyStore ks;
+        try {
+            ks = KeyStore.getInstance(KeyStore.getDefaultType());
+
+            InputStream inputStream = null;
+            try {
+                inputStream = getClass().getClassLoader().getResourceAsStream("ida_truststore.ts");
+                ks.load(inputStream, "puppet".toCharArray());
+            } finally {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            }
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
+            throw Throwables.propagate(e);
+        }
+        return new DependentServiceSSLTrustStore(ks);
     }
 
     private final String rootCACertString = "-----BEGIN CERTIFICATE-----\n" +
@@ -166,5 +188,28 @@ public class CertificateChainVerifierTest {
             "pzVF8k+A1B578jb0ppfm4SLQX0uWM9Ndlxb31LsL7SeAcQhUjhjWYXGoYhpT20vO\n" +
             "vRQ0E9Je7xgJTH0OVTz5+gEYLJ0WdcKzQeWGryS7HCwH9XMWP/tfotyWCORNdFr9\n" +
             "x/VHS5Kns6lj7Kd0UPKv7Q==\n" +
+            "-----END CERTIFICATE-----";
+
+    private final String childSignedByOtherRootCAString = "-----BEGIN CERTIFICATE-----\n" +
+            "MIIDjzCCAncCCQDwHVkOSrcxeDANBgkqhkiG9w0BAQUFADCBijELMAkGA1UEBhMC\n" +
+            "R0IxDzANBgNVBAgTBkxvbmRvbjEPMA0GA1UEBxMGTG9uZG9uMRcwFQYDVQQKEw5D\n" +
+            "YWJpbmV0IE9mZmljZTEMMAoGA1UECxMDR0RTMRUwEwYDVQQDEwxNYXJrIFJvb3Qg\n" +
+            "Q0ExGzAZBgkqhkiG9w0BCQEWDG1hcmsudGF5bG9yMTAeFw0xMzA5MTgxMzI1MDha\n" +
+            "Fw0xNTAxMzExMzI1MDhaMIGHMQswCQYDVQQGEwJHQjEPMA0GA1UECBMGTG9uZG9u\n" +
+            "MQ8wDQYDVQQHEwZMb25kb24xFzAVBgNVBAoTDkNhYmluZXQgT2ZmaWNlMQwwCgYD\n" +
+            "VQQLEwNHRFMxEjAQBgNVBAMTCTEyNy4wLjAuMTEbMBkGCSqGSIb3DQEJARYMbWFy\n" +
+            "ay50YXlsb3IxMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAttDMf6ai\n" +
+            "wdVR5/qqSUSzK5Kh2/7e0tMrmD78lnO3is0gAGFJN2Lh9nqMfk/k3WptsgKT62sz\n" +
+            "2xBYoLE2TLkusdleTy3dEXOjAvQiC3RhLcFdU98eYteR4kaWPzQELwThr4g4jW70\n" +
+            "BdQbiAU+X3GekV2InmSD+kugbqTGFQ1b0RW/7ekE49KCjvWMvXGijVqWcun3Rpls\n" +
+            "LMjHi1s9VonNCnYygIjHKfckQS11mrgMLnH6JgYmysT7jILxZUpybjEXuoGXfgaC\n" +
+            "fl1nTz9UpUl8Sv35avhPWJ2GEtSyaKv1CVUL2+aCHKnMsj2zz+yz8gavjCHIfjFs\n" +
+            "6EJ25zXkatRccQIDAQABMA0GCSqGSIb3DQEBBQUAA4IBAQBqRILBd58THiJmc5Nk\n" +
+            "EPC2HMuhq4uG1MDQbT1jgypos190AtYfTxrmPSaWGOZTgIbHUFcLH2a2YyApsgbD\n" +
+            "+YcWBRoXPm2l/nB4EbfdYwqNQe/HvpHE4vI0zdsY53vt5iCvYiRhKuk+ZtqN3Vw0\n" +
+            "+d6e8KS5SfbltbKkH0zUaxQFNX9cVr5qDQfokKh3lNZ/fThQ0TMyTrI/vOffT38C\n" +
+            "6k0QP/hEjjLTrXRoA2wDss+QmTw8dDkdesj234Lv0BUgEDywW6rkSt0/j/wAj1XB\n" +
+            "cELQ4Y14XwQrR9TNF3K3NH5Nt05kFj1LncQ2rCh12kwHrfa/NAr7n+yn5e8vyAGw\n" +
+            "7cGW\n" +
             "-----END CERTIFICATE-----";
 }
