@@ -1,61 +1,64 @@
 package uk.gov.ida.shared.rest.config.verification;
 
 import com.google.common.base.Throwables;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import uk.gov.ida.shared.rest.truststore.DependentServiceSSLTrustStore;
+import uk.gov.ida.shared.common.security.CertificateFactory;
+import uk.gov.ida.shared.rest.truststore.IdaTrustStore;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.fail;
 
 public class CertificateChainValidatorTest {
 
-    public CertificateFactory x509Factory;
+    public CertificateFactory certificateFactory;
     public CertificateChainValidator certificateChainValidator;
 
     @Before
     public void setUp() throws Exception {
-        x509Factory = CertificateFactory.getInstance("x509");
-        DependentServiceSSLTrustStore trustStore = getTrustStore();
-        certificateChainValidator = new CertificateChainValidator(trustStore);
+        certificateFactory = new CertificateFactory();
+        certificateChainValidator = new CertificateChainValidator(getTrustStore());
     }
 
     @Test
     public void verify_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
-        final X509Certificate intermediaryCACertificate = createX509Certificate(intermediaryCACertString);
+        final X509Certificate intermediaryCACertificate = certificateFactory.createCertificate(intermediaryCACertString);
 
         certificateChainValidator.validate(intermediaryCACertificate);
     }
 
     @Test
     public void verify_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStore() throws Exception {
-        final X509Certificate encryptionCertificate = createX509Certificate(this.encryptionCertString);
+        final X509Certificate encryptionCertificate = certificateFactory.createCertificate(this.encryptionCertString);
 
         certificateChainValidator.validate(encryptionCertificate);
     }
 
-    @Test(expected = CertPathValidatorException.class)
+    @Test
     public void verify_shouldFailACertSignedByAnUnknownRootCACert() throws Exception {
-        final X509Certificate otherChildCertificate = createX509Certificate(childSignedByOtherRootCAString);
+        final X509Certificate otherChildCertificate =
+                certificateFactory.createCertificate(childSignedByOtherRootCAString);
 
-        certificateChainValidator.validate(otherChildCertificate);
+        assertExceptionMessage(
+                certificateChainValidator,
+                otherChildCertificate,
+                CertPathValidatorException.class,
+                "java.security.cert.CertPathValidatorException: Path does not chain with any of the trust anchors"
+        );
     }
 
-    private X509Certificate createX509Certificate(String certificateString) throws CertificateException, UnsupportedEncodingException {
-        return (X509Certificate)
-                x509Factory.generateCertificate(new ByteArrayInputStream(certificateString.getBytes("UTF-8")));
-    }
-
-    public DependentServiceSSLTrustStore getTrustStore() {
+    public IdaTrustStore getTrustStore() {
         KeyStore ks;
         try {
             ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -72,7 +75,18 @@ public class CertificateChainValidatorTest {
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
             throw Throwables.propagate(e);
         }
-        return new DependentServiceSSLTrustStore(ks);
+        return new IdaTrustStore(ks);
+    }
+
+    private void assertExceptionMessage(CertificateChainValidator validator, X509Certificate certificate, Class exceptionClass, String value) {
+        try {
+            validator.validate(certificate);
+        } catch (Exception e) {
+            Assert.assertThat(e.getCause().getClass(), equalTo(exceptionClass));
+            Assert.assertThat(e.getMessage(), is(value));
+            return;
+        }
+        fail("Should have thrown exception");
     }
 
     private final String intermediaryCACertString = "-----BEGIN CERTIFICATE-----\n" +
