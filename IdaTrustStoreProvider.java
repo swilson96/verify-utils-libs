@@ -14,17 +14,18 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
-public class DependentServiceSSLTrustStoreProvider implements Provider<DependentServiceSSLTrustStore> {
+public class IdaTrustStoreProvider implements Provider<IdaTrustStore> {
 
     private final ClientTrustStoreConfiguration configuration;
 
     @Inject
-    public DependentServiceSSLTrustStoreProvider(ClientTrustStoreConfiguration configuration) {
+    public IdaTrustStoreProvider(ClientTrustStoreConfiguration configuration) {
+
         this.configuration = configuration;
     }
 
     @Override
-    public DependentServiceSSLTrustStore get() {
+    public IdaTrustStore get() {
         KeyStore ks;
         try {
             ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -43,6 +44,6 @@ public class DependentServiceSSLTrustStoreProvider implements Provider<Dependent
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
             throw Throwables.propagate(e);
         }
-        return new DependentServiceSSLTrustStore(ks);
+        return new IdaTrustStore(ks);
     }
 }

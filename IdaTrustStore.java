@@ -8,14 +8,15 @@ import java.security.KeyStore;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.fromNullable;
 
-public class DependentServiceSSLTrustStore {
+public class IdaTrustStore {
     private Optional<KeyStore> keyStore = absent();
 
     @Inject
-    public DependentServiceSSLTrustStore() {
+    public IdaTrustStore() {
+        //NOTE: [24/09/2013] Mark - This constructor is to allow injection in places that don't want to care about the trust-store
     }
 
-    public DependentServiceSSLTrustStore(KeyStore keyStore) {
+    public IdaTrustStore(KeyStore keyStore) {
         this.keyStore = fromNullable(keyStore);
     }
 
