@@ -2,7 +2,8 @@ package uk.gov.ida.shared.rest.config.verification;
 
 import com.google.common.base.Throwables;
 import com.google.inject.Inject;
-import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
+import uk.gov.ida.shared.rest.common.ExceptionType;
+import uk.gov.ida.shared.rest.exceptions.ApplicationErrorException;
 import uk.gov.ida.shared.rest.truststore.IdaTrustStore;
 
 import java.security.InvalidAlgorithmParameterException;
@@ -15,6 +16,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.PKIXParameters;
 import java.security.cert.X509Certificate;
+import java.util.UUID;
 
 import static com.google.common.collect.ImmutableList.of;
 
@@ -59,7 +61,7 @@ public class CertificateChainValidator {
         try {
             certPathValidator.validate(certificatePath, certPathParameters);
         } catch (CertPathValidatorException e) {
-            throw new CertificateChainValidationException("Unable to validate certificate using CA certificates in trust store.", e);
+            throw ApplicationErrorException.createUnauditedException(ExceptionType.UNCHAINED_CERT, UUID.randomUUID(), e);
         } catch (InvalidAlgorithmParameterException e) {
             throw Throwables.propagate(e);
         }
