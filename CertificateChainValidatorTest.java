@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.ida.shared.common.security.CertificateFactory;
-import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
 import uk.gov.ida.shared.rest.truststore.IdaTrustStore;
 
 import java.io.IOException;
@@ -12,8 +11,14 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class CertificateChainValidatorTest {
 
@@ -40,12 +45,33 @@ public class CertificateChainValidatorTest {
         certificateChainValidator.validate(encryptionCertificate);
     }
 
-    @Test(expected = CertificateChainValidationException.class)
+    @Test
     public void verify_shouldFailACertSignedByAnUnknownRootCACert() throws Exception {
         final X509Certificate otherChildCertificate =
                 certificateFactory.createCertificate(childSignedByOtherRootCAString);
 
-        certificateChainValidator.validate(otherChildCertificate);
+        assertExceptionMessage(
+                certificateChainValidator,
+                otherChildCertificate,
+                CertPathValidatorException.class,
+                "Exception of type [UNCHAINED_CERT] "
+        );
+    }
+
+    private void assertExceptionMessage(
+            CertificateChainValidator validator,
+            X509Certificate certificate,
+            Class exceptionClass,
+            String value) {
+
+        try {
+            validator.validate(certificate);
+        } catch (Exception e) {
+            assertThat(e.getCause().getClass(), equalTo(exceptionClass));
+            assertThat(e.getMessage(), is(value));
+            return;
+        }
+        fail("Should have thrown exception.");
     }
 
     public IdaTrustStore getTrustStore() {
