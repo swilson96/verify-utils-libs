@@ -141,34 +141,6 @@ public class CertificateChainValidatorTest {
             "GUwSFoQ=\n" +
             "-----END CERTIFICATE-----";
 
-    public String otherRootCACertString = "-----BEGIN CERTIFICATE-----\n" +
-            "MIIEjDCCA3SgAwIBAgIJAN5dEk++usvXMA0GCSqGSIb3DQEBBQUAMIGKMQswCQYD\n" +
-            "VQQGEwJHQjEPMA0GA1UECBMGTG9uZG9uMQ8wDQYDVQQHEwZMb25kb24xFzAVBgNV\n" +
-            "BAoTDkNhYmluZXQgT2ZmaWNlMQwwCgYDVQQLEwNHRFMxFTATBgNVBAMTDE1hcmsg\n" +
-            "Um9vdCBDQTEbMBkGCSqGSIb3DQEJARYMbWFyay50YXlsb3IxMB4XDTEzMDkxODEz\n" +
-            "MjAyNVoXDTE2MDcwODEzMjAyNVowgYoxCzAJBgNVBAYTAkdCMQ8wDQYDVQQIEwZM\n" +
-            "b25kb24xDzANBgNVBAcTBkxvbmRvbjEXMBUGA1UEChMOQ2FiaW5ldCBPZmZpY2Ux\n" +
-            "DDAKBgNVBAsTA0dEUzEVMBMGA1UEAxMMTWFyayBSb290IENBMRswGQYJKoZIhvcN\n" +
-            "AQkBFgxtYXJrLnRheWxvcjEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB\n" +
-            "AQDVFubvXrYy2aivRo5D+s1JhAMmj17bdfkY6znrpN8z1anPdV3rt4tdZGUnh+kM\n" +
-            "ldF5Ndzxg/0vJz9Ht7qovBxQsDjP1X02nnigLa25kR3KJ1uLx2ec6rWex9mWN0ew\n" +
-            "3XOoSlHmpEI62onu9l/Y3G09GRFnzWghVGs5nE+gsJCNfpx5AS6HK1FCwvfk5Hvn\n" +
-            "JVz10g+yiA/FYtUvmQxNxlJemFgxgIHXipCQb1VfiFCwJc7VP3RfYggSTUdzJEZj\n" +
-            "vjdOtf7BUm3U47zKzK+TACnb+4awRWOKDieWGgVA1fVtM2CBqxi8OOgcvLry1xcP\n" +
-            "yEed4j0hlYjJKO0kQ9IB2Yf3AgMBAAGjgfIwge8wHQYDVR0OBBYEFA74ESKAj2X6\n" +
-            "Umb4fR5JZk195FGYMIG/BgNVHSMEgbcwgbSAFA74ESKAj2X6Umb4fR5JZk195FGY\n" +
-            "oYGQpIGNMIGKMQswCQYDVQQGEwJHQjEPMA0GA1UECBMGTG9uZG9uMQ8wDQYDVQQH\n" +
-            "EwZMb25kb24xFzAVBgNVBAoTDkNhYmluZXQgT2ZmaWNlMQwwCgYDVQQLEwNHRFMx\n" +
-            "FTATBgNVBAMTDE1hcmsgUm9vdCBDQTEbMBkGCSqGSIb3DQEJARYMbWFyay50YXls\n" +
-            "b3IxggkA3l0ST766y9cwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEA\n" +
-            "FN3wgfJQFPuWqzn3R/2OAS0ey7pH5I4w4c9Gz67U6arKQ7sn4V/NTh+nktuRVZJB\n" +
-            "zk9AqhhLR3/rSw/gcH4Vx/xu4W0QwkJh5aviKfh+Z3Q2W1kikelbv7JnRAwt+lft\n" +
-            "I89ShbB8Y0mvwsN+gMj2z7KUwt7CcLe+kMdaC5nX5210L7CVwnIcyA6XeXI2+zaw\n" +
-            "pzVF8k+A1B578jb0ppfm4SLQX0uWM9Ndlxb31LsL7SeAcQhUjhjWYXGoYhpT20vO\n" +
-            "vRQ0E9Je7xgJTH0OVTz5+gEYLJ0WdcKzQeWGryS7HCwH9XMWP/tfotyWCORNdFr9\n" +
-            "x/VHS5Kns6lj7Kd0UPKv7Q==\n" +
-            "-----END CERTIFICATE-----";
-
     private final String childSignedByOtherRootCAString = "-----BEGIN CERTIFICATE-----\n" +
             "MIIDjzCCAncCCQDwHVkOSrcxeDANBgkqhkiG9w0BAQUFADCBijELMAkGA1UEBhMC\n" +
             "R0IxDzANBgNVBAgTBkxvbmRvbjEPMA0GA1UEBxMGTG9uZG9uMRcwFQYDVQQKEw5D\n" +
