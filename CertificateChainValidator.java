@@ -22,11 +22,11 @@ import static com.google.common.collect.ImmutableList.of;
 
 
 public class CertificateChainValidator {
-    public final String PKIX_ALGORITHM = "PKIX";
-    public final String X509_CERTIFICATE_TYPE = "X.509";
-    public PKIXParameters certPathParameters;
-    public CertificateFactory certificateFactory;
-    public CertPathValidator certPathValidator;
+    private static final String PKIX_ALGORITHM = "PKIX";
+    private static final String X509_CERTIFICATE_TYPE = "X.509";
+    private final PKIXParameters certPathParameters;
+    private final CertificateFactory certificateFactory;
+    private final CertPathValidator certPathValidator;
 
     @Inject
     public CertificateChainValidator(IdaTrustStore trustStore) {
