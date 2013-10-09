@@ -3,7 +3,12 @@ package uk.gov.ida.shared.rest.config.verification;
 import com.google.common.base.Throwables;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.shared.common.security.CertificateFactory;
+import uk.gov.ida.shared.rest.common.CertificateDto;
+import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
 import uk.gov.ida.shared.rest.truststore.IdaTrustStore;
 
@@ -19,34 +24,42 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.ida.hub.shared.test.builders.CertificateDtoBuilder.aCertificateDto;
 
+@RunWith(MockitoJUnitRunner.class)
 public class CertificateChainValidatorTest {
 
-    public CertificateFactory certificateFactory;
-    public CertificateChainValidator certificateChainValidator;
+    private CertificateFactory certificateFactory;
+    private CertificateChainValidator certificateChainValidator;
+    
+    @Mock
+    private CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer;
 
     @Before
     public void setUp() throws Exception {
         certificateFactory = new CertificateFactory();
-        certificateChainValidator = new CertificateChainValidator(getTrustStore());
+        certificateChainValidator = new CertificateChainValidator(getTrustStore(), certificateDtoToX509CertificateTransformer);
     }
 
     @Test
-    public void verify_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
+    public void validate_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate intermediaryCACertificate = certificateFactory.createCertificate(intermediaryCACertString);
 
         certificateChainValidator.validate(intermediaryCACertificate);
     }
 
     @Test
-    public void verify_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStore() throws Exception {
+    public void validate_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate encryptionCertificate = certificateFactory.createCertificate(this.encryptionCertString);
 
         certificateChainValidator.validate(encryptionCertificate);
     }
 
     @Test
-    public void verify_shouldFailACertSignedByAnUnknownRootCACert() throws Exception {
+    public void validate_shouldFailACertSignedByAnUnknownRootCACert() throws Exception {
         final X509Certificate otherChildCertificate =
                 certificateFactory.createCertificate(childSignedByOtherRootCAString);
 
@@ -56,6 +69,24 @@ public class CertificateChainValidatorTest {
                 CertificateChainValidationException.class,
                 "Certificate could not be chained to a trusted root CA certificate."
         );
+    }
+
+    @Test
+    public void validate_shouldHandleCertificateDtos() throws Exception {
+        final CertificateDto certificateDto = aCertificateDto().withCertificate(this.encryptionCertString).build();
+        when(certificateDtoToX509CertificateTransformer.transform(any(CertificateDto.class)))
+                .thenReturn(certificateFactory.createCertificate(this.encryptionCertString));
+
+        certificateChainValidator.validate(certificateDto);
+
+        verify(certificateDtoToX509CertificateTransformer).transform(certificateDto);
+    }
+
+    @Test(expected = CertificateChainValidationException.class)
+    public void validate_shouldWrapCertificateExceptionsGeneratedByTransformer() throws Exception {
+        when(certificateDtoToX509CertificateTransformer.transform(any(CertificateDto.class))).thenThrow(new CertificateException());
+
+        certificateChainValidator.validate(aCertificateDto().build());
     }
 
     private void assertExceptionMessage(
