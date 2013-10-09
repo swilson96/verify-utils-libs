@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.ida.shared.common.security.CertificateFactory;
+import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
 import uk.gov.ida.shared.rest.truststore.IdaTrustStore;
 
 import java.io.IOException;
@@ -11,7 +12,6 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -53,8 +53,8 @@ public class CertificateChainValidatorTest {
         assertExceptionMessage(
                 certificateChainValidator,
                 otherChildCertificate,
-                CertPathValidatorException.class,
-                "Exception of type [UNCHAINED_CERT] "
+                CertificateChainValidationException.class,
+                "Certificate could not be chained to a trusted root CA certificate."
         );
     }
 
@@ -67,7 +67,7 @@ public class CertificateChainValidatorTest {
         try {
             validator.validate(certificate);
         } catch (Exception e) {
-            assertThat(e.getCause().getClass(), equalTo(exceptionClass));
+            assertThat(e.getClass(), equalTo(exceptionClass));
             assertThat(e.getMessage(), is(value));
             return;
         }
