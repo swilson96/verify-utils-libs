@@ -1,9 +1,7 @@
 package uk.gov.ida.shared.rest.config.verification;
 
-import com.google.common.base.Throwables;
 import com.google.inject.Inject;
-import uk.gov.ida.shared.rest.common.ExceptionType;
-import uk.gov.ida.shared.rest.exceptions.ApplicationErrorException;
+import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
 import uk.gov.ida.shared.rest.truststore.IdaTrustStore;
 
 import java.security.InvalidAlgorithmParameterException;
@@ -16,7 +14,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.PKIXParameters;
 import java.security.cert.X509Certificate;
-import java.util.UUID;
 
 import static com.google.common.collect.ImmutableList.of;
 
@@ -33,20 +30,20 @@ public class CertificateChainValidator {
         try {
             certPathParameters = new PKIXParameters(trustStore.getKeyStore().get());
         } catch (KeyStoreException | InvalidAlgorithmParameterException e) {
-            throw Throwables.propagate(e);
+            throw new CertificateChainValidationException("There was an error reading from the trust store.", e);
         }
         certPathParameters.setRevocationEnabled(false);
 
         try {
             certificateFactory = CertificateFactory.getInstance(X509_CERTIFICATE_TYPE);
         } catch (CertificateException e) {
-            throw Throwables.propagate(e);
+            throw new CertificateChainValidationException("Error retrieving X509 certificate factory instance.", e);
         }
 
         try {
             certPathValidator = CertPathValidator.getInstance(PKIX_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            throw Throwables.propagate(e);
+            throw new CertificateChainValidationException("Error retrieving PKIX certificate path validator instance.", e);
         }
     }
 
@@ -55,15 +52,17 @@ public class CertificateChainValidator {
         try {
             certificatePath = certificateFactory.generateCertPath(of(certificate));
         } catch (CertificateException e) {
-            throw Throwables.propagate(e);
+            throw new CertificateChainValidationException("Error generating certificate path for certificate.", e);
         }
 
         try {
             certPathValidator.validate(certificatePath, certPathParameters);
         } catch (CertPathValidatorException e) {
-            throw ApplicationErrorException.createUnauditedException(ExceptionType.UNCHAINED_CERT, UUID.randomUUID(), e);
+            throw new CertificateChainValidationException(
+                    "Certificate could not be chained to a trusted root CA certificate.",
+                    e);
         } catch (InvalidAlgorithmParameterException e) {
-            throw Throwables.propagate(e);
+            throw new CertificateChainValidationException("Unable to proceed in validating certificate chain.", e);
         }
     }
 }
