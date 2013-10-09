@@ -1,6 +1,8 @@
 package uk.gov.ida.shared.rest.config.verification;
 
 import com.google.inject.Inject;
+import uk.gov.ida.shared.rest.common.CertificateDto;
+import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
 import uk.gov.ida.shared.rest.truststore.IdaTrustStore;
 
@@ -24,9 +26,15 @@ public class CertificateChainValidator {
     private final PKIXParameters certPathParameters;
     private final CertificateFactory certificateFactory;
     private final CertPathValidator certPathValidator;
+    private final CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer;
 
     @Inject
-    public CertificateChainValidator(IdaTrustStore trustStore) {
+    public CertificateChainValidator(
+            IdaTrustStore trustStore,
+            CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer) {
+
+        this.certificateDtoToX509CertificateTransformer = certificateDtoToX509CertificateTransformer;
+
         try {
             certPathParameters = new PKIXParameters(trustStore.getKeyStore().get());
         } catch (KeyStoreException | InvalidAlgorithmParameterException e) {
@@ -64,5 +72,16 @@ public class CertificateChainValidator {
         } catch (InvalidAlgorithmParameterException e) {
             throw new CertificateChainValidationException("Unable to proceed in validating certificate chain.", e);
         }
+    }
+
+    public void validate(CertificateDto certificate) {
+        X509Certificate x509Certificate;
+        try {
+            x509Certificate = certificateDtoToX509CertificateTransformer.transform(certificate);
+        } catch (CertificateException e) {
+            throw new CertificateChainValidationException("Could not transform CertificateDto into an X509Certificate.", e);
+        }
+
+        validate(x509Certificate);
     }
 }
