@@ -67,7 +67,7 @@ public class CertificateChainValidatorTest {
                 certificateChainValidator,
                 otherChildCertificate,
                 CertificateChainValidationException.class,
-                "Certificate could not be chained to a trusted root CA certificate."
+                "Certificate could not be chained to a trusted root CA certificate: EMAILADDRESS=mark.taylor1, CN=127.0.0.1, OU=GDS, O=Cabinet Office, L=London, ST=London, C=GB"
         );
     }
 
