@@ -1,6 +1,8 @@
 package uk.gov.ida.shared.rest.config.verification;
 
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.ida.shared.rest.common.CertificateDto;
 import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
@@ -21,6 +23,9 @@ import static com.google.common.collect.ImmutableList.of;
 
 
 public class CertificateChainValidator {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CertificateChainValidator.class);
+
     private static final String PKIX_ALGORITHM = "PKIX";
     private static final String X509_CERTIFICATE_TYPE = "X.509";
     private final PKIXParameters certPathParameters;
@@ -60,17 +65,17 @@ public class CertificateChainValidator {
         try {
             certificatePath = certificateFactory.generateCertPath(of(certificate));
         } catch (CertificateException e) {
-            throw new CertificateChainValidationException("Error generating certificate path for certificate.", e);
+            throw new CertificateChainValidationException("Error generating certificate path for certificate: " + getDnForCertificate(certificate), e);
         }
 
         try {
             certPathValidator.validate(certificatePath, certPathParameters);
         } catch (CertPathValidatorException e) {
             throw new CertificateChainValidationException(
-                    "Certificate could not be chained to a trusted root CA certificate.",
+                    "Certificate could not be chained to a trusted root CA certificate: " + getDnForCertificate(certificate),
                     e);
         } catch (InvalidAlgorithmParameterException e) {
-            throw new CertificateChainValidationException("Unable to proceed in validating certificate chain.", e);
+            throw new CertificateChainValidationException("Unable to proceed in validating certificate chain: " + getDnForCertificate(certificate), e);
         }
     }
 
@@ -83,5 +88,15 @@ public class CertificateChainValidator {
         }
 
         validate(x509Certificate);
+    }
+
+    private String getDnForCertificate(X509Certificate certificate) {
+        try {
+            if(certificate != null && certificate.getSubjectDN() != null)
+              return certificate.getSubjectDN().getName();
+        } catch (RuntimeException e) {
+            LOG.error("Failed to generate DN string for certificate", e);
+        }
+        return "";
     }
 }
