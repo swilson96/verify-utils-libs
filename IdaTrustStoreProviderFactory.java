@@ -9,7 +9,7 @@ import uk.gov.ida.shared.configuration.ClientTrustStoreConfiguration;
  * not try and read from the file system when running the test. To enable this, the
  * bundle can't be injected with the provider directly, since the provider depends on
  * the {@link ClientTrustStoreConfiguration}, which the bundle only has once inside its
- * {@link uk.gov.ida.shared.rest.healthcheck.DependentServiceHealthCheckBundle#run(uk.gov.ida.shared.configuration.BaseConfiguration, com.yammer.dropwizard.config.Environment)}
+ * {@link uk.gov.ida.shared.rest.healthcheck.DependentServiceHealthCheckBundle#run(uk.gov.ida.shared.configuration.BaseConfiguration, io.dropwizard.setup.Environment)}
  * method.
  */
 public class IdaTrustStoreProviderFactory {
