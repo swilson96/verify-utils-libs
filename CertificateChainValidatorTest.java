@@ -20,10 +20,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -98,8 +96,8 @@ public class CertificateChainValidatorTest {
         try {
             validator.validate(certificate);
         } catch (Exception e) {
-            assertThat(e.getClass(), equalTo(exceptionClass));
-            assertThat(e.getMessage(), is(value));
+            assertThat(e.getClass()).isEqualTo(exceptionClass);
+            assertThat(e.getMessage()).isEqualTo(value);
             return;
         }
         fail("Should have thrown exception.");
