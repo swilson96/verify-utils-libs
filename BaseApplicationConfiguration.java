@@ -15,7 +15,7 @@ public class BaseApplicationConfiguration extends Configuration {
     private String serviceName;
 
     @Valid
-//    @NotNull
+    @NotNull
     @JsonProperty
     private URI serviceBaseUri;
 
