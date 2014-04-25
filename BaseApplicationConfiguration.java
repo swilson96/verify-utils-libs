@@ -5,6 +5,7 @@ import io.dropwizard.Configuration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.net.URI;
 
 public class BaseApplicationConfiguration extends Configuration {
 
@@ -13,7 +14,16 @@ public class BaseApplicationConfiguration extends Configuration {
     @JsonProperty
     private String serviceName;
 
+    @Valid
+    @NotNull
+    @JsonProperty
+    private URI serviceBaseUri;
+
     public String getServiceName() {
         return serviceName;
+    }
+
+    public URI getServiceBaseUri() {
+        return serviceBaseUri;
     }
 }
