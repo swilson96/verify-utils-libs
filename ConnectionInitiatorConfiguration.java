@@ -22,7 +22,7 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
                 return input instanceof ConsoleAppenderFactory;
             }
         });
-        consoleAppender.setLogFormat("%-5p [%d{ISO8601,UTC}] (^_^) %c: [REQ: %X{reqid:-na}] %m%n%rEx");
+        consoleAppender.setLogFormat("%-5p [%d{ISO8601,UTC}] (^_^) %c: [REQ: %X{request-tracking-id:-na}] %m%n%rEx");
     }
 
     @Valid
