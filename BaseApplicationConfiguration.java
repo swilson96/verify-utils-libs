@@ -12,7 +12,7 @@ public class BaseApplicationConfiguration extends Configuration {
     @Valid
     @NotNull
     @JsonProperty
-    private String serviceName;
+    protected String serviceName;
 
     public String getServiceName() {
         return serviceName;
