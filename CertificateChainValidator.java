@@ -3,8 +3,8 @@ package uk.gov.ida.matchingserviceadapter.configuration.verification;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.matchingserviceadapter.rest.common.CertificateDto;
-import uk.gov.ida.matchingserviceadapter.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
+import uk.gov.ida.matchingserviceadapter.rest.CertificateDto;
+import uk.gov.ida.matchingserviceadapter.rest.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.matchingserviceadapter.exceptions.CertificateChainValidationException;
 import uk.gov.ida.matchingserviceadapter.rest.truststore.IdaTrustStore;
 

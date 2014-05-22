@@ -1,7 +1,7 @@
 package uk.gov.ida.matchingserviceadapter.configuration.verification;
 
 import com.google.inject.Inject;
-import uk.gov.ida.matchingserviceadapter.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
+import uk.gov.ida.matchingserviceadapter.rest.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.matchingserviceadapter.rest.truststore.IdaTrustStore;
 
 import java.security.cert.X509Certificate;
