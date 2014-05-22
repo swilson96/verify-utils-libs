@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.ida.hub.shared.test.builders.CertificateDtoBuilder.aCertificateDto;
+import static uk.gov.ida.matchingserviceadapter.builders.CertificateDtoBuilder.aCertificateDto;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateChainValidatorTest {
