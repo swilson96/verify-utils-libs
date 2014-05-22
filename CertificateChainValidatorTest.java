@@ -8,8 +8,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.matchingserviceadapter.configuration.verification.CertificateChainValidator;
 import uk.gov.ida.matchingserviceadapter.security.CertificateFactory;
-import uk.gov.ida.matchingserviceadapter.rest.common.CertificateDto;
-import uk.gov.ida.matchingserviceadapter.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
+import uk.gov.ida.matchingserviceadapter.rest.CertificateDto;
+import uk.gov.ida.matchingserviceadapter.rest.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.matchingserviceadapter.exceptions.CertificateChainValidationException;
 import uk.gov.ida.matchingserviceadapter.rest.truststore.IdaTrustStore;
 
