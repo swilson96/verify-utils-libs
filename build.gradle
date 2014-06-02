@@ -1,0 +1,69 @@
+apply plugin: 'idea'
+apply from: 'sonar.gradle'
+
+idea {
+    project {
+        jdkName = '1.7'
+        languageLevel = '1.7'
+    }
+    module {
+        //if you love browsing Javadoc
+        downloadJavadoc = true
+
+        //and hate reading sources :)
+        downloadSources = true
+    }
+}
+
+buildscript {
+    repositories {
+        maven {
+            url 'https://build.ida.digital.cabinet-office.gov.uk/maven/'
+        }
+    }
+    dependencies {
+        classpath 'uk.gov.ida:ida-gradle:1.0.0-4'
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'idaJar'
+    apply plugin: 'idea'
+    apply plugin: 'maven-publish'
+
+    group = "uk.gov.ida"
+    version = "1.0.0-$System.env.BUILD_NUMBER"
+
+    repositories {
+        maven {
+            url 'https://build.shibboleth.net/nexus/content/groups/public'
+        }
+        mavenCentral()
+        maven {
+            url "http://repo.typesafe.com/typesafe/releases/"
+        }
+        maven {
+            url "http://repository.jboss.org/nexus/content/groups/public"
+        }
+        maven {
+            url 'https://build.ida.digital.cabinet-office.gov.uk/maven/'
+        }
+    }
+
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+            }
+
+            repositories {
+                maven {
+                    url "/srv/maven" // change to point to your repo, e.g. http://my.org/repo
+                }
+            }
+
+        }
+    }
+}

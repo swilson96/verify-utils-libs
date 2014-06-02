@@ -1,0 +1,37 @@
+apply plugin: "sonar-runner"
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url 'http://dl.bintray.com/robfletcher/gradle-plugins' }
+    }
+    dependencies {
+        classpath 'org.ajoberstar:gradle-jacoco:0.3.0'
+    }
+}
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.projectName", "ida-utils-sonar"
+        property "sonar.projectKey", "ida-utils-sonar"
+        property "sonar.host.url", "http://sonar.ida.digital.cabinet-office.gov.uk:8888"
+        property "sonar.jdbc.url", "jdbc:postgresql://sonar.ida.digital.cabinet-office.gov.uk/sonar"
+        property "sonar.jdbc.driverClassName", "org.postgresql.Driver"
+        property "sonar.jdbc.username", "sonar"
+        property "sonar.jdbc.password", "holborn missing purple chimney"
+        property "sonar.login", "admin"
+        property "sonar.password", "cup cream fair"
+        property "sonar.core.codeCoveragePlugin", "jacoco"
+    }
+}
+
+subprojects {
+    apply plugin: 'jacoco'
+
+    sonarRunner {
+        sonarProperties {
+            property "sonar.sourceEncoding", "UTF-8"
+            property "sonar.jacoco.reportPath", "build/jacoco/test.exec"
+        }
+    }
+}
