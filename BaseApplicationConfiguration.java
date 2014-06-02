@@ -5,7 +5,6 @@ import io.dropwizard.Configuration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.net.URI;
 
 public class BaseApplicationConfiguration extends Configuration {
 
@@ -16,5 +15,9 @@ public class BaseApplicationConfiguration extends Configuration {
 
     public String getServiceName() {
         return serviceName;
+    }
+
+    public String getShortServiceName() {
+        return serviceName.replaceFirst("-agent$", "");
     }
 }
