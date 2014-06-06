@@ -11,8 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 
-import static uk.gov.ida.shared.rest.jerseyclient.IdaClientBuilder.anIdaJerseyClientWithScheme;
-import static uk.gov.ida.shared.rest.jerseyclient.InsecureSSLClientConfigurationBuilder.aConfigWithInsecureSSLSchemeRegistry;
+import static uk.gov.ida.restclient.IdaClientBuilder.anIdaJerseyClientWithScheme;
+import static uk.gov.ida.restclient.InsecureSSLClientConfigurationBuilder.aConfigWithInsecureSSLSchemeRegistry;
+
 
 public class IgnoreSSLJerseyClientBuilder {
 
