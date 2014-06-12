@@ -11,7 +11,7 @@ public class BaseApplicationConfiguration extends Configuration {
     @Valid
     @NotNull
     @JsonProperty
-    protected String serviceName;
+    public String serviceName;
 
     public String getServiceName() {
         return serviceName;
