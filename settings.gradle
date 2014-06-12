@@ -1,2 +1,3 @@
 include "common-utils",
-        "rest-utils"
+        "rest-utils",
+        "security-utils"
