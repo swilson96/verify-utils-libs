@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.ida.shared.common.security.CertificateFactory;
+import uk.gov.ida.common.shared.security.CertificateFactory;
 import uk.gov.ida.shared.rest.common.CertificateDto;
 import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
