@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import uk.gov.ida.shared.rest.common.CertificateDto;
 import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
-import uk.gov.ida.shared.rest.truststore.IdaTrustStore;
+import uk.gov.ida.truststore.IdaTrustStore;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
