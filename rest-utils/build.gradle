@@ -3,9 +3,10 @@ dependencies {
             'org.assertj:assertj-core:1.6.0',
             'org.mockito:mockito-core:1.9.5'
 
-    ext {
-        dropwizardVersion = "0.7.0"
-    }
+    dependencyVersions = [
+            saml_lib:'58',
+            dropwizardVersion:'0.7.0'
+    ]
 
     compile "com.google.inject:guice:3.0",
             "com.sun.jersey.contribs:jersey-guice:1.18.1",
@@ -13,7 +14,7 @@ dependencies {
             "com.sun.jersey:jersey-server:1.18.1",
             "javax.servlet:javax.servlet-api:3.0.1",
             "com.sun.jersey:jersey-core:1.18.1",
-            "io.dropwizard:dropwizard-core:" + ext.dropwizardVersion,
-            "io.dropwizard:dropwizard-client:" + ext.dropwizardVersion
-
+            "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
+            "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion",
+            "uk.gov.ida:ida-saml-configuration:2.6.1-$dependencyVersions.saml_lib"
 }
