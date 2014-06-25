@@ -5,7 +5,6 @@ import io.dropwizard.client.JerseyClientConfiguration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.io.File;
 
 public abstract class ConnectionInitiatorConfiguration extends BaseApplicationConfiguration {
 
@@ -33,21 +32,4 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
         return httpClient;
     }
 
-    public static class MutualAuthConfiguration {
-        @JsonProperty
-        @NotNull
-        private File keyStoreFile;
-
-        @JsonProperty
-        @NotNull
-        private String keyStorePassword;
-
-        public String getKeyStorePassword() {
-            return keyStorePassword;
-        }
-
-        public File getKeyStoreFile() {
-            return keyStoreFile;
-        }
-    }
 }
