@@ -22,7 +22,7 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
     }
 
     @JsonProperty
-    protected MutualAuthConfiguration mutualAuth = null;
+    public MutualAuthConfiguration mutualAuth = null;
 
     public boolean acceptsSelfSignedCerts() {
         return acceptSelfSignedCerts;
