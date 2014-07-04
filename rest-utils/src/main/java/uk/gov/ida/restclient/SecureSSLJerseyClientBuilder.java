@@ -5,6 +5,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,16 +25,20 @@ public class SecureSSLJerseyClientBuilder {
     private final JerseyClientConfiguration jerseyClientConfiguration;
     private final IdaTrustStore idaTrustStore;
     private boolean enableStaleConnectionCheck;
+    private final HttpRequestRetryHandler retryHandler;
 
     public SecureSSLJerseyClientBuilder(
             Environment environment,
             JerseyClientConfiguration jerseyClientConfiguration,
-            IdaTrustStore idaTrustStore, boolean enableStaleConnectionCheck) {
+            IdaTrustStore idaTrustStore,
+            boolean enableStaleConnectionCheck,
+            HttpRequestRetryHandler retryHandler) {
 
         this.environment = environment;
         this.jerseyClientConfiguration = jerseyClientConfiguration;
         this.idaTrustStore = idaTrustStore;
         this.enableStaleConnectionCheck = enableStaleConnectionCheck;
+        this.retryHandler = retryHandler;
     }
 
     public Client build(String clientName) {
@@ -43,7 +48,9 @@ public class SecureSSLJerseyClientBuilder {
                 jerseyClientConfiguration,
                 secureSSLClientConfiguration.getSchemeRegistry(),
                 secureSSLClientConfiguration.getConfigurationProperties(),
-                clientName, enableStaleConnectionCheck);
+                clientName,
+                enableStaleConnectionCheck,
+                retryHandler);
     }
 
     private SecureSSLClientConfiguration getSecureSSLClientConfiguration() {

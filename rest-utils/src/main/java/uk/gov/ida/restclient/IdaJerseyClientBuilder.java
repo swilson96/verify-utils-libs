@@ -14,6 +14,7 @@ import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.setup.Environment;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.scheme.SchemeRegistry;
 
@@ -153,6 +154,17 @@ public class IdaJerseyClientBuilder {
     }
 
     /**
+     * Uses the {@link HttpRequestRetryHandler} for handling request retries.
+     *
+     * @param httpRequestRetryHandler an httpRequestRetryHandler
+     * @return {@code this}
+     */
+    public IdaJerseyClientBuilder using(HttpRequestRetryHandler httpRequestRetryHandler) {
+        builder.using(httpRequestRetryHandler);
+        return this;
+    }
+
+    /**
      * Uses the given {@link java.util.concurrent.ExecutorService} and {@link com.fasterxml.jackson.databind.ObjectMapper}.
      *
      * @param executorService a thread pool
@@ -165,6 +177,8 @@ public class IdaJerseyClientBuilder {
         this.objectMapper = objectMapper;
         return this;
     }
+
+
 
     /**
      * Builds the {@link com.sun.jersey.api.client.Client} instance.

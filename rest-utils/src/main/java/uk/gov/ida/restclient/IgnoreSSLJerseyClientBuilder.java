@@ -5,6 +5,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,11 +23,17 @@ public class IgnoreSSLJerseyClientBuilder {
     private final Environment environment;
     private final JerseyClientConfiguration jerseyClientConfiguration;
     private boolean enableStaleConnectionCheck;
+    private final HttpRequestRetryHandler retryHandler;
 
-    public IgnoreSSLJerseyClientBuilder(Environment environment, JerseyClientConfiguration jerseyClientConfiguration, boolean enableStaleConnectionCheck) {
+    public IgnoreSSLJerseyClientBuilder(
+            Environment environment,
+            JerseyClientConfiguration jerseyClientConfiguration,
+            boolean enableStaleConnectionCheck,
+            HttpRequestRetryHandler retryHandler) {
         this.environment = environment;
         this.jerseyClientConfiguration = jerseyClientConfiguration;
         this.enableStaleConnectionCheck = enableStaleConnectionCheck;
+        this.retryHandler = retryHandler;
     }
 
     public Client build(String clientName) {
@@ -37,7 +44,8 @@ public class IgnoreSSLJerseyClientBuilder {
             insecureSSLClientConfiguration.getSchemeRegistry(),
             insecureSSLClientConfiguration.getConfigurationProperties(),
             clientName,
-            enableStaleConnectionCheck
+            enableStaleConnectionCheck,
+            retryHandler
         );
     }
 

@@ -5,7 +5,7 @@ dependencies {
 
     dependencyVersions = [
             saml_lib:'58',
-            dropwizardVersion:'0.7.0'
+            dropwizardVersion:'0.7.1'
     ]
 
     compile "com.google.inject:guice:3.0",

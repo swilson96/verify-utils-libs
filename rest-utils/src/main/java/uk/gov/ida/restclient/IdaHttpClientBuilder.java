@@ -19,9 +19,11 @@ public class IdaHttpClientBuilder extends HttpClientBuilder {
      *
      * @return a BasicHttpParams object from the HttpClientConfiguration
      */
-    protected BasicHttpParams createHttpParams() {
-        final BasicHttpParams params = super.createHttpParams();
+    protected BasicHttpParams createHttpParams(String name) {
+        final BasicHttpParams params = super.createHttpParams(name);
         params.setParameter(AllClientPNames.STALE_CONNECTION_CHECK, enableStaleConnectionCheck);
         return params;
     }
+
+
 }
