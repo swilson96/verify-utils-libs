@@ -22,8 +22,9 @@ public abstract class BaseClientProvider implements Provider<Client> {
             String clientName) {
 
         HttpRequestRetryHandler retryHandler = new StandardHttpRequestRetryHandler(0, false);
-        if (retryTimeOutExceptions)
+        if (retryTimeOutExceptions) {
             retryHandler = new TimeoutRequestRetryHandler(jerseyClientConfiguration.getRetries());
+        }
 
         if (doesAcceptSelfSignedCerts) {
             client = new IgnoreSSLJerseyClientBuilder(environment, jerseyClientConfiguration, enableStaleConnectionCheck, retryHandler).build(clientName);

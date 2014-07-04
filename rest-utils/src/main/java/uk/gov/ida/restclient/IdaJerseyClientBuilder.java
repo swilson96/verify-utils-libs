@@ -179,7 +179,6 @@ public class IdaJerseyClientBuilder {
     }
 
 
-
     /**
      * Builds the {@link com.sun.jersey.api.client.Client} instance.
      *

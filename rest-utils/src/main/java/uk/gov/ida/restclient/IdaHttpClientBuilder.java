@@ -24,6 +24,4 @@ public class IdaHttpClientBuilder extends HttpClientBuilder {
         params.setParameter(AllClientPNames.STALE_CONNECTION_CHECK, enableStaleConnectionCheck);
         return params;
     }
-
-
 }

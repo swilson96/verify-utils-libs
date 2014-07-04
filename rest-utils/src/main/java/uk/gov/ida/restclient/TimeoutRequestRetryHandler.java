@@ -15,9 +15,9 @@ public class TimeoutRequestRetryHandler implements HttpRequestRetryHandler {
 
     @Override
     public boolean retryRequest(IOException e, int executionCount, HttpContext httpContext) {
-        if( e instanceof ConnectTimeoutException && executionCount < numRetries)
+        if( e instanceof ConnectTimeoutException && executionCount < numRetries) {
             return true;
-
+        }
         return false;
     }
 }
