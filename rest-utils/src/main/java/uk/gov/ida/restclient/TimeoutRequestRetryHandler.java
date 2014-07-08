@@ -35,7 +35,6 @@ public class TimeoutRequestRetryHandler implements HttpRequestRetryHandler {
             }
             finally {
                 LOG.info(format("Retrying {0} of {1}, to {2} / {3}", executionCount, numRetries, httpMethod, uri));
-
             }
             return true;
         }
