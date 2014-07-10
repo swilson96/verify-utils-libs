@@ -20,9 +20,6 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
     @JsonProperty
     public MutualAuthConfiguration mutualAuth = null;
 
-    @JsonProperty
-    public BasicAuthCredentials basicAuthCredentials;
-
     public MutualAuthConfiguration getMutualAuth() {
         return mutualAuth;
     }
@@ -33,9 +30,5 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
 
     public JerseyClientConfiguration getClientConnectionConfig() {
         return httpClient;
-    }
-
-    public BasicAuthCredentials getBasicAuthCredentials() {
-        return basicAuthCredentials;
     }
 }
