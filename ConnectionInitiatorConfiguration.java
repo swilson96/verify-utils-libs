@@ -17,12 +17,15 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
     @JsonProperty
     protected boolean acceptSelfSignedCerts = false;
 
+    @JsonProperty
+    public MutualAuthConfiguration mutualAuth = null;
+
+    @JsonProperty
+    public BasicAuthCredentials basicAuthCredentials;
+
     public MutualAuthConfiguration getMutualAuth() {
         return mutualAuth;
     }
-
-    @JsonProperty
-    public MutualAuthConfiguration mutualAuth = null;
 
     public boolean acceptsSelfSignedCerts() {
         return acceptSelfSignedCerts;
@@ -32,4 +35,7 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
         return httpClient;
     }
 
+    public BasicAuthCredentials getBasicAuthCredentials() {
+        return basicAuthCredentials;
+    }
 }
