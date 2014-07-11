@@ -40,7 +40,11 @@ public class IdaJerseyClientBuilder {
     private ExecutorService executorService;
 
     public IdaJerseyClientBuilder(Environment environment, boolean enableStaleConnectionCheck) {
-        this.builder = new IdaHttpClientBuilder(environment, enableStaleConnectionCheck);
+        this(environment, new IdaHttpClientBuilder(environment, enableStaleConnectionCheck));
+    }
+
+    public IdaJerseyClientBuilder(Environment environment, HttpClientBuilder clientBuilder) {
+        this.builder = clientBuilder;
         this.environment = environment;
     }
 
