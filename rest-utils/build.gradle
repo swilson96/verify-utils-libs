@@ -16,5 +16,6 @@ dependencies {
             "com.sun.jersey:jersey-core:1.18.1",
             "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
             "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion",
-            "uk.gov.ida:ida-saml-configuration:2.6.1-$dependencyVersions.saml_lib"
+            "uk.gov.ida:ida-saml-configuration:2.6.1-$dependencyVersions.saml_lib",
+            project(':security-utils')
 }
