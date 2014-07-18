@@ -21,7 +21,6 @@ public class IdaTrustStoreProvider implements Provider<IdaTrustStore> {
 
     @Inject
     public IdaTrustStoreProvider(ClientTrustStoreConfiguration configuration) {
-
         this.configuration = configuration;
     }
 
