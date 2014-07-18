@@ -28,24 +28,15 @@ public class CertificateChainValidator {
 
     private static final String PKIX_ALGORITHM = "PKIX";
     private static final String X509_CERTIFICATE_TYPE = "X.509";
-    private final PKIXParameters certPathParameters;
     private final CertificateFactory certificateFactory;
     private final CertPathValidator certPathValidator;
     private final CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer;
 
     @Inject
     public CertificateChainValidator(
-            IdaTrustStore trustStore,
             CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer) {
 
         this.certificateDtoToX509CertificateTransformer = certificateDtoToX509CertificateTransformer;
-
-        try {
-            certPathParameters = new PKIXParameters(trustStore.getKeyStore().get());
-        } catch (KeyStoreException | InvalidAlgorithmParameterException e) {
-            throw new CertificateChainValidationException("There was an error reading from the trust store.", e);
-        }
-        certPathParameters.setRevocationEnabled(false);
 
         try {
             certificateFactory = CertificateFactory.getInstance(X509_CERTIFICATE_TYPE);
@@ -60,8 +51,9 @@ public class CertificateChainValidator {
         }
     }
 
-    public void validate(X509Certificate certificate) {
+    public void validate(X509Certificate certificate, IdaTrustStore trustStore) {
         CertPath certificatePath;
+
         try {
             certificatePath = certificateFactory.generateCertPath(of(certificate));
         } catch (CertificateException e) {
@@ -69,7 +61,7 @@ public class CertificateChainValidator {
         }
 
         try {
-            certPathValidator.validate(certificatePath, certPathParameters);
+            certPathValidator.validate(certificatePath, getPkixParameters(trustStore));
         } catch (CertPathValidatorException e) {
             throw new CertificateChainValidationException(
                     "Certificate could not be chained to a trusted root CA certificate: " + getDnForCertificate(certificate),
@@ -79,7 +71,8 @@ public class CertificateChainValidator {
         }
     }
 
-    public void validate(CertificateDto certificate) {
+
+    public void validate(CertificateDto certificate, IdaTrustStore trustStore) {
         X509Certificate x509Certificate;
         try {
             x509Certificate = certificateDtoToX509CertificateTransformer.transform(certificate);
@@ -87,7 +80,19 @@ public class CertificateChainValidator {
             throw new CertificateChainValidationException("Could not transform CertificateDto into an X509Certificate.", e);
         }
 
-        validate(x509Certificate);
+        validate(x509Certificate, trustStore);
+    }
+
+    private PKIXParameters getPkixParameters(IdaTrustStore trustStore) {
+        PKIXParameters certPathParameters;
+
+        try {
+            certPathParameters = new PKIXParameters(trustStore.getKeyStore().get());
+        } catch (KeyStoreException | InvalidAlgorithmParameterException e) {
+            throw new CertificateChainValidationException("There was an error reading from the trust store.", e);
+        }
+        certPathParameters.setRevocationEnabled(false);
+        return certPathParameters;
     }
 
     private String getDnForCertificate(X509Certificate certificate) {

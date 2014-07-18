@@ -13,7 +13,7 @@ public class NoOpCertificateChainValidator extends CertificateChainValidator {
             IdaTrustStore trustStore,
             CertificateDtoToX509CertificateTransformer certificateTransformer) {
 
-        super(trustStore, certificateTransformer);
+        super(certificateTransformer);
     }
 
     public void validate(X509Certificate certificate) {
