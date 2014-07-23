@@ -8,6 +8,6 @@ handle_failure() {
 }
 trap "handle_failure" ERR INT TERM
 
-gradle clean test
+./gradlew clean test
 
 log "SUCCESS!"
