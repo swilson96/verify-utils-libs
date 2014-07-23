@@ -4,7 +4,6 @@ dependencies {
             'org.mockito:mockito-core:1.9.5'
 
     dependencyVersions = [
-            saml_lib:'58',
             dropwizardVersion:'0.7.1'
     ]
 
@@ -15,6 +14,5 @@ dependencies {
             "javax.servlet:javax.servlet-api:3.0.1",
             "com.sun.jersey:jersey-core:1.18.1",
             "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
-            "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion",
-            "uk.gov.ida:ida-saml-configuration:2.6.1-$dependencyVersions.saml_lib"
+            "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion"
 }
