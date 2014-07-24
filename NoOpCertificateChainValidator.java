@@ -1,6 +1,7 @@
 package uk.gov.ida.shared.rest.config.verification;
 
 import com.google.inject.Inject;
+import uk.gov.ida.shared.rest.common.CertificateDto;
 import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
 import uk.gov.ida.truststore.IdaTrustStore;
 
@@ -10,12 +11,14 @@ public class NoOpCertificateChainValidator extends CertificateChainValidator {
 
     @Inject
     public NoOpCertificateChainValidator(
-            IdaTrustStore trustStore,
             CertificateDtoToX509CertificateTransformer certificateTransformer) {
 
         super(certificateTransformer);
     }
 
-    public void validate(X509Certificate certificate) {
-    }
+    @Override
+    public void validate(CertificateDto certificate, IdaTrustStore trustStore) {}
+
+    @Override
+    public void validate(X509Certificate certificate, IdaTrustStore trustStore) {}
 }
