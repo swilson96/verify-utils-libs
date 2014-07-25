@@ -15,7 +15,7 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
     private JerseyClientConfiguration httpClient;
 
     @JsonProperty
-    protected boolean acceptSelfSignedCerts = false;
+    protected boolean acceptAllSslCerts = false;
 
     @JsonProperty
     public MutualAuthConfiguration mutualAuth = null;
@@ -28,8 +28,8 @@ public abstract class ConnectionInitiatorConfiguration extends BaseApplicationCo
         return mutualAuth;
     }
 
-    public boolean acceptsSelfSignedCerts() {
-        return acceptSelfSignedCerts;
+    public boolean acceptAllSslCerts() {
+        return acceptAllSslCerts;
     }
 
     public JerseyClientConfiguration getClientConnectionConfig() {
