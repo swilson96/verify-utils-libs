@@ -8,11 +8,11 @@ import java.io.File;
 public class MutualAuthConfiguration {
     @JsonProperty
     @NotNull
-    private File keyStoreFile;
+    protected File keyStoreFile;
 
     @JsonProperty
     @NotNull
-    private String keyStorePassword;
+    protected String keyStorePassword;
 
     public String getKeyStorePassword() {
         return keyStorePassword;
