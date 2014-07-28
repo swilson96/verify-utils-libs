@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.Valid;
 import java.io.File;
 
-public class TrustedServerConfiguration {
+public class TrustedSslServersConfiguration {
 
     @JsonProperty
     @Valid
