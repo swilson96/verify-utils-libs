@@ -1,4 +1,5 @@
 apply plugin: 'idea'
+apply plugin: 'java'
 apply from: 'sonar.gradle'
 
 idea {
@@ -67,3 +68,5 @@ subprojects {
         }
     }
 }
+
+task sonar(dependsOn: [':clean', ':build', 'sonarRunner'])
