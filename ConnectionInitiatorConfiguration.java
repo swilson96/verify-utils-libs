@@ -6,6 +6,4 @@ public interface ConnectionInitiatorConfiguration {
     public TrustedServerConfiguration getTrustedServers();
 
     public MutualAuthConfiguration getMutualAuth();
-
-    public boolean acceptAllSslCerts();
 }

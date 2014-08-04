@@ -21,9 +21,6 @@ public abstract class JerseyConnectionInitiatorConfiguration extends BaseApplica
     @Valid
     public TrustedServerConfiguration trustedServers = null;
 
-    @JsonProperty
-    public boolean acceptAllSslCerts = false;
-
     public JerseyClientConfiguration getClientConnectionConfig() {
         return httpClient;
     }
@@ -36,10 +33,5 @@ public abstract class JerseyConnectionInitiatorConfiguration extends BaseApplica
     @Override
     public MutualAuthConfiguration getMutualAuth() {
         return mutualAuth;
-    }
-
-    @Override
-    public boolean acceptAllSslCerts() {
-        return acceptAllSslCerts;
     }
 }
