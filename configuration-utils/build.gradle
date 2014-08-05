@@ -1,0 +1,9 @@
+dependencies {
+
+    dependencyVersions = [
+            dropwizardVersion:'0.7.1'
+    ]
+
+    compile "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
+            "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion"
+}

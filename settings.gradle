@@ -1,3 +1,4 @@
 include "common-utils",
         "rest-utils",
-        "security-utils"
+        "security-utils",
+        "configuration-utils"
