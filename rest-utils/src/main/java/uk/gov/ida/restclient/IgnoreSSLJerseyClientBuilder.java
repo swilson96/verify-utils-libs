@@ -52,7 +52,7 @@ public class IgnoreSSLJerseyClientBuilder {
     private InsecureSSLClientConfiguration getInsecureSSLClientConfiguration() {
         SSLContext sslContext;
         try {
-            sslContext = SSLContext.getInstance("SSL");
+            sslContext = SSLContext.getInstance("TLSv1.2");
         } catch (Exception e) {
             LOG.error("Error creating SSL context.", e);
             throw Throwables.propagate(e);
