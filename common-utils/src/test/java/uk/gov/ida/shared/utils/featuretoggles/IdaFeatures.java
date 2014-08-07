@@ -4,8 +4,14 @@ import org.joda.time.DateTime;
 
 public enum IdaFeatures implements Feature {
 
-    UIRework,
-    EncodeAssertions;
+    UIRework(DateTime.parse("2014-08-14")),
+    EncodeAssertions(DateTime.parse("2014-08-14"));
+
+    private final DateTime createdDate;
+
+    IdaFeatures(DateTime createdDate) {
+        this.createdDate = createdDate;
+    }
 
     private boolean active;
 
@@ -15,7 +21,7 @@ public enum IdaFeatures implements Feature {
 
     @Override
     public DateTime getCreateDate() {
-        return new DateTime(2014, 8, 14, 10, 7);
+        return createdDate;
     }
 
     public void setActive(boolean active) {
