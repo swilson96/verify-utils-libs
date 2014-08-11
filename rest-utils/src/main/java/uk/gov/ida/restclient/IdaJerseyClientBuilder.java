@@ -17,9 +17,12 @@ import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.net.ProxySelector;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -223,7 +226,13 @@ public class IdaJerseyClientBuilder {
     }
 
     private ApacheHttpClient4Handler buildHandler(String name) {
-        return new ApacheHttpClient4Handler(builder.build(name), null, true);
+        // DropWizard's HttpClientBuilder doesn't expose the ability to
+        // configure HttpRoutePlanner instances so we have to hack it in
+        DefaultHttpClient client = (DefaultHttpClient) builder.build(name);
+
+        client.setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()));
+
+        return new ApacheHttpClient4Handler(client, null, true);
     }
 
     private ApacheHttpClient4Config buildConfig(ObjectMapper objectMapper) {
