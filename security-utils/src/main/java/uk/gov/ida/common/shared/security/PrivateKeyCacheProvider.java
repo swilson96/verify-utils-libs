@@ -1,5 +1,6 @@
 package uk.gov.ida.common.shared.security;
 
+import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -34,7 +35,6 @@ public class PrivateKeyCacheProvider implements Provider<LoadingCache<String, Pr
     @Override
     public LoadingCache<String, PrivateKey> get() {
         LoadingCache<String, PrivateKey> keyCache = CacheBuilder.<String, PrivateKey>newBuilder()
-//                .expireAfterWrite(cacheDuration.length, cacheDuration.unit)
                 .build(new CacheLoader<String, PrivateKey>() {
                     @Override
                     public PrivateKey load(String key) throws IOException {
@@ -46,6 +46,7 @@ public class PrivateKeyCacheProvider implements Provider<LoadingCache<String, Pr
             keyCache.get(signingKeyConfiguration.getKeyUri());
             keyCache.get(encryptionKeyConfiguration.getKeyUri());
         } catch (ExecutionException e) {
+            throw Throwables.propagate(e);
         }
 
         return keyCache;
