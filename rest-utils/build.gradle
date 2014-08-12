@@ -4,7 +4,6 @@ dependencies {
             'org.mockito:mockito-core:1.9.5'
 
     dependencyVersions = [
-            common_utils:'21',
             dropwizardVersion:'0.7.1'
     ]
 
@@ -14,7 +13,6 @@ dependencies {
             "com.sun.jersey:jersey-server:1.18.1",
             "javax.servlet:javax.servlet-api:3.0.1",
             "com.sun.jersey:jersey-core:1.18.1",
-            "uk.gov.ida:common-utils:1.0.0-$dependencyVersions.common_utils",
             "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
             "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion"
 }
