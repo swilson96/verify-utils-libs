@@ -1,6 +1,5 @@
 package uk.gov.ida.common.shared.security;
 
-import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -20,7 +19,6 @@ public class PrivateKeyCacheProvider implements Provider<LoadingCache<String, Pr
     private KeyConfiguration signingKeyConfiguration;
     private KeyConfiguration encryptionKeyConfiguration;
     private PrivateKeyFactory privateKeyFactory;
-
     @Inject
     public PrivateKeyCacheProvider(
             @PrivateSigningKeyConfiguration KeyConfiguration signingKeyConfiguration,
@@ -46,7 +44,7 @@ public class PrivateKeyCacheProvider implements Provider<LoadingCache<String, Pr
             keyCache.get(signingKeyConfiguration.getKeyUri());
             keyCache.get(encryptionKeyConfiguration.getKeyUri());
         } catch (ExecutionException e) {
-            throw Throwables.propagate(e);
+           // Swallowing this exception because this is simply warming up the cache
         }
 
         return keyCache;
