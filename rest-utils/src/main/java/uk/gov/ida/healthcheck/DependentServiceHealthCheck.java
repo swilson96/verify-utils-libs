@@ -42,11 +42,23 @@ public class DependentServiceHealthCheck extends InjectableHealthCheck {
             } else {
                 return HealthCheck.Result.healthy();
             }
-        } catch (UniformInterfaceException | ClientHandlerException e) {
-            String message = format("Dependent service {0} at {1} gives {2}.", dependentServiceConfiguration.getServiceName(), uri, e.getMessage());
-            LOG.info(message);
-            return HealthCheck.Result.unhealthy(message);
+        } catch (UniformInterfaceException e) {
+        // It looks like there are no guarantees that the ClientResponse within a UniformInterfaceException is closed, so we are going to try to close it every time
+            try {
+                e.getResponse().close();
+            } catch (ClientHandlerException che) {
+                return handleFail(uri, e);
+            }
+            return handleFail(uri, e);
+        } catch (ClientHandlerException e) {
+            return handleFail(uri, e);
         }
+    }
+
+    private Result handleFail(URI uri, Throwable exception) {
+        String message = format("Dependent service {0} at {1} gives {2}.", dependentServiceConfiguration.getServiceName(), uri, exception.getMessage());
+        LOG.info(message);
+        return Result.unhealthy(message);
     }
 
     @Override
