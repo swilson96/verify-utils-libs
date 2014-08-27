@@ -24,13 +24,14 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static uk.gov.ida.analytics.AnalyticsReporter.*;
+import static uk.gov.ida.analytics.AnalyticsReporter.PIWIK_VISITOR_ID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AnalyticsReporterTest {
@@ -68,7 +69,7 @@ public class AnalyticsReporterTest {
 
         String requestId = "foo";
         doReturn(requestId).when(analyticsReporter).getRequestId();
-        doReturn(piwikUri).when(analyticsReporter).generateURI(friendlyDescription, requestContext, visitorId, requestId);
+        doReturn(piwikUri).when(analyticsReporter).generateURI(eq("SERVER "+friendlyDescription), eq(requestContext), eq(visitorId), eq(requestId));
 
         analyticsReporter.report(friendlyDescription, context);
 
@@ -93,11 +94,11 @@ public class AnalyticsReporterTest {
         when(requestContext.getHeaderValue("Referer")).thenReturn("http://piwikserver/referrerUrl");
         when(requestContext.getRequestUri()).thenReturn(new URI("http://piwikserver/requestUrl"));
 
-        URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FreferrerUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&r=613892&action_name=friendly+description+of+URL");
+        URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FreferrerUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&r=613892&action_name=SERVER+friendly+description+of+URL");
         AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
 
-        URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("friendly description of URL", requestContext, "abc", "613892"));
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("SERVER friendly description of URL", requestContext, "abc", "613892"));
 
         Map<String,NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
             public String apply(NameValuePair from) {

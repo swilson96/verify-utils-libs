@@ -10,19 +10,18 @@ import org.slf4j.LoggerFactory;
 import uk.gov.ida.configuration.AnalyticsConfiguration;
 
 import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.MultivaluedMap;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Random;
 
 import static com.google.common.base.Optional.fromNullable;
-import static java.text.MessageFormat.format;
 
 public class AnalyticsReporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnalyticsReporter.class);
     public static final String PIWIK_VISITOR_ID = "PIWIK_VISITOR_ID";
+    private static final String SERVER_ANALYTICS_PREFIX = "SERVER ";
 
     private AnalyticsConfiguration analyticsConfiguration;
     private PiwikClient piwikClient;
@@ -57,11 +56,7 @@ public class AnalyticsReporter {
                 Optional<Cookie> piwikCookie = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID));
                 if(piwikCookie.isPresent()) {
                     String visitorId = piwikCookie.get().getValue();
-                    piwikClient.report(generateURI(friendlyDescription, request, visitorId, getRequestId()), request);
-                }
-                MultivaluedMap<String, String> cookies = request.getCookieNameValueMap();
-                for(String key : cookies.keySet()){
-                    LOG.info(format("{0} - {1}", key, cookies.get(key)));
+                    piwikClient.report(generateURI(SERVER_ANALYTICS_PREFIX + friendlyDescription, request, visitorId, getRequestId()), request);
                 }
             }
         } catch (Exception e) {
