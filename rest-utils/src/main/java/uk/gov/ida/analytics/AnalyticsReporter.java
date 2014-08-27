@@ -44,9 +44,13 @@ public class AnalyticsReporter {
         return uriBuilder.build();
     }
 
-    public void report(String friendlyDescription, HttpRequestContext request, String visitorID) {
+    public void report(String friendlyDescription, HttpContext context) {
         try {
-            piwikClient.report(generateURI(friendlyDescription, request, visitorID, getRequestId()), request);
+            if (analyticsConfiguration.getServerSideAnalyticsEnabled()) {
+                HttpRequestContext request = context.getRequest();
+                String visitorId = request.getCookies().get(PIWIK_VISITOR_ID).getValue();
+                piwikClient.report(generateURI(friendlyDescription, request, visitorId, getRequestId()), request);
+            }
         } catch (Exception e) {
             LOG.error("Analytics Reporting error", e);
         }
@@ -56,9 +60,4 @@ public class AnalyticsReporter {
         return String.valueOf(new Random().nextInt(10000000));
     }
 
-    public void report(String friendlyText, HttpContext context) {
-        HttpRequestContext request = context.getRequest();
-        String visitorId = request.getCookies().get(PIWIK_VISITOR_ID).getValue();
-        report(friendlyText, request, visitorId);
-    }
 }

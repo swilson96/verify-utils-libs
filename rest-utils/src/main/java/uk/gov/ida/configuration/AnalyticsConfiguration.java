@@ -1,7 +1,10 @@
 package uk.gov.ida.configuration;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;import java.lang.Boolean;import java.lang.Integer;import java.lang.String;
+import javax.validation.constraints.NotNull;
+import java.lang.Boolean;
+import java.lang.Integer;
+import java.lang.String;
 
 public class AnalyticsConfiguration {
 
@@ -14,6 +17,9 @@ public class AnalyticsConfiguration {
     protected Boolean enabled;
 
     @Valid
+    protected Boolean serverSideAnalyticsEnabled = false;
+
+    @Valid
     protected Integer siteId;
 
     @Valid
@@ -22,19 +28,21 @@ public class AnalyticsConfiguration {
     @Valid
     protected String piwikServerSideUrl;
 
+    public Boolean getServerSideAnalyticsEnabled() { return serverSideAnalyticsEnabled; }
+
     public String getPiwikServerSideUrl() {
         return piwikServerSideUrl;
     }
 
-    public Integer getSiteId(){
+    public Integer getSiteId() {
         return siteId;
     }
 
-    public String getPiwikBaseUrl(){
+    public String getPiwikBaseUrl() {
         return piwikBaseUrl;
     }
 
-    public boolean getEnabled(){
+    public boolean getEnabled() {
         return enabled;
     }
 }

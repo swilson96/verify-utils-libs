@@ -1,12 +1,15 @@
 package uk.gov.ida.analytics;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.sun.jersey.api.client.AsyncWebResource;
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.core.HttpRequestContext;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -14,6 +17,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.configuration.AnalyticsConfiguration;
 import uk.gov.ida.configuration.AnalyticsConfigurationBuilder;
 
+import javax.ws.rs.core.Cookie;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static uk.gov.ida.analytics.AnalyticsReporter.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AnalyticsReporterTest {
@@ -37,26 +42,35 @@ public class AnalyticsReporterTest {
     private HttpRequestContext requestContext;
 
     @Mock
+    private HttpContext context;
+
+    @Mock
     private AsyncWebResource asyncWebResource;
 
     @Mock
     private PiwikClient piwikClient;
+    private String visitorId = "123";
+
+    @Before
+    public void setUp() throws Exception {
+        doReturn(requestContext).when(context).getRequest();
+        doReturn(ImmutableMap.of(PIWIK_VISITOR_ID, new Cookie(PIWIK_VISITOR_ID, visitorId))).when(requestContext).getCookies();
+    }
 
     @Test
     public void shouldCallGenerateUrlAndSendToPiwkAsynchronously() throws MalformedURLException, URISyntaxException {
-        String visitorID = "abc";
         String friendlyDescription = "friendly description of URL";
         URI piwikUri = mock(URI.class);
 
         when(requestContext.getHeaderValue("User-Agent")).thenReturn("Chrome");
 
-        AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
+        AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().withServerSideAnalyticsEnabled(true).build()));
 
         String requestId = "foo";
         doReturn(requestId).when(analyticsReporter).getRequestId();
-        doReturn(piwikUri).when(analyticsReporter).generateURI(friendlyDescription, requestContext, visitorID, requestId);
+        doReturn(piwikUri).when(analyticsReporter).generateURI(friendlyDescription, requestContext, visitorId, requestId);
 
-        analyticsReporter.report(friendlyDescription, requestContext, visitorID);
+        analyticsReporter.report(friendlyDescription, context);
 
         verify(piwikClient).report(piwikUri, requestContext);
     }
@@ -64,15 +78,14 @@ public class AnalyticsReporterTest {
     @Test
     public void shouldHandleAnyExceptions() throws MalformedURLException, URISyntaxException {
 
-        String visitorID = "abc";
         String friendlyDescription = "friendly description of URL";
 
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
 
         String requestId = "4";
-        doThrow(new RuntimeException("error")).when(analyticsReporter).generateURI(friendlyDescription, requestContext, visitorID, requestId);
+        doThrow(new RuntimeException("error")).when(analyticsReporter).generateURI(friendlyDescription, requestContext, visitorId, requestId);
 
-        analyticsReporter.report(friendlyDescription, requestContext, visitorID);
+        analyticsReporter.report(friendlyDescription, context);
     }
 
     @Test
