@@ -1,5 +1,6 @@
 package uk.gov.ida.analytics;
 
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.core.HttpRequestContext;
@@ -8,10 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.configuration.AnalyticsConfiguration;
 
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.MultivaluedMap;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Random;
+
+import static com.google.common.base.Optional.fromNullable;
+import static java.text.MessageFormat.format;
 
 public class AnalyticsReporter {
 
@@ -48,8 +54,15 @@ public class AnalyticsReporter {
         try {
             if (analyticsConfiguration.getServerSideAnalyticsEnabled()) {
                 HttpRequestContext request = context.getRequest();
-                String visitorId = request.getCookies().get(PIWIK_VISITOR_ID).getValue();
-                piwikClient.report(generateURI(friendlyDescription, request, visitorId, getRequestId()), request);
+                Optional<Cookie> piwikCookie = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID));
+                if(piwikCookie.isPresent()) {
+                    String visitorId = piwikCookie.get().getValue();
+                    piwikClient.report(generateURI(friendlyDescription, request, visitorId, getRequestId()), request);
+                }
+                MultivaluedMap<String, String> cookies = request.getCookieNameValueMap();
+                for(String key : cookies.keySet()){
+                    LOG.info(format("{0} - {1}", key, cookies.get(key)));
+                }
             }
         } catch (Exception e) {
             LOG.error("Analytics Reporting error", e);
