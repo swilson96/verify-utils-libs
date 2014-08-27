@@ -1,6 +1,7 @@
 package uk.gov.ida.analytics;
 
 import com.google.inject.Inject;
+import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.core.HttpRequestContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -55,8 +56,9 @@ public class AnalyticsReporter {
         return String.valueOf(new Random().nextInt(10000000));
     }
 
-    public void report(String friendlyText, HttpRequestContext context) {
-        String visitorId = context.getCookies().get(PIWIK_VISITOR_ID).getValue();
-        report(friendlyText, context, visitorId);
+    public void report(String friendlyText, HttpContext context) {
+        HttpRequestContext request = context.getRequest();
+        String visitorId = request.getCookies().get(PIWIK_VISITOR_ID).getValue();
+        report(friendlyText, request, visitorId);
     }
 }

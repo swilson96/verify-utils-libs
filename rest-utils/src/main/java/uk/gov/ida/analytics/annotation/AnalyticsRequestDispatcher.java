@@ -18,7 +18,7 @@ public class AnalyticsRequestDispatcher implements RequestDispatcher {
 
     @Override
     public void dispatch(Object resource, HttpContext context) {
-        analyticsReporter.report(friendlyText, context.getRequest());
+        analyticsReporter.report(friendlyText, context);
         underlying.dispatch(resource, context);
     }
 }
