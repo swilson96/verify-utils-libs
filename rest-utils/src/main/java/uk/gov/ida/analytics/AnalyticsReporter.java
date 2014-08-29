@@ -22,6 +22,7 @@ public class AnalyticsReporter {
     private static final Logger LOG = LoggerFactory.getLogger(AnalyticsReporter.class);
     public static final String PIWIK_VISITOR_ID = "PIWIK_VISITOR_ID";
     private static final String SERVER_ANALYTICS_PREFIX = "SERVER ";
+    public static final String REFERER = "Referer";
 
     private AnalyticsConfiguration analyticsConfiguration;
     private PiwikClient piwikClient;
@@ -41,9 +42,14 @@ public class AnalyticsReporter {
         uriBuilder.addParameter("apiv", "1");
         uriBuilder.addParameter("rec", "1");
         uriBuilder.addParameter("r", requestId);
-        uriBuilder.addParameter("url", request.getHeaderValue("Referer"));
-        uriBuilder.addParameter("urlref", request.getHeaderValue("Referer"));
-        uriBuilder.addParameter("ref", request.getHeaderValue("Referer"));
+        uriBuilder.addParameter("url", request.getRequestUri().toString());
+
+        // Only FireFox on Windows is unable to provide referrer on AJAX calls
+        Optional<String> refererHeader = fromNullable(request.getHeaderValue(REFERER));
+        if(refererHeader.isPresent()) {
+            uriBuilder.addParameter("urlref", refererHeader.get());
+            uriBuilder.addParameter("ref", refererHeader.get());
+        }
         uriBuilder.addParameter("cookie", "false");
 
         return uriBuilder.build();
