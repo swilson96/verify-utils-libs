@@ -2,6 +2,10 @@ package uk.gov.ida.configuration;
 
 public class AnalyticsConfigurationBuilder {
 
+    public static AnalyticsConfigurationBuilder anAnalyticsConfiguration() {
+        return new AnalyticsConfigurationBuilder();
+    }
+
     public AnalyticsConfiguration build() {
         return new TestAnalyticsConfiguration(true, 9595, "http://piwik-digds.rhcloud.com/analytics", "http://analytics-1/analytics");
 
