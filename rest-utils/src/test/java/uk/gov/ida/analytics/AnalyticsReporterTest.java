@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -65,11 +64,11 @@ public class AnalyticsReporterTest {
 
         when(requestContext.getHeaderValue("User-Agent")).thenReturn("Chrome");
 
-        AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().withServerSideAnalyticsEnabled(true).build()));
+        AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
 
         String requestId = "foo";
         doReturn(requestId).when(analyticsReporter).getRequestId();
-        doReturn(piwikUri).when(analyticsReporter).generateURI(eq("SERVER "+friendlyDescription), eq(requestContext), eq(visitorId), eq(requestId));
+        doReturn(piwikUri).when(analyticsReporter).generateURI(friendlyDescription, requestContext, visitorId, requestId);
 
         analyticsReporter.report(friendlyDescription, context);
 

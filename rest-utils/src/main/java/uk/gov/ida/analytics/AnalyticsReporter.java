@@ -21,7 +21,6 @@ public class AnalyticsReporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnalyticsReporter.class);
     public static final String PIWIK_VISITOR_ID = "PIWIK_VISITOR_ID";
-    private static final String SERVER_ANALYTICS_PREFIX = "SERVER ";
     public static final String REFERER = "Referer";
 
     private AnalyticsConfiguration analyticsConfiguration;
@@ -57,12 +56,12 @@ public class AnalyticsReporter {
 
     public void report(String friendlyDescription, HttpContext context) {
         try {
-            if (analyticsConfiguration.getServerSideAnalyticsEnabled()) {
+            if (analyticsConfiguration.getEnabled()) {
                 HttpRequestContext request = context.getRequest();
                 Optional<Cookie> piwikCookie = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID));
                 if(piwikCookie.isPresent()) {
                     String visitorId = piwikCookie.get().getValue();
-                    piwikClient.report(generateURI(SERVER_ANALYTICS_PREFIX + friendlyDescription, request, visitorId, getRequestId()), request);
+                    piwikClient.report(generateURI(friendlyDescription, request, visitorId, getRequestId()), request);
                 }
             }
         } catch (Exception e) {

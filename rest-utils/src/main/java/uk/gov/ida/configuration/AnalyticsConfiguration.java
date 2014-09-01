@@ -17,9 +17,6 @@ public class AnalyticsConfiguration {
     protected Boolean enabled;
 
     @Valid
-    protected Boolean serverSideAnalyticsEnabled = false;
-
-    @Valid
     protected Integer siteId;
 
     @Valid
@@ -27,8 +24,6 @@ public class AnalyticsConfiguration {
 
     @Valid
     protected String piwikServerSideUrl;
-
-    public Boolean getServerSideAnalyticsEnabled() { return serverSideAnalyticsEnabled; }
 
     public String getPiwikServerSideUrl() {
         return piwikServerSideUrl;
