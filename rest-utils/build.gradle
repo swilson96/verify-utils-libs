@@ -8,7 +8,7 @@ dependencies {
             "org.powermock:powermock-api-mockito:1.5",
             "org.powermock:powermock-core:1.5"
 
-    dependencyVersions = [
+    def dependencyVersions = [
             dropwizardVersion:"0.7.1"
     ]
 
