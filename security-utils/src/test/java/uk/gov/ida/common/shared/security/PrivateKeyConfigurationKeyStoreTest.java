@@ -49,7 +49,7 @@ public class PrivateKeyConfigurationKeyStoreTest {
     public void getEncryptionPrivateKey_returnsEncryptionKey() throws Exception {
         when(keyCache.getUnchecked(encryptionKeyUri)).thenReturn(encryptionKey);
 
-        PrivateKey retrievedKey = keyStore.getEncryptionPrivateKey();
+        PrivateKey retrievedKey = keyStore.getEncryptionPrivateKeys().get(0);
 
         assertThat(retrievedKey).isEqualTo(encryptionKey);
     }

@@ -16,7 +16,7 @@ public class NoOpPrivateKeyStore implements PrivateKeyStore {
     }
 
     @Override
-    public PrivateKey getEncryptionPrivateKey() {
+    public java.util.List<PrivateKey> getEncryptionPrivateKeys() {
         throw new UnsupportedOperationException("Access to private encryption key is prohibited.");
     }
 }
