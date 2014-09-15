@@ -12,7 +12,6 @@ public class PiwikClient {
 
     @Inject
     public PiwikClient(Client client){
-
         this.client = client;
     }
 
@@ -20,6 +19,7 @@ public class PiwikClient {
         client.asyncResource(uri)
                 .header("User-Agent", request.getHeaderValue("User-Agent"))
                 .header("Accept-Language", request.getHeaderValue("Accept-Language"))
+                .header("X-Forwarded-For", request.getHeaderValue("X-Forwarded-For"))
                 .get(String.class);
     }
 }
