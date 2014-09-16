@@ -4,5 +4,5 @@ import java.security.PrivateKey;
 
 public interface PrivateKeyStore {
     PrivateKey getSigningPrivateKey();
-    PrivateKey getEncryptionPrivateKey();
+    java.util.List<PrivateKey> getEncryptionPrivateKeys();
 }

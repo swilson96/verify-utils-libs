@@ -1,6 +1,7 @@
 package uk.gov.ida.common.shared.security;
 
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import uk.gov.ida.common.shared.configuration.KeyConfiguration;
 import uk.gov.ida.common.shared.configuration.PrivateEncryptionKeyConfiguration;
@@ -8,6 +9,7 @@ import uk.gov.ida.common.shared.configuration.PrivateSigningKeyConfiguration;
 
 
 import java.security.PrivateKey;
+import java.util.List;
 
 public class PrivateKeyConfigurationKeyStore implements PrivateKeyStore {
 
@@ -32,7 +34,7 @@ public class PrivateKeyConfigurationKeyStore implements PrivateKeyStore {
     }
 
     @Override
-    public PrivateKey getEncryptionPrivateKey() {
-        return keyCache.getUnchecked(encryptionKeyConfiguration.getKeyUri());
+    public List<PrivateKey> getEncryptionPrivateKeys() {
+        return ImmutableList.of(keyCache.getUnchecked(encryptionKeyConfiguration.getKeyUri()));
     }
 }
