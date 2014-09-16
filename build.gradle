@@ -37,9 +37,6 @@ subprojects {
     version = "1.0.0-$System.env.BUILD_NUMBER"
 
     repositories {
-        maven {
-            url 'https://build.shibboleth.net/nexus/content/groups/public'
-        }
         mavenCentral()
         maven {
             url "http://repo.typesafe.com/typesafe/releases/"
