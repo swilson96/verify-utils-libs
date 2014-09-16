@@ -13,6 +13,7 @@ import uk.gov.ida.common.shared.security.exceptions.KeyLoadingException;
 
 import java.io.File;
 import java.security.PrivateKey;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
@@ -26,22 +27,26 @@ public class PrivateKeyCacheTest {
     @Mock
     private KeyConfiguration signingKeyConfiguration;
     @Mock
-    private KeyConfiguration encryptionKeyConfiguration;
+    private KeyConfiguration primaryEncryptionKeyConfiguration;
+    @Mock
+    private KeyConfiguration secondaryEncryptionKeyConfiguration;
     @Mock
     private PrivateKeyFactory privateKeyFactory;
     @Mock
     private PrivateKey signingPrivateKey;
     @Mock
-    private PrivateKey encryptionPrivateKey;
+    private PrivateKey primaryEncryptionPrivateKey;
+    @Mock
+    private PrivateKey secondaryEncryptionPrivateKey;
 
-    private final String tempEncrpytionKeyUri = "/tmp/encryption-key-uri";
     private final String nonExistentFilePath = "/boo/encryption-key-uri";
     private final String tempSigningKeyUri = "/tmp/signing-key-uri";
     private final String signingKeyUri = "/signing-key-uri";
-    private final String encryptionKeyUri = "/encryption-key-uri";
+    private final String primaryEncryptionKeyUri = "/primary-encryption-key-uri";
+    private final String secondaryEncryptionKeyUri = "/secondary-encryption-key-uri";
     private final byte[] signingKey = new byte[] {1,2,3};
-    private final byte[] encryptionKey = new byte[] {4,5,6};
-
+    private final byte[] primaryEncryptionKey = new byte[] {4,5,6};
+    private final byte[] secondaryEncryptionKey = new byte[] {7,8,9};
     private PrivateKeyCache privateKeyCache;
 
     @Before
@@ -51,20 +56,24 @@ public class PrivateKeyCacheTest {
         when(System.getenv("SIGNING_KEY")).thenReturn(null);
 
         when(signingKeyConfiguration.getKeyUri()).thenReturn(signingKeyUri);
-        when(encryptionKeyConfiguration.getKeyUri()).thenReturn(encryptionKeyUri);
+        when(primaryEncryptionKeyConfiguration.getKeyUri()).thenReturn(primaryEncryptionKeyUri);
+        when(secondaryEncryptionKeyConfiguration.getKeyUri()).thenReturn(secondaryEncryptionKeyUri);
         when(privateKeyFactory.createPrivateKey(eq(signingKey))).thenReturn(signingPrivateKey);
-        when(privateKeyFactory.createPrivateKey(eq(encryptionKey))).thenReturn(encryptionPrivateKey);
+        when(privateKeyFactory.createPrivateKey(eq(primaryEncryptionKey))).thenReturn(primaryEncryptionPrivateKey);
+        when(privateKeyFactory.createPrivateKey(eq(secondaryEncryptionKey))).thenReturn(secondaryEncryptionPrivateKey);
     }
 
     @Test
     public void init_shouldLoadSigningKeyFromDisk() throws Exception {
         PowerMockito.mockStatic(Files.class);
         when(Files.toByteArray(new File(signingKeyUri))).thenReturn(signingKey);
-        when(Files.toByteArray(new File(encryptionKeyUri))).thenReturn(encryptionKey);
+        when(Files.toByteArray(new File(primaryEncryptionKeyUri))).thenReturn(primaryEncryptionKey);
+
 
         privateKeyCache = new PrivateKeyCache(
                 signingKeyConfiguration,
-                encryptionKeyConfiguration,
+                primaryEncryptionKeyConfiguration,
+                secondaryEncryptionKeyConfiguration,
                 privateKeyFactory
         );
 
@@ -77,16 +86,20 @@ public class PrivateKeyCacheTest {
     public void init_shouldLoadEncryptionKeyFromDisk() throws Exception {
         PowerMockito.mockStatic(Files.class);
         when(Files.toByteArray(new File(signingKeyUri))).thenReturn(signingKey);
-        when(Files.toByteArray(new File(encryptionKeyUri))).thenReturn(encryptionKey);
+        when(Files.toByteArray(new File(primaryEncryptionKeyUri))).thenReturn(primaryEncryptionKey);
+        when(Files.toByteArray(new File(secondaryEncryptionKeyUri))).thenReturn(secondaryEncryptionKey);
 
         privateKeyCache = new PrivateKeyCache(
                 signingKeyConfiguration,
-                encryptionKeyConfiguration,
+                primaryEncryptionKeyConfiguration,
+                secondaryEncryptionKeyConfiguration,
                 privateKeyFactory
         );
 
-        PrivateKey privateKey = privateKeyCache.getEncryptionPrivateKeys().get(0);
-        assertThat(privateKey).isEqualTo(encryptionPrivateKey);
+        List<PrivateKey> encryptionPrivateKeys = privateKeyCache.getEncryptionPrivateKeys();
+        assertThat(encryptionPrivateKeys).hasSize(2);
+        assertThat(encryptionPrivateKeys.get(0)).isEqualTo(primaryEncryptionPrivateKey);
+        assertThat(encryptionPrivateKeys.get(1)).isEqualTo(secondaryEncryptionPrivateKey);
         verifyStatic(times(1));
     }
 
@@ -96,12 +109,13 @@ public class PrivateKeyCacheTest {
         when(System.getenv("SIGNING_KEY")).thenReturn(tempSigningKeyUri);
 
         PowerMockito.mockStatic(Files.class);
-        when(Files.toByteArray(new File(encryptionKeyUri))).thenReturn(encryptionKey);
+        when(Files.toByteArray(new File(primaryEncryptionKeyUri))).thenReturn(primaryEncryptionKey);
         when(Files.toByteArray(new File(tempSigningKeyUri))).thenReturn(signingKey);
 
         privateKeyCache = new PrivateKeyCache(
                 signingKeyConfiguration,
-                encryptionKeyConfiguration,
+                primaryEncryptionKeyConfiguration,
+                primaryEncryptionKeyConfiguration,
                 privateKeyFactory
         );
 
@@ -112,20 +126,25 @@ public class PrivateKeyCacheTest {
     @Test
     public void init_shouldLoadEncryptionKeyFromLocationAtEnvironmentVariable() throws Exception {
         PowerMockito.mockStatic(System.class);
-        when(System.getenv("ENCRYPTION_KEY")).thenReturn(tempEncrpytionKeyUri);
+        when(System.getenv("PRIMARY_ENCRYPTION_KEY")).thenReturn(primaryEncryptionKeyUri);
+        when(System.getenv("SECONDARY_ENCRYPTION_KEY")).thenReturn(secondaryEncryptionKeyUri);
 
         PowerMockito.mockStatic(Files.class);
         when(Files.toByteArray(new File(signingKeyUri))).thenReturn(signingKey);
-        when(Files.toByteArray(new File(tempEncrpytionKeyUri))).thenReturn(encryptionKey);
+        when(Files.toByteArray(new File(primaryEncryptionKeyUri))).thenReturn(primaryEncryptionKey);
+        when(Files.toByteArray(new File(secondaryEncryptionKeyUri))).thenReturn(secondaryEncryptionKey);
 
         privateKeyCache = new PrivateKeyCache(
                 signingKeyConfiguration,
-                encryptionKeyConfiguration,
+                null,
+                null,
                 privateKeyFactory
         );
 
-        PrivateKey privateKey = privateKeyCache.getEncryptionPrivateKeys().get(0);
-        assertThat(privateKey).isEqualTo(encryptionPrivateKey);
+        List<PrivateKey> encryptionPrivateKeys = privateKeyCache.getEncryptionPrivateKeys();
+        assertThat(encryptionPrivateKeys).hasSize(2);
+        assertThat(encryptionPrivateKeys.get(0)).isEqualTo(primaryEncryptionPrivateKey);
+        assertThat(encryptionPrivateKeys.get(1)).isEqualTo(secondaryEncryptionPrivateKey);
     }
     
     @Test(expected = KeyLoadingException.class)
@@ -135,7 +154,8 @@ public class PrivateKeyCacheTest {
 
         privateKeyCache = new PrivateKeyCache(
                 signingKeyConfiguration,
-                encryptionKeyConfiguration,
+                primaryEncryptionKeyConfiguration,
+                secondaryEncryptionKeyConfiguration,
                 privateKeyFactory
         );
 
