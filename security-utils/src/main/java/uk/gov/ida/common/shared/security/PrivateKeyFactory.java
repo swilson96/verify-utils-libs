@@ -14,11 +14,13 @@ public class PrivateKeyFactory {
     public PrivateKey createPrivateKey(byte[] cert) {
         KeySpec keySpec = new PKCS8EncodedKeySpec(cert);
         KeyFactory keyFactory;
+
         try {
             keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePrivate(keySpec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw Throwables.propagate(e);
         }
+
     }
 }

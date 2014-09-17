@@ -9,7 +9,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import uk.gov.ida.common.shared.configuration.KeyConfiguration;
-import uk.gov.ida.common.shared.security.exceptions.KeyLoadingException;
 
 import java.io.File;
 import java.security.PrivateKey;
@@ -38,6 +37,8 @@ public class PrivateKeyCacheTest {
     private PrivateKey primaryEncryptionPrivateKey;
     @Mock
     private PrivateKey secondaryEncryptionPrivateKey;
+    @Mock
+    private NumberedPipeReader numberedPipeReader;
 
     private final String nonExistentFilePath = "/boo/encryption-key-uri";
     private final String tempSigningKeyUri = "/tmp/signing-key-uri";
@@ -74,7 +75,9 @@ public class PrivateKeyCacheTest {
                 signingKeyConfiguration,
                 primaryEncryptionKeyConfiguration,
                 secondaryEncryptionKeyConfiguration,
-                privateKeyFactory
+                privateKeyFactory,
+                numberedPipeReader,
+                false
         );
 
         PrivateKey privateKey = privateKeyCache.getSigningPrivateKey();
@@ -93,7 +96,9 @@ public class PrivateKeyCacheTest {
                 signingKeyConfiguration,
                 primaryEncryptionKeyConfiguration,
                 secondaryEncryptionKeyConfiguration,
-                privateKeyFactory
+                privateKeyFactory,
+                numberedPipeReader,
+                false
         );
 
         List<PrivateKey> encryptionPrivateKeys = privateKeyCache.getEncryptionPrivateKeys();
@@ -104,62 +109,24 @@ public class PrivateKeyCacheTest {
     }
 
     @Test
-    public void init_shouldLoadSigningKeyFromLocationAtEnvironmentVariable() throws Exception {
-        PowerMockito.mockStatic(System.class);
-        when(System.getenv("SIGNING_KEY")).thenReturn(tempSigningKeyUri);
-
-        PowerMockito.mockStatic(Files.class);
-        when(Files.toByteArray(new File(primaryEncryptionKeyUri))).thenReturn(primaryEncryptionKey);
-        when(Files.toByteArray(new File(tempSigningKeyUri))).thenReturn(signingKey);
+    public void init_shouldLoadKeysFromFileDescriptorWhenLoadSecureKeysIsTrue() throws Exception {
+        when(numberedPipeReader.readKey(4)).thenReturn(primaryEncryptionPrivateKey);
+        when(numberedPipeReader.readKey(5)).thenReturn(secondaryEncryptionPrivateKey);
+        when(numberedPipeReader.readKey(6)).thenReturn(signingPrivateKey);
 
         privateKeyCache = new PrivateKeyCache(
-                signingKeyConfiguration,
-                primaryEncryptionKeyConfiguration,
-                primaryEncryptionKeyConfiguration,
-                privateKeyFactory
-        );
-
-        PrivateKey privateKey = privateKeyCache.getSigningPrivateKey();
-        assertThat(privateKey).isEqualTo(signingPrivateKey);
-    }
-
-    @Test
-    public void init_shouldLoadEncryptionKeyFromLocationAtEnvironmentVariable() throws Exception {
-        PowerMockito.mockStatic(System.class);
-        when(System.getenv("PRIMARY_ENCRYPTION_KEY")).thenReturn(primaryEncryptionKeyUri);
-        when(System.getenv("SECONDARY_ENCRYPTION_KEY")).thenReturn(secondaryEncryptionKeyUri);
-
-        PowerMockito.mockStatic(Files.class);
-        when(Files.toByteArray(new File(signingKeyUri))).thenReturn(signingKey);
-        when(Files.toByteArray(new File(primaryEncryptionKeyUri))).thenReturn(primaryEncryptionKey);
-        when(Files.toByteArray(new File(secondaryEncryptionKeyUri))).thenReturn(secondaryEncryptionKey);
-
-        privateKeyCache = new PrivateKeyCache(
-                signingKeyConfiguration,
                 null,
                 null,
-                privateKeyFactory
+                null,
+                null,
+                numberedPipeReader,
+                true
         );
 
         List<PrivateKey> encryptionPrivateKeys = privateKeyCache.getEncryptionPrivateKeys();
-        assertThat(encryptionPrivateKeys).hasSize(2);
+        PrivateKey actualSigningPrivateKey = privateKeyCache.getSigningPrivateKey();
         assertThat(encryptionPrivateKeys.get(0)).isEqualTo(primaryEncryptionPrivateKey);
         assertThat(encryptionPrivateKeys.get(1)).isEqualTo(secondaryEncryptionPrivateKey);
+        assertThat(actualSigningPrivateKey).isEqualTo(signingPrivateKey);
     }
-    
-    @Test(expected = KeyLoadingException.class)
-    public void init_shouldThrowExceptionIfKeyFileNotFoundAtPathFromEnvironmentVariable() throws Exception {
-        PowerMockito.mockStatic(System.class);
-        when(System.getenv("SIGNING_KEY")).thenReturn(nonExistentFilePath);
-
-        privateKeyCache = new PrivateKeyCache(
-                signingKeyConfiguration,
-                primaryEncryptionKeyConfiguration,
-                secondaryEncryptionKeyConfiguration,
-                privateKeyFactory
-        );
-
-        privateKeyCache.getSigningPrivateKey();
-    }
-
 }
