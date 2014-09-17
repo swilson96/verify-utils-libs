@@ -1,10 +1,7 @@
 package uk.gov.ida.common.shared.security;
 
-import com.google.inject.Inject;
 import org.apache.commons.codec.binary.StringUtils;
-import uk.gov.ida.common.shared.configuration.PublicEncryptionKeyConfiguration;
 import uk.gov.ida.common.shared.configuration.PublicKeyConfiguration;
-import uk.gov.ida.common.shared.configuration.PublicSigningKeyConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,23 +11,29 @@ import static com.google.common.base.Throwables.propagate;
 public class CertificateStore {
     public static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
-    private final PublicKeyConfiguration publicEncryptionKeyConfiguration;
+    private final PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration;
+    private final PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration;
     private final PublicKeyConfiguration publicSigningKeyConfiguration;
     private final PublicKeyInputStreamFactory publicKeyInputStreamFactory;
 
-    @Inject
     public CertificateStore(
-            @PublicEncryptionKeyConfiguration PublicKeyConfiguration publicEncryptionKeyConfiguration,
-            @PublicSigningKeyConfiguration PublicKeyConfiguration publicSigningKeyConfiguration,
+            PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration,
+            PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration,
+            PublicKeyConfiguration publicSigningKeyConfiguration,
             PublicKeyInputStreamFactory publicKeyInputStreamFactory) {
 
-        this.publicEncryptionKeyConfiguration = publicEncryptionKeyConfiguration;
+        this.primaryPublicEncryptionKeyConfiguration = primaryPublicEncryptionKeyConfiguration;
+        this.secondaryPublicEncryptionKeyConfiguration = secondaryPublicEncryptionKeyConfiguration;
         this.publicSigningKeyConfiguration = publicSigningKeyConfiguration;
         this.publicKeyInputStreamFactory = publicKeyInputStreamFactory;
     }
 
-    public String getEncryptionCertificateValue() {
-        return getCertificate(publicEncryptionKeyConfiguration);
+    public String getPrimaryEncryptionCertificateValue() {
+        return getCertificate(primaryPublicEncryptionKeyConfiguration);
+    }
+
+    public String getSecondaryEncryptionCertificateValue() {
+        return getCertificate(secondaryPublicEncryptionKeyConfiguration);
     }
 
     public String getSigningCertificateValue() {

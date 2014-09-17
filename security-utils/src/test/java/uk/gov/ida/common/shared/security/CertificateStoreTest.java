@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,10 +29,10 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITH_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
-        String encryptionCertificateValue = certificateStore.getEncryptionCertificateValue();
+        String encryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
 
         assertThat(encryptionCertificateValue.contains("BEGIN")).isEqualTo(false);
         assertThat(encryptionCertificateValue.contains("END")).isEqualTo(false);
@@ -43,10 +44,10 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
-        String encryptionCertificateValue = certificateStore.getEncryptionCertificateValue();
+        String encryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
 
         assertThat(encryptionCertificateValue.contains("BEGIN")).isEqualTo(false);
         assertThat(encryptionCertificateValue.contains("END")).isEqualTo(false);
@@ -54,11 +55,31 @@ public class CertificateStoreTest {
     }
 
     @Test
+    public void getEncryptionCertificateValue_shouldReturnAppropriateCertificateValue() throws UnsupportedEncodingException {
+        String secondaryCertificateWithoutHeader = "sfjkvjdfbkbdfjbmxbfsjbdfjbdfjbjbfdjbfdkjhbkfbdj";
+        when(publicKeyFileInputStreamFactory.createInputStream("primaryUri")).thenReturn(new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8")));
+        when(publicKeyFileInputStreamFactory.createInputStream("secondaryUri")).thenReturn(new ByteArrayInputStream(secondaryCertificateWithoutHeader.getBytes("UTF-8")));
+
+        PublicKeyConfiguration secondaryPublicKeyConfiguration = mock(PublicKeyConfiguration.class);
+
+        when(publicKeyConfiguration.getKeyUri()).thenReturn("primaryUri");
+        when(secondaryPublicKeyConfiguration.getKeyUri()).thenReturn("secondaryUri");
+
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,secondaryPublicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
+
+        String primaryEncryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
+        String secondaryEncryptionCertificateValue = certificateStore.getSecondaryEncryptionCertificateValue();
+
+        assertThat(primaryEncryptionCertificateValue).isEqualTo(CERTIFICATE_WITHOUT_HEADER);
+        assertThat(secondaryEncryptionCertificateValue).isEqualTo(secondaryCertificateWithoutHeader);
+    }
+
+    @Test
     public void getSigningCertificateValue_shouldStripOutHeadersIfPresent() throws UnsupportedEncodingException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITH_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
         String signingCertificateValue = certificateStore.getSigningCertificateValue();
@@ -73,7 +94,7 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
         String signingCertificateValue = certificateStore.getSigningCertificateValue();
