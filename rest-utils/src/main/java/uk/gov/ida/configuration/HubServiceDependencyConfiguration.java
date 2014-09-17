@@ -1,6 +1,6 @@
 package uk.gov.ida.configuration;
 
-import uk.gov.ida.common.ServiceInfo;
+import uk.gov.ida.common.ServiceInfoConfiguration;
 
 public interface HubServiceDependencyConfiguration {
     DependentServiceConfiguration getFrontend();
@@ -17,5 +17,5 @@ public interface HubServiceDependencyConfiguration {
 
     DependentServiceConfiguration getHubConfig();
 
-    ServiceInfo getServiceInfo();
+    ServiceInfoConfiguration getServiceInfo();
 }

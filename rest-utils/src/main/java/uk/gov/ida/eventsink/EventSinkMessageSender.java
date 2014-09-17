@@ -2,7 +2,7 @@ package uk.gov.ida.eventsink;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import uk.gov.ida.common.ServiceInfo;
+import uk.gov.ida.common.ServiceInfoConfiguration;
 import uk.gov.ida.common.SessionId;
 
 import java.util.HashMap;
@@ -13,10 +13,10 @@ import java.util.UUID;
 public class EventSinkMessageSender {
 
     private EventSinkProxy eventSinkProxy;
-    private ServiceInfo serviceInfo;
+    private ServiceInfoConfiguration serviceInfo;
 
     @Inject
-    public EventSinkMessageSender(EventSinkProxy eventSinkProxy, ServiceInfo serviceInfo) {
+    public EventSinkMessageSender(EventSinkProxy eventSinkProxy, ServiceInfoConfiguration serviceInfo) {
         this.eventSinkProxy = eventSinkProxy;
         this.serviceInfo = serviceInfo;
     }

@@ -2,7 +2,7 @@ package uk.gov.ida.eventsink;
 
 import com.google.common.collect.Maps;
 import org.joda.time.DateTime;
-import uk.gov.ida.common.ServiceInfo;
+import uk.gov.ida.common.ServiceInfoConfiguration;
 import uk.gov.ida.common.SessionId;
 
 import java.util.EnumMap;
@@ -21,7 +21,7 @@ public class EventSinkHubEvent {
     private EventSinkHubEvent() {
     }
 
-    public EventSinkHubEvent(ServiceInfo serviceInfo, SessionId sessionId, String eventType, Map<EventDetailsKey, String> details) {
+    public EventSinkHubEvent(ServiceInfoConfiguration serviceInfo, SessionId sessionId, String eventType, Map<EventDetailsKey, String> details) {
         this.eventId = UUID.randomUUID();
         this.originatingService = serviceInfo.getName();
         this.sessionId = sessionId;

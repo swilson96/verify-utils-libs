@@ -1,15 +1,14 @@
 package uk.gov.ida.common;
 
-// TODO: rename to ServiceInfoConfiguration
-public class ServiceInfo {
+public class ServiceInfoConfiguration {
 
     protected String name;
 
     @SuppressWarnings("unused") //Needed by JAXB
-    protected ServiceInfo() {
+    protected ServiceInfoConfiguration() {
     }
 
-    public ServiceInfo(String name) {
+    public ServiceInfoConfiguration(String name) {
         this.name = name;
     }
 
