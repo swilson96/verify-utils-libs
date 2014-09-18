@@ -19,7 +19,6 @@ public class PublicKeyConfiguration extends KeyConfiguration {
     protected String keyName;
 
     @Valid
-    @Null
     @JsonProperty
     protected Boolean includeInMetadata = true;
 
