@@ -4,7 +4,7 @@ package uk.gov.ida.shared.rest.truststore;
 import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import uk.gov.ida.shared.configuration.ClientTrustStoreConfiguration;
+import uk.gov.ida.truststore.ClientTrustStoreConfiguration;
 import uk.gov.ida.truststore.IdaTrustStore;
 
 import java.io.FileInputStream;
