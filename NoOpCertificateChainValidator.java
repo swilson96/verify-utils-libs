@@ -11,14 +11,14 @@ public class NoOpCertificateChainValidator extends CertificateChainValidator {
 
     @Inject
     public NoOpCertificateChainValidator(
-            CertificateDtoToX509CertificateTransformer certificateTransformer) {
+            CertificateDtoToX509CertificateTransformer certificateTransformer, PKIXParametersProvider pkixParametersProvider) {
 
-        super(certificateTransformer);
+        super(certificateTransformer, pkixParametersProvider);
     }
 
     @Override
-    public void validate(CertificateDto certificate, IdaTrustStore trustStore) {}
+    public void validateOrThrow(CertificateDto certificate, IdaTrustStore trustStore) {}
 
     @Override
-    public void validate(X509Certificate certificate, IdaTrustStore trustStore) {}
+    public void validateOrThrow(X509Certificate certificate, IdaTrustStore trustStore) {}
 }
