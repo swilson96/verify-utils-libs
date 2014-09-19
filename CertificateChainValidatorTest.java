@@ -18,6 +18,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.PKIXReason;
 import java.security.cert.X509Certificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,25 +36,37 @@ public class CertificateChainValidatorTest {
     
     @Mock
     private CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer;
+    private PKIXParametersProvider pkixParametersProvider;
 
     @Before
     public void setUp() throws Exception {
         certificateFactory = new CertificateFactory();
-        certificateChainValidator = new CertificateChainValidator(certificateDtoToX509CertificateTransformer);
+        pkixParametersProvider = new PKIXParametersProvider();
+        certificateChainValidator = new CertificateChainValidator(certificateDtoToX509CertificateTransformer, pkixParametersProvider);
+
     }
 
     @Test
     public void validate_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate intermediaryCACertificate = certificateFactory.createCertificate(intermediaryCACertString);
 
-        certificateChainValidator.validate(intermediaryCACertificate, getTrustStore());
+        certificateChainValidator.validateOrThrow(intermediaryCACertificate, getTrustStore());
     }
 
     @Test
     public void validate_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate encryptionCertificate = certificateFactory.createCertificate(this.encryptionCertString);
 
-        certificateChainValidator.validate(encryptionCertificate, getTrustStore());
+        certificateChainValidator.validateOrThrow(encryptionCertificate, getTrustStore());
+    }
+
+    @Test
+    public void validate_shouldReturnValidACertSignedByAnUnknownRootCACert() throws Exception {
+        final X509Certificate encryptionCertificate = certificateFactory.createCertificate(this.encryptionCertString);
+
+        CertificateValidity certificateValidity = certificateChainValidator.validate(encryptionCertificate, getTrustStore());
+        assertThat(certificateValidity.isValid()).isEqualTo(true);
+        assertThat(certificateValidity.getReason().isPresent()).isEqualTo(false);
     }
 
     @Test
@@ -70,12 +83,23 @@ public class CertificateChainValidatorTest {
     }
 
     @Test
+    public void validate_shouldReturnInvalidACertSignedByAnUnknownRootCACert() throws Exception {
+        final X509Certificate otherChildCertificate =
+                certificateFactory.createCertificate(childSignedByOtherRootCAString);
+
+        CertificateValidity certificateValidity = certificateChainValidator.validate(otherChildCertificate, getTrustStore());
+        assertThat(certificateValidity.isInvalid()).isEqualTo(true);
+        assertThat(certificateValidity.getReason().get()).isEqualTo(PKIXReason.NO_TRUST_ANCHOR);
+    }
+
+
+    @Test
     public void validate_shouldHandleCertificateDtos() throws Exception {
         final CertificateDto certificateDto = aCertificateDto().withCertificate(this.encryptionCertString).build();
         when(certificateDtoToX509CertificateTransformer.transform(any(CertificateDto.class)))
                 .thenReturn(certificateFactory.createCertificate(this.encryptionCertString));
 
-        certificateChainValidator.validate(certificateDto, getTrustStore());
+        certificateChainValidator.validateOrThrow(certificateDto, getTrustStore());
 
         verify(certificateDtoToX509CertificateTransformer).transform(certificateDto);
     }
@@ -84,7 +108,7 @@ public class CertificateChainValidatorTest {
     public void validate_shouldWrapCertificateExceptionsGeneratedByTransformer() throws Exception {
         when(certificateDtoToX509CertificateTransformer.transform(any(CertificateDto.class))).thenThrow(new CertificateException());
 
-        certificateChainValidator.validate(aCertificateDto().build(), getTrustStore());
+        certificateChainValidator.validateOrThrow(aCertificateDto().build(), getTrustStore());
     }
 
     private void assertExceptionMessage(
@@ -94,7 +118,7 @@ public class CertificateChainValidatorTest {
             String value) {
 
         try {
-            validator.validate(certificate, getTrustStore());
+            validator.validateOrThrow(certificate, getTrustStore());
         } catch (Exception e) {
             assertThat(e.getClass()).isEqualTo(exceptionClass);
             assertThat(e.getMessage()).isEqualTo(value);
