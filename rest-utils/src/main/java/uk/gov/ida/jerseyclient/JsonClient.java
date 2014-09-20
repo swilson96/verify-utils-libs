@@ -7,12 +7,16 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
+import com.sun.jersey.api.client.WebResource;
 import uk.gov.ida.common.CommonUrls;
 import uk.gov.ida.common.ExceptionType;
 
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.google.common.base.Optional.absent;
@@ -46,6 +50,11 @@ public class JsonClient<TSessionIdType> {
         return responseProcessor.getJsonEntity(uri, null, clazz, executeGet(uri));
     }
 
+    public <T> T get(URI uri, Class<T> clazz, TSessionIdType newSessionId, List<Cookie> cookies, Map<String, String> headers) {
+        URI uriWithRequestId = appendNewSessionIdToUri(uri, newSessionId);
+        return responseProcessor.getJsonEntity(uri, null, clazz, executeGet(uriWithRequestId, cookies, headers));
+    }
+
     public <T> T get(URI uri, TSessionIdType newSessionId, Class<T> clazz) {
         URI uriWithRequestId = appendNewSessionIdToUri(uri, newSessionId);
         return responseProcessor.getJsonEntity(uriWithRequestId, null, clazz, executeGet(uriWithRequestId));
@@ -59,7 +68,29 @@ public class JsonClient<TSessionIdType> {
         return errorHandledClientResponse(new Function<Optional<Object>, ClientResponse>() {
             @Override
             public ClientResponse apply(Optional<Object> input) {
-                return jerseyClient.resource(uri).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+                return jerseyClient.resource(uri)
+                        .accept(MediaType.APPLICATION_JSON_TYPE)
+                        .get(ClientResponse.class);
+            }
+        }, uri);
+    }
+
+    private ClientResponse executeGet(final URI uri, final List<Cookie> cookies, final Map<String, String> headers) {
+        return errorHandledClientResponse(new Function<Optional<Object>, ClientResponse>() {
+            @Override
+            public ClientResponse apply(Optional<Object> input) {
+                WebResource.Builder requestBuilder = jerseyClient.resource(uri).getRequestBuilder();
+                for(Cookie cookie: cookies){
+                    requestBuilder = requestBuilder.cookie(cookie);
+                }
+                for(Map.Entry<String, String> headerDetail: headers.entrySet()){
+                    if(headerDetail.getValue() != null) {
+                        requestBuilder = requestBuilder.header(headerDetail.getKey(), headerDetail.getValue());
+                    }
+                }
+                return requestBuilder
+                        .accept(MediaType.APPLICATION_JSON_TYPE)
+                        .get(ClientResponse.class);
             }
         }, uri);
     }
