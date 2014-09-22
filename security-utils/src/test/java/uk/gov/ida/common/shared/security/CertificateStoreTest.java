@@ -29,7 +29,7 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITH_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration, publicKeyConfiguration, publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
         String encryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
@@ -44,7 +44,7 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration, publicKeyConfiguration, publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
         String encryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
@@ -65,7 +65,7 @@ public class CertificateStoreTest {
         when(publicKeyConfiguration.getKeyUri()).thenReturn("primaryUri");
         when(secondaryPublicKeyConfiguration.getKeyUri()).thenReturn("secondaryUri");
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,secondaryPublicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,secondaryPublicKeyConfiguration, publicKeyConfiguration, publicKeyConfiguration, publicKeyFileInputStreamFactory);
 
         String primaryEncryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
         String secondaryEncryptionCertificateValue = certificateStore.getSecondaryEncryptionCertificateValue();
@@ -79,10 +79,10 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITH_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration, publicKeyConfiguration, publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
-        String signingCertificateValue = certificateStore.getSigningCertificateValue();
+        String signingCertificateValue = certificateStore.getPrimarySigningCertificateValue();
 
         assertThat(signingCertificateValue.contains("BEGIN")).isEqualTo(false);
         assertThat(signingCertificateValue.contains("END")).isEqualTo(false);
@@ -94,10 +94,10 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration,publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, publicKeyConfiguration, publicKeyConfiguration, publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
-        String signingCertificateValue = certificateStore.getSigningCertificateValue();
+        String signingCertificateValue = certificateStore.getPrimarySigningCertificateValue();
 
         assertThat(signingCertificateValue.contains("BEGIN")).isEqualTo(false);
         assertThat(signingCertificateValue.contains("END")).isEqualTo(false);

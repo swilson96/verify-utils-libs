@@ -13,18 +13,21 @@ public class CertificateStore {
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
     private final PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration;
     private final PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration;
-    private final PublicKeyConfiguration publicSigningKeyConfiguration;
+    private final PublicKeyConfiguration primaryPublicSigningKeyConfiguration;
+    private PublicKeyConfiguration secondaryPublicSigningKeyConfiguration;
     private final PublicKeyInputStreamFactory publicKeyInputStreamFactory;
 
     public CertificateStore(
             PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration,
             PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration,
-            PublicKeyConfiguration publicSigningKeyConfiguration,
+            PublicKeyConfiguration primaryPublicSigningKeyConfiguration,
+            PublicKeyConfiguration secondaryPublicSigningKeyConfiguration,
             PublicKeyInputStreamFactory publicKeyInputStreamFactory) {
 
         this.primaryPublicEncryptionKeyConfiguration = primaryPublicEncryptionKeyConfiguration;
         this.secondaryPublicEncryptionKeyConfiguration = secondaryPublicEncryptionKeyConfiguration;
-        this.publicSigningKeyConfiguration = publicSigningKeyConfiguration;
+        this.primaryPublicSigningKeyConfiguration = primaryPublicSigningKeyConfiguration;
+        this.secondaryPublicSigningKeyConfiguration = secondaryPublicSigningKeyConfiguration;
         this.publicKeyInputStreamFactory = publicKeyInputStreamFactory;
     }
 
@@ -36,8 +39,12 @@ public class CertificateStore {
         return getCertificate(secondaryPublicEncryptionKeyConfiguration);
     }
 
-    public String getSigningCertificateValue() {
-        return getCertificate(publicSigningKeyConfiguration);
+    public String getPrimarySigningCertificateValue() {
+        return getCertificate(primaryPublicSigningKeyConfiguration);
+    }
+
+    public String getSecondarySigningCertificateValue() {
+        return getCertificate(secondaryPublicSigningKeyConfiguration);
     }
 
     private String getCertificate(PublicKeyConfiguration configuration) {
