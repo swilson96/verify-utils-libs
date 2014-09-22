@@ -111,6 +111,15 @@ public class CertificateChainValidatorTest {
         certificateChainValidator.validateOrThrow(aCertificateDto().build(), getTrustStore());
     }
 
+    @Test
+    public void should_doAnOcspCheck() throws Exception {
+        final X509Certificate encryptionCertificate = certificateFactory.createCertificate(this.encryptionCertString);
+
+        CertificateChainValidator chainValidator = new CertificateChainValidator(certificateDtoToX509CertificateTransformer, new OCSPPKIXParametersProvider());
+        CertificateValidity validate = chainValidator.validate(encryptionCertificate, getTrustStore());
+        assertThat(validate.isValid()).isEqualTo(true);
+    }
+
     private void assertExceptionMessage(
             CertificateChainValidator validator,
             X509Certificate certificate,
