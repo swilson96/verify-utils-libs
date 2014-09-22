@@ -38,10 +38,10 @@ public class CertificateStore {
         return getCertificate(secondaryPublicEncryptionKeyConfiguration);
     }
 
-    public List<String> getSigningCertificateValues() {
-        List<String> certs = new ArrayList<>();
+    public List<Certificate> getSigningCertificateValues() {
+        List<Certificate> certs = new ArrayList<>();
         for (PublicKeyConfiguration certConfig : publicSigningKeyConfiguration) {
-            certs.add(getCertificate(certConfig));
+            certs.add(new Certificate(certConfig.getKeyName(), getCertificate(certConfig), Certificate.KeyUse.Signing));
         }
         return certs;
     }

@@ -81,36 +81,45 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITH_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration, publicKeyConfiguration, ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
+        when(publicKeyConfiguration.getKeyName()).thenReturn("primary");
 
-        List<String> signingCertificateValues = certificateStore.getSigningCertificateValues();
+        List<Certificate> signingCertificateValues = certificateStore.getSigningCertificateValues();
 
         assertThat(signingCertificateValues).hasSize(1);
 
-        String primaryCertificate = signingCertificateValues.get(0);
-        assertThat(primaryCertificate).isEqualTo(CERTIFICATE_WITHOUT_HEADER);
+        Certificate primaryCertificate = signingCertificateValues.get(0);
+        assertThat(primaryCertificate.getIssuerId()).isEqualTo("primary");
+        assertThat(primaryCertificate.getCertificate()).isEqualTo(CERTIFICATE_WITHOUT_HEADER);
     }
 
     @Test
     public void getSigningCertificateValue_shouldReturnOriginalCertificateIfHeadersAreAbsent() throws UnsupportedEncodingException {
+        PublicKeyConfiguration secondaryPublicKeyConfiguration = mock(PublicKeyConfiguration.class);
+
         ByteArrayInputStream byteArrayInputStream1 = new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8"));
         ByteArrayInputStream byteArrayInputStream2 = new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8"));
-        when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream1).thenReturn(byteArrayInputStream2);
+        when(publicKeyFileInputStreamFactory.createInputStream("uri1")).thenReturn(byteArrayInputStream1);
+        when(publicKeyFileInputStreamFactory.createInputStream("uri2")).thenReturn(byteArrayInputStream2);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, ImmutableList.of(publicKeyConfiguration, publicKeyConfiguration), publicKeyFileInputStreamFactory);
-        when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
+        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration, publicKeyConfiguration, ImmutableList.of(publicKeyConfiguration, secondaryPublicKeyConfiguration), publicKeyFileInputStreamFactory);
+        when(publicKeyConfiguration.getKeyUri()).thenReturn("uri1");
+        when(publicKeyConfiguration.getKeyName()).thenReturn("primary");
+        when(secondaryPublicKeyConfiguration.getKeyUri()).thenReturn("uri2");
+        when(secondaryPublicKeyConfiguration.getKeyName()).thenReturn("secondary");
 
-        List<String> signingCertificateValues = certificateStore.getSigningCertificateValues();
-
+        List<Certificate> signingCertificateValues = certificateStore.getSigningCertificateValues();
 
         assertThat(signingCertificateValues).hasSize(2);
 
-        String primarySigningCertificate = signingCertificateValues.get(0);
-        assertThat(primarySigningCertificate).isEqualTo(CERTIFICATE_WITHOUT_HEADER);
+        Certificate primarySigningCertificate = signingCertificateValues.get(0);
+        assertThat(primarySigningCertificate.getIssuerId()).isEqualTo("primary");
+        assertThat(primarySigningCertificate.getCertificate()).isEqualTo(CERTIFICATE_WITHOUT_HEADER);
 
-        String secondarySigningCertificate = signingCertificateValues.get(1);
-        assertThat(secondarySigningCertificate).isEqualTo(CERTIFICATE_WITHOUT_HEADER);
+        Certificate secondarySigningCertificate = signingCertificateValues.get(1);
+        assertThat(secondarySigningCertificate.getIssuerId()).isEqualTo("secondary");
+        assertThat(secondarySigningCertificate.getCertificate()).isEqualTo(CERTIFICATE_WITHOUT_HEADER);
     }
 
 
