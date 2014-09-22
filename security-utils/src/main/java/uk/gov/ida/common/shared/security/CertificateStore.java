@@ -5,6 +5,8 @@ import uk.gov.ida.common.shared.configuration.PublicKeyConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.google.common.base.Throwables.propagate;
 
@@ -13,21 +15,18 @@ public class CertificateStore {
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
     private final PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration;
     private final PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration;
-    private final PublicKeyConfiguration primaryPublicSigningKeyConfiguration;
-    private PublicKeyConfiguration secondaryPublicSigningKeyConfiguration;
+    private final List<PublicKeyConfiguration> publicSigningKeyConfiguration;
     private final PublicKeyInputStreamFactory publicKeyInputStreamFactory;
 
     public CertificateStore(
             PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration,
             PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration,
-            PublicKeyConfiguration primaryPublicSigningKeyConfiguration,
-            PublicKeyConfiguration secondaryPublicSigningKeyConfiguration,
+            List<PublicKeyConfiguration> publicSigningKeyConfiguration,
             PublicKeyInputStreamFactory publicKeyInputStreamFactory) {
 
         this.primaryPublicEncryptionKeyConfiguration = primaryPublicEncryptionKeyConfiguration;
         this.secondaryPublicEncryptionKeyConfiguration = secondaryPublicEncryptionKeyConfiguration;
-        this.primaryPublicSigningKeyConfiguration = primaryPublicSigningKeyConfiguration;
-        this.secondaryPublicSigningKeyConfiguration = secondaryPublicSigningKeyConfiguration;
+        this.publicSigningKeyConfiguration = publicSigningKeyConfiguration;
         this.publicKeyInputStreamFactory = publicKeyInputStreamFactory;
     }
 
@@ -39,12 +38,12 @@ public class CertificateStore {
         return getCertificate(secondaryPublicEncryptionKeyConfiguration);
     }
 
-    public String getPrimarySigningCertificateValue() {
-        return getCertificate(primaryPublicSigningKeyConfiguration);
-    }
-
-    public String getSecondarySigningCertificateValue() {
-        return getCertificate(secondaryPublicSigningKeyConfiguration);
+    public List<String> getSigningCertificateValues() {
+        List<String> certs = new ArrayList<>();
+        for (PublicKeyConfiguration certConfig : publicSigningKeyConfiguration) {
+            certs.add(getCertificate(certConfig));
+        }
+        return certs;
     }
 
     private String getCertificate(PublicKeyConfiguration configuration) {
