@@ -20,6 +20,9 @@ public class NumberedPipeReader {
         this.privateKeyFactory = privateKeyFactory;
     }
 
+    //CLOSING THE FILE_STREAM AFTER READING FROM THE FILE DESCRIPTORS IS VERY IMPORTANT.
+    //DO NOT REMOVE THE FINALLY BLOCK SINCE THIS MAKES SURE THE DESCRIPTORS GET CLOSED.
+
     public PrivateKey readKey(int fileDescriptorNumber) {
         FileDescriptor fileDescriptor = new FileDescriptor();
         getJavaIOFileDescriptorAccess().set(fileDescriptor, fileDescriptorNumber);

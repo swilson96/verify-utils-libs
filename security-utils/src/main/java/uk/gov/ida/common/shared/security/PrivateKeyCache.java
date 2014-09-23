@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.security.PrivateKey;
 
 public class PrivateKeyCache implements PrivateKeyStore {
-    private static final String PRIMARY_ENCRYPTION_KEY_ENVIRONMENT_VARIABLE = "PRIMARY_ENCRYPTION_KEY";
-    private static final String SECONDARY_ENCRYPTION_KEY_ENVIRONMENT_VARIABLE = "SECONDARY_ENCRYPTION_KEY";
-    private static final String SIGNING_KEY_ENVIRONMENT_VARIABLE = "SIGNING_KEY";
     private KeyConfiguration signingKeyConfiguration;
     private KeyConfiguration primaryEncryptionKeyConfiguration;
     private KeyConfiguration secondaryEncryptionKeyConfiguration;
@@ -43,6 +40,16 @@ public class PrivateKeyCache implements PrivateKeyStore {
         this.privateKeyFactory = privateKeyFactory;
         this.numberedPipeReader = numberedPipeReader;
         getKeys();
+    }
+
+    @Override
+    public PrivateKey getSigningPrivateKey() {
+        return signingKey;
+    }
+
+    @Override
+    public java.util.List<PrivateKey> getEncryptionPrivateKeys() {
+        return ImmutableList.of(primaryEncryptionKey, secondaryEncryptionKey);
     }
 
     private void getKeys() {
@@ -79,15 +86,5 @@ public class PrivateKeyCache implements PrivateKeyStore {
         } catch (IOException e) {
             throw new KeyLoadingException(keyUri, e);
         }
-    }
-
-    @Override
-    public PrivateKey getSigningPrivateKey() {
-        return signingKey;
-    }
-
-    @Override
-    public java.util.List<PrivateKey> getEncryptionPrivateKeys() {
-        return ImmutableList.of(primaryEncryptionKey, secondaryEncryptionKey);
     }
 }
