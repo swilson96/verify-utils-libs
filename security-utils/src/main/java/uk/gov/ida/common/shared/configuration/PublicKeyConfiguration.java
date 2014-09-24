@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 
 public class PublicKeyConfiguration extends KeyConfiguration {
@@ -21,6 +20,14 @@ public class PublicKeyConfiguration extends KeyConfiguration {
     @Valid
     @JsonProperty
     protected Boolean includeInMetadata = true;
+
+    @Valid
+    @JsonProperty
+    protected Boolean activeKey = true;
+
+    public Boolean getActiveKey() {
+        return activeKey;
+    }
 
     public String getKeyName() {
         return keyName;

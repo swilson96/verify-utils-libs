@@ -15,7 +15,7 @@ public class CertificateStore {
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
     private final PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration;
     private final PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration;
-    private final List<PublicKeyConfiguration> publicSigningKeyConfiguration;
+    private final List<PublicKeyConfiguration> publicSigningKeyConfigurations;
     private final PublicKeyInputStreamFactory publicKeyInputStreamFactory;
 
     public CertificateStore(
@@ -26,7 +26,7 @@ public class CertificateStore {
 
         this.primaryPublicEncryptionKeyConfiguration = primaryPublicEncryptionKeyConfiguration;
         this.secondaryPublicEncryptionKeyConfiguration = secondaryPublicEncryptionKeyConfiguration;
-        this.publicSigningKeyConfiguration = publicSigningKeyConfiguration;
+        this.publicSigningKeyConfigurations = publicSigningKeyConfiguration;
         this.publicKeyInputStreamFactory = publicKeyInputStreamFactory;
     }
 
@@ -40,7 +40,7 @@ public class CertificateStore {
 
     public List<Certificate> getSigningCertificateValues() {
         List<Certificate> certs = new ArrayList<>();
-        for (PublicKeyConfiguration certConfig : publicSigningKeyConfiguration) {
+        for (PublicKeyConfiguration certConfig : publicSigningKeyConfigurations) {
             certs.add(new Certificate(certConfig.getKeyName(), getCertificate(certConfig), Certificate.KeyUse.Signing));
         }
         return certs;
