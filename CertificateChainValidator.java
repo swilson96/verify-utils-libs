@@ -3,8 +3,7 @@ package uk.gov.ida.shared.rest.config.verification;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.shared.rest.common.CertificateDto;
-import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
+import uk.gov.ida.common.shared.security.X509CertificateFactory;
 import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
 import uk.gov.ida.truststore.IdaTrustStore;
 
@@ -28,15 +27,16 @@ public class CertificateChainValidator {
     private static final String X509_CERTIFICATE_TYPE = "X.509";
     private final CertificateFactory certificateFactory;
     private final CertPathValidator certPathValidator;
-    private final CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer;
     private final PKIXParametersProvider pkixParametersProvider;
+    private final X509CertificateFactory x509certificateFactory;
 
     @Inject
     public CertificateChainValidator(
-            CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer, PKIXParametersProvider pkixParametersProvider) {
+            PKIXParametersProvider pkixParametersProvider,
+            X509CertificateFactory x509certificateFactory) {
 
-        this.certificateDtoToX509CertificateTransformer = certificateDtoToX509CertificateTransformer;
         this.pkixParametersProvider = pkixParametersProvider;
+        this.x509certificateFactory = x509certificateFactory;
 
         try {
             certificateFactory = CertificateFactory.getInstance(X509_CERTIFICATE_TYPE);
@@ -90,36 +90,18 @@ public class CertificateChainValidator {
         return CertificateValidity.valid();
     }
 
-    public void validateOrThrow(CertificateDto certificate, IdaTrustStore trustStore) {
-        X509Certificate x509Certificate;
-        try {
-            x509Certificate = certificateDtoToX509CertificateTransformer.transform(certificate);
-        } catch (CertificateException e) {
-            throw new CertificateChainValidationException("Could not transform CertificateDto into an X509Certificate.", e);
-        }
-
-        validateOrThrow(x509Certificate, trustStore);
-    }
-
-    public CertificateValidity validate(CertificateDto certificate, IdaTrustStore trustStore) {
-        X509Certificate x509Certificate;
-        try {
-            x509Certificate = certificateDtoToX509CertificateTransformer.transform(certificate);
-        } catch (CertificateException e) {
-            throw new CertificateChainValidationException("Could not transform CertificateDto into an X509Certificate.", e);
-        }
-
+    public CertificateValidity validate(String x509String, IdaTrustStore trustStore) {
+        X509Certificate x509Certificate = x509certificateFactory.createCertificate(x509String);
         return validate(x509Certificate, trustStore);
     }
 
     private String getDnForCertificate(X509Certificate certificate) {
         try {
-            if(certificate != null && certificate.getSubjectDN() != null)
-              return certificate.getSubjectDN().getName();
+            if (certificate != null && certificate.getSubjectDN() != null)
+                return certificate.getSubjectDN().getName();
         } catch (RuntimeException e) {
             LOG.error("Failed to generate DN string for certificate", e);
         }
         return "";
     }
-
 }

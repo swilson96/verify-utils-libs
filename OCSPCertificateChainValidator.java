@@ -1,13 +1,13 @@
 package uk.gov.ida.shared.rest.config.verification;
 
 import com.google.inject.Inject;
-import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
+import uk.gov.ida.common.shared.security.X509CertificateFactory;
 
 public class OCSPCertificateChainValidator extends CertificateChainValidator{
 
     @Inject
     public OCSPCertificateChainValidator(
-            CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer, OCSPPKIXParametersProvider parametersProvider) {
-        super(certificateDtoToX509CertificateTransformer, parametersProvider);
+            OCSPPKIXParametersProvider parametersProvider, X509CertificateFactory x509certificateFactory) {
+        super(parametersProvider, x509certificateFactory);
     }
 }
