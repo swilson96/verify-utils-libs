@@ -3,8 +3,6 @@ package uk.gov.ida.configuration;
 import uk.gov.ida.common.ServiceInfoConfiguration;
 
 public interface HubServiceDependencyConfiguration {
-    DependentServiceConfiguration getFrontend();
-
     DependentServiceConfiguration getHubPolicy();
 
     DependentServiceConfiguration getEventSink();
