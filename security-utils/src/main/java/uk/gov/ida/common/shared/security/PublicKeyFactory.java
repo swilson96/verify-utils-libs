@@ -8,10 +8,10 @@ import java.security.cert.CertificateException;
 
 public class PublicKeyFactory {
 
-    private CertificateFactory certificateFactory;
+    private X509CertificateFactory certificateFactory;
 
     @Inject
-    public PublicKeyFactory(CertificateFactory certificateFactory) {
+    public PublicKeyFactory(X509CertificateFactory certificateFactory) {
         this.certificateFactory = certificateFactory;
     }
 
