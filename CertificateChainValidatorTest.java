@@ -4,11 +4,8 @@ import com.google.common.base.Throwables;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.ida.common.shared.security.CertificateFactory;
-import uk.gov.ida.shared.rest.common.CertificateDto;
-import uk.gov.ida.shared.rest.common.transformers.CertificateDtoToX509CertificateTransformer;
+import uk.gov.ida.common.shared.security.X509CertificateFactory;
 import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
 import uk.gov.ida.truststore.IdaTrustStore;
 
@@ -23,46 +20,39 @@ import java.security.cert.X509Certificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.ida.hub.shared.test.builders.CertificateDtoBuilder.aCertificateDto;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateChainValidatorTest {
 
-    private CertificateFactory certificateFactory;
+    private X509CertificateFactory x509CertificateFactory;
     private CertificateChainValidator certificateChainValidator;
-    
-    @Mock
-    private CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer;
     private PKIXParametersProvider pkixParametersProvider;
 
     @Before
     public void setUp() throws Exception {
-        certificateFactory = new CertificateFactory();
+        x509CertificateFactory = new X509CertificateFactory();
         pkixParametersProvider = new PKIXParametersProvider();
-        certificateChainValidator = new CertificateChainValidator(certificateDtoToX509CertificateTransformer, pkixParametersProvider);
+        certificateChainValidator = new CertificateChainValidator(pkixParametersProvider, x509CertificateFactory);
 
     }
 
     @Test
     public void validate_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
-        final X509Certificate intermediaryCACertificate = certificateFactory.createCertificate(intermediaryCACertString);
+        final X509Certificate intermediaryCACertificate = x509CertificateFactory.createCertificate(intermediaryCACertString);
 
         certificateChainValidator.validateOrThrow(intermediaryCACertificate, getTrustStore());
     }
 
     @Test
     public void validate_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStore() throws Exception {
-        final X509Certificate encryptionCertificate = certificateFactory.createCertificate(this.encryptionCertString);
+        final X509Certificate encryptionCertificate = x509CertificateFactory.createCertificate(this.encryptionCertString);
 
         certificateChainValidator.validateOrThrow(encryptionCertificate, getTrustStore());
     }
 
     @Test
     public void validate_shouldReturnValidACertSignedByAnUnknownRootCACert() throws Exception {
-        final X509Certificate encryptionCertificate = certificateFactory.createCertificate(this.encryptionCertString);
+        final X509Certificate encryptionCertificate = x509CertificateFactory.createCertificate(this.encryptionCertString);
 
         CertificateValidity certificateValidity = certificateChainValidator.validate(encryptionCertificate, getTrustStore());
         assertThat(certificateValidity.isValid()).isEqualTo(true);
@@ -72,7 +62,7 @@ public class CertificateChainValidatorTest {
     @Test
     public void validate_shouldFailACertSignedByAnUnknownRootCACert() throws Exception {
         final X509Certificate otherChildCertificate =
-                certificateFactory.createCertificate(childSignedByOtherRootCAString);
+                x509CertificateFactory.createCertificate(childSignedByOtherRootCAString);
 
         assertExceptionMessage(
                 certificateChainValidator,
@@ -85,37 +75,18 @@ public class CertificateChainValidatorTest {
     @Test
     public void validate_shouldReturnInvalidACertSignedByAnUnknownRootCACert() throws Exception {
         final X509Certificate otherChildCertificate =
-                certificateFactory.createCertificate(childSignedByOtherRootCAString);
+                x509CertificateFactory.createCertificate(childSignedByOtherRootCAString);
 
         CertificateValidity certificateValidity = certificateChainValidator.validate(otherChildCertificate, getTrustStore());
         assertThat(certificateValidity.isInvalid()).isEqualTo(true);
         assertThat(certificateValidity.getReason().get()).isEqualTo(PKIXReason.NO_TRUST_ANCHOR);
     }
 
-
-    @Test
-    public void validate_shouldHandleCertificateDtos() throws Exception {
-        final CertificateDto certificateDto = aCertificateDto().withCertificate(this.encryptionCertString).build();
-        when(certificateDtoToX509CertificateTransformer.transform(any(CertificateDto.class)))
-                .thenReturn(certificateFactory.createCertificate(this.encryptionCertString));
-
-        certificateChainValidator.validateOrThrow(certificateDto, getTrustStore());
-
-        verify(certificateDtoToX509CertificateTransformer).transform(certificateDto);
-    }
-
-    @Test(expected = CertificateChainValidationException.class)
-    public void validate_shouldWrapCertificateExceptionsGeneratedByTransformer() throws Exception {
-        when(certificateDtoToX509CertificateTransformer.transform(any(CertificateDto.class))).thenThrow(new CertificateException());
-
-        certificateChainValidator.validateOrThrow(aCertificateDto().build(), getTrustStore());
-    }
-
     @Test
     public void should_doAnOcspCheck() throws Exception {
-        final X509Certificate encryptionCertificate = certificateFactory.createCertificate(this.encryptionCertString);
+        final X509Certificate encryptionCertificate = x509CertificateFactory.createCertificate(this.encryptionCertString);
 
-        CertificateChainValidator chainValidator = new CertificateChainValidator(certificateDtoToX509CertificateTransformer, new OCSPPKIXParametersProvider());
+        CertificateChainValidator chainValidator = new CertificateChainValidator(new OCSPPKIXParametersProvider(), x509CertificateFactory);
         CertificateValidity validate = chainValidator.validate(encryptionCertificate, getTrustStore());
         assertThat(validate.isValid()).isEqualTo(true);
     }
