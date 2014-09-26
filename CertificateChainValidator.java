@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
-import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
+import uk.gov.ida.shared.rest.config.verification.exceptions.CertificateChainValidationException;
 import uk.gov.ida.truststore.IdaTrustStore;
 
 import java.security.InvalidAlgorithmParameterException;

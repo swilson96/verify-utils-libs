@@ -1,6 +1,6 @@
 package uk.gov.ida.shared.rest.config.verification;
 
-import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
+import uk.gov.ida.shared.rest.config.verification.exceptions.CertificateChainValidationException;
 import uk.gov.ida.truststore.IdaTrustStore;
 
 import java.security.InvalidAlgorithmParameterException;
