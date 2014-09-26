@@ -1,47 +1,27 @@
-package uk.gov.ida.truststore;
+package uk.gov.ida.shared.rest.truststore;
 
 
-import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import uk.gov.ida.truststore.ClientTrustStoreConfiguration;
+import uk.gov.ida.truststore.IdaTrustStore;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
 public class IdaTrustStoreProvider implements Provider<IdaTrustStore> {
 
     private final ClientTrustStoreConfiguration configuration;
+    private final KeyStoreLoader keyStoreLoader;
 
     @Inject
-    public IdaTrustStoreProvider(ClientTrustStoreConfiguration configuration) {
+    public IdaTrustStoreProvider(ClientTrustStoreConfiguration configuration, KeyStoreLoader keyStoreLoader) {
         this.configuration = configuration;
+        this.keyStoreLoader = keyStoreLoader;
     }
 
     @Override
     public IdaTrustStore get() {
-        KeyStore ks;
-        try {
-            ks = KeyStore.getInstance(KeyStore.getDefaultType());
-
-            char[] password = configuration.getPassword().toCharArray();
-
-            InputStream inputStream = null;
-            try {
-                inputStream = new FileInputStream(configuration.getStoreUri());
-                ks.load(inputStream, password);
-            } finally {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            }
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
-            throw Throwables.propagate(e);
-        }
+        KeyStore ks = keyStoreLoader.load(configuration.getStoreUri(), configuration.getPassword());
         return new IdaTrustStore(ks);
     }
 }
