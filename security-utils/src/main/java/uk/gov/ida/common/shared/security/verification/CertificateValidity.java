@@ -1,4 +1,4 @@
-package uk.gov.ida.shared.rest.config.verification;
+package uk.gov.ida.common.shared.security.verification;
 
 import com.google.common.base.Optional;
 

@@ -1,4 +1,4 @@
-package uk.gov.ida.shared.rest.config.verification.exceptions;
+package uk.gov.ida.common.shared.security.verification.exceptions;
 
 public class CertificateChainValidationException extends RuntimeException {
     public CertificateChainValidationException(String message, Throwable cause) {

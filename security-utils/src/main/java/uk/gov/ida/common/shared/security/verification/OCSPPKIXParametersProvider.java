@@ -1,14 +1,13 @@
-package uk.gov.ida.shared.rest.config.verification;
+package uk.gov.ida.common.shared.security.verification;
 
-import uk.gov.ida.truststore.IdaTrustStore;
-
+import java.security.KeyStore;
 import java.security.Security;
 import java.security.cert.PKIXParameters;
 
 public class OCSPPKIXParametersProvider extends PKIXParametersProvider {
     @Override
-    public PKIXParameters getPkixParameters(IdaTrustStore trustStore) {
-        PKIXParameters pkixParameters = super.getPkixParameters(trustStore);
+    public PKIXParameters getPkixParameters(KeyStore keyStore) {
+        PKIXParameters pkixParameters = super.getPkixParameters(keyStore);
         pkixParameters.setRevocationEnabled(true);
         Security.setProperty("ocsp.enable", "true");
         return pkixParameters;

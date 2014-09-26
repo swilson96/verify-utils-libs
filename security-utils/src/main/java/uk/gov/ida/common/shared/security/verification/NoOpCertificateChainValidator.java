@@ -1,9 +1,9 @@
-package uk.gov.ida.shared.rest.config.verification;
+package uk.gov.ida.common.shared.security.verification;
 
 import com.google.inject.Inject;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
-import uk.gov.ida.truststore.IdaTrustStore;
 
+import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 
 public class NoOpCertificateChainValidator extends CertificateChainValidator {
@@ -16,5 +16,5 @@ public class NoOpCertificateChainValidator extends CertificateChainValidator {
     }
 
     @Override
-    public void validateOrThrow(X509Certificate certificate, IdaTrustStore trustStore) {}
+    public void validateOrThrow(X509Certificate certificate, KeyStore keyStore) {}
 }

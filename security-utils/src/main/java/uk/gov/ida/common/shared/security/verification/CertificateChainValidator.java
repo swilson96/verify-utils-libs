@@ -1,13 +1,13 @@
-package uk.gov.ida.shared.rest.config.verification;
+package uk.gov.ida.common.shared.security.verification;
 
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
-import uk.gov.ida.shared.rest.config.verification.exceptions.CertificateChainValidationException;
-import uk.gov.ida.truststore.IdaTrustStore;
+import uk.gov.ida.common.shared.security.verification.exceptions.CertificateChainValidationException;
 
 import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
@@ -51,7 +51,7 @@ public class CertificateChainValidator {
         }
     }
 
-    public void validateOrThrow(X509Certificate certificate, IdaTrustStore trustStore) {
+    public void validateOrThrow(X509Certificate certificate, KeyStore keyStore) {
         CertPath certificatePath;
 
         try {
@@ -61,7 +61,7 @@ public class CertificateChainValidator {
         }
 
         try {
-            certPathValidator.validate(certificatePath, pkixParametersProvider.getPkixParameters(trustStore));
+            certPathValidator.validate(certificatePath, pkixParametersProvider.getPkixParameters(keyStore));
         } catch (CertPathValidatorException e) {
             throw new CertificateChainValidationException(
                     "Certificate could not be chained to a trusted root CA certificate: " + getDnForCertificate(certificate),
@@ -71,7 +71,7 @@ public class CertificateChainValidator {
         }
     }
 
-    public CertificateValidity validate(X509Certificate certificate, IdaTrustStore trustStore) {
+    public CertificateValidity validate(X509Certificate certificate, KeyStore trustStore) {
         CertPath certificatePath;
 
         try {
@@ -90,7 +90,7 @@ public class CertificateChainValidator {
         return CertificateValidity.valid();
     }
 
-    public CertificateValidity validate(String x509String, IdaTrustStore trustStore) {
+    public CertificateValidity validate(String x509String, KeyStore trustStore) {
         X509Certificate x509Certificate = x509certificateFactory.createCertificate(x509String);
         return validate(x509Certificate, trustStore);
     }

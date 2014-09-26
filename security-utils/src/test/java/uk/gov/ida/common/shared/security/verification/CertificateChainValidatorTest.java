@@ -1,4 +1,4 @@
-package uk.gov.ida.shared.rest.config.verification;
+package uk.gov.ida.common.shared.security.verification;
 
 import com.google.common.base.Throwables;
 import org.junit.Before;
@@ -6,8 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
-import uk.gov.ida.shared.rest.exceptions.CertificateChainValidationException;
-import uk.gov.ida.truststore.IdaTrustStore;
+import uk.gov.ida.common.shared.security.verification.exceptions.CertificateChainValidationException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,7 +106,7 @@ public class CertificateChainValidatorTest {
         fail("Should have thrown exception.");
     }
 
-    public IdaTrustStore getTrustStore() {
+    public KeyStore getTrustStore() {
         KeyStore ks;
         try {
             ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -124,7 +123,7 @@ public class CertificateChainValidatorTest {
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
             throw Throwables.propagate(e);
         }
-        return new IdaTrustStore(ks);
+        return ks;
     }
 
     private final String intermediaryCACertString = "-----BEGIN CERTIFICATE-----\n" +
