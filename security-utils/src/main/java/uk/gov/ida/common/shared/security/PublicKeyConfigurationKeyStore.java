@@ -9,21 +9,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.base.Throwables.propagate;
-import static java.util.Arrays.asList;
 
 public class PublicKeyConfigurationKeyStore implements InternalPublicKeyStore {
 
     private final PublicKeyFactory publicKeyFactory;
-    private final PublicKeyConfiguration publicKeyConfiguration;
+    private final List<PublicKeyConfiguration> publicKeyConfiguration;
     private final PublicKeyInputStreamFactory publicKeyInputStreamFactory;
 
     @Inject
     public PublicKeyConfigurationKeyStore(
             PublicKeyFactory publicKeyFactory,
-            @PublicSigningKeyConfiguration PublicKeyConfiguration publicKeyConfiguration,
+            @PublicSigningKeyConfiguration List<PublicKeyConfiguration> publicKeyConfiguration,
             PublicKeyInputStreamFactory publicKeyInputStreamFactory) {
 
         this.publicKeyFactory = publicKeyFactory;
@@ -33,8 +33,11 @@ public class PublicKeyConfigurationKeyStore implements InternalPublicKeyStore {
 
     @Override
     public List<PublicKey> getVerifyingKeysForEntity() {
-        String publicKeyUri = publicKeyConfiguration.getKeyUri();
-        return asList(getPublicKey(publicKeyUri));
+        List<PublicKey> verifyingKeys = new ArrayList<>();
+        for (PublicKeyConfiguration keyConfiguration : publicKeyConfiguration) {
+            verifyingKeys.add(getPublicKey(keyConfiguration.getKeyUri()));
+        }
+        return verifyingKeys;
     }
 
     private PublicKey getPublicKey(String publicKeyUri) {
