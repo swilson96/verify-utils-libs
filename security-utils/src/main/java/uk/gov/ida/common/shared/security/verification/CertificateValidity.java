@@ -6,17 +6,20 @@ import java.security.cert.CertPathValidatorException;
 
 public class CertificateValidity {
     private final Optional<CertPathValidatorException.Reason> reason;
+    private final Optional<String> description;
 
     public static CertificateValidity valid() {
-        return new CertificateValidity(Optional.<CertPathValidatorException.Reason>absent());
+        return new CertificateValidity(Optional.<CertPathValidatorException.Reason>absent(), Optional.<String>absent());
     }
 
-    public static CertificateValidity invalid(CertPathValidatorException.Reason reason) {
-        return new CertificateValidity(Optional.of(reason));
+    public static CertificateValidity invalid(CertPathValidatorException.Reason reason, String description) {
+        return new CertificateValidity(Optional.of(reason), Optional.of(description));
     }
 
-    private CertificateValidity(Optional<CertPathValidatorException.Reason> reason) {
+
+    private CertificateValidity(Optional<CertPathValidatorException.Reason> reason, Optional<String> description) {
         this.reason = reason;
+        this.description = description;
     }
 
     public boolean isValid() {
@@ -29,5 +32,9 @@ public class CertificateValidity {
 
     public Optional<CertPathValidatorException.Reason> getReason() {
         return reason;
+    }
+
+    public Optional<String> getDescription() {
+        return description;
     }
 }

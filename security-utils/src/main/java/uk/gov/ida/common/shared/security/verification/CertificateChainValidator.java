@@ -83,7 +83,7 @@ public class CertificateChainValidator {
         try {
             certPathValidator.validate(certificatePath, pkixParametersProvider.getPkixParameters(trustStore));
         } catch (CertPathValidatorException e) {
-            return CertificateValidity.invalid(e.getReason());
+            return CertificateValidity.invalid(e.getReason(), e.getMessage());
         } catch (InvalidAlgorithmParameterException e) {
             throw new CertificateChainValidationException("Unable to proceed in validating certificate chain: " + getDnForCertificate(certificate), e);
         }
