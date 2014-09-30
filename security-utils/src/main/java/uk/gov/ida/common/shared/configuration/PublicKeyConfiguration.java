@@ -21,14 +21,6 @@ public class PublicKeyConfiguration extends KeyConfiguration {
     @JsonProperty
     protected Boolean includeInMetadata = true;
 
-    @Valid
-    @JsonProperty
-    protected Boolean activeKey = true;
-
-    public Boolean getActiveKey() {
-        return activeKey;
-    }
-
     public String getKeyName() {
         return keyName;
     }
