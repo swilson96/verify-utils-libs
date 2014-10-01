@@ -1,6 +1,7 @@
 package uk.gov.ida.common.shared.security;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -31,10 +32,10 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITH_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(ImmutableList.of(publicKeyConfiguration), ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
-        String encryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
+        String encryptionCertificateValue = certificateStore.getEncryptionCertificates().get(0).getCertificate();
 
         assertThat(encryptionCertificateValue.contains("BEGIN")).isEqualTo(false);
         assertThat(encryptionCertificateValue.contains("END")).isEqualTo(false);
@@ -46,10 +47,10 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,publicKeyConfiguration, ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(ImmutableList.of(publicKeyConfiguration), ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
 
-        String encryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
+        String encryptionCertificateValue = certificateStore.getEncryptionCertificates().get(0).getCertificate();
 
         assertThat(encryptionCertificateValue.contains("BEGIN")).isEqualTo(false);
         assertThat(encryptionCertificateValue.contains("END")).isEqualTo(false);
@@ -57,23 +58,26 @@ public class CertificateStoreTest {
     }
 
     @Test
-    public void getEncryptionCertificateValue_shouldReturnAppropriateCertificateValue() throws UnsupportedEncodingException {
-        String secondaryCertificateWithoutHeader = "sfjkvjdfbkbdfjbmxbfsjbdfjbdfjbjbfdjbfdkjhbkfbdj";
-        when(publicKeyFileInputStreamFactory.createInputStream("primaryUri")).thenReturn(new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8")));
-        when(publicKeyFileInputStreamFactory.createInputStream("secondaryUri")).thenReturn(new ByteArrayInputStream(secondaryCertificateWithoutHeader.getBytes("UTF-8")));
+    public void getEncryptionCertificateValue_shouldHandleMultipleCertificateValues() throws UnsupportedEncodingException {
+        String secondCertificateWithoutHeader = "sfjkvjdfbkbdfjbmxbfsjbdfjbdfjbjbfdjbfdkjhbkfbdj";
+        when(publicKeyFileInputStreamFactory.createInputStream("firstUri")).thenReturn(new ByteArrayInputStream(CERTIFICATE_WITHOUT_HEADER.getBytes("UTF-8")));
+        when(publicKeyFileInputStreamFactory.createInputStream("secondUri")).thenReturn(new ByteArrayInputStream(secondCertificateWithoutHeader.getBytes("UTF-8")));
 
-        PublicKeyConfiguration secondaryPublicKeyConfiguration = mock(PublicKeyConfiguration.class);
+        PublicKeyConfiguration anotherPublicKeyConfiguration = mock(PublicKeyConfiguration.class);
 
-        when(publicKeyConfiguration.getKeyUri()).thenReturn("primaryUri");
-        when(secondaryPublicKeyConfiguration.getKeyUri()).thenReturn("secondaryUri");
+        when(publicKeyConfiguration.getKeyUri()).thenReturn("firstUri");
+        when(publicKeyConfiguration.getKeyName()).thenReturn("first");
+        when(anotherPublicKeyConfiguration.getKeyUri()).thenReturn("secondUri");
+        when(anotherPublicKeyConfiguration.getKeyName()).thenReturn("second");
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration,secondaryPublicKeyConfiguration, ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(ImmutableList.of(publicKeyConfiguration, anotherPublicKeyConfiguration), ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
 
-        String primaryEncryptionCertificateValue = certificateStore.getPrimaryEncryptionCertificateValue();
-        String secondaryEncryptionCertificateValue = certificateStore.getSecondaryEncryptionCertificateValue();
+        final List<Certificate> encryptionCertificates = certificateStore.getEncryptionCertificates();
+        String firstEncryptionCertificateValue = encryptionCertificates.get(0).getCertificate();
+        String secondEncryptionCertificateValue = encryptionCertificates.get(1).getCertificate();
 
-        assertThat(primaryEncryptionCertificateValue).isEqualTo(CERTIFICATE_WITHOUT_HEADER);
-        assertThat(secondaryEncryptionCertificateValue).isEqualTo(secondaryCertificateWithoutHeader);
+        assertThat(ImmutableSet.of(firstEncryptionCertificateValue, secondEncryptionCertificateValue))
+                .isEqualTo(ImmutableSet.of(CERTIFICATE_WITHOUT_HEADER, secondCertificateWithoutHeader));
     }
 
     @Test
@@ -81,7 +85,7 @@ public class CertificateStoreTest {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(CERTIFICATE_WITH_HEADER.getBytes("UTF-8"));
         when(publicKeyFileInputStreamFactory.createInputStream("uri")).thenReturn(byteArrayInputStream);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration, publicKeyConfiguration, ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(ImmutableList.of(publicKeyConfiguration), ImmutableList.of(publicKeyConfiguration), publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
         when(publicKeyConfiguration.getKeyName()).thenReturn("primary");
 
@@ -103,7 +107,7 @@ public class CertificateStoreTest {
         when(publicKeyFileInputStreamFactory.createInputStream("uri1")).thenReturn(byteArrayInputStream1);
         when(publicKeyFileInputStreamFactory.createInputStream("uri2")).thenReturn(byteArrayInputStream2);
 
-        CertificateStore certificateStore = new CertificateStore(publicKeyConfiguration, publicKeyConfiguration, ImmutableList.of(publicKeyConfiguration, secondaryPublicKeyConfiguration), publicKeyFileInputStreamFactory);
+        CertificateStore certificateStore = new CertificateStore(ImmutableList.of(publicKeyConfiguration), ImmutableList.of(publicKeyConfiguration, secondaryPublicKeyConfiguration), publicKeyFileInputStreamFactory);
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri1");
         when(publicKeyConfiguration.getKeyName()).thenReturn("primary");
         when(secondaryPublicKeyConfiguration.getKeyUri()).thenReturn("uri2");

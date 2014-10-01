@@ -13,29 +13,26 @@ import static com.google.common.base.Throwables.propagate;
 public class CertificateStore {
     public static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
-    private final PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration;
-    private final PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration;
+    private final List<PublicKeyConfiguration> publicEncryptionKeyConfigurations;
     private final List<PublicKeyConfiguration> publicSigningKeyConfigurations;
     private final PublicKeyInputStreamFactory publicKeyInputStreamFactory;
 
     public CertificateStore(
-            PublicKeyConfiguration primaryPublicEncryptionKeyConfiguration,
-            PublicKeyConfiguration secondaryPublicEncryptionKeyConfiguration,
+            List<PublicKeyConfiguration> publicEncryptionKeyConfigurations,
             List<PublicKeyConfiguration> publicSigningKeyConfiguration,
             PublicKeyInputStreamFactory publicKeyInputStreamFactory) {
 
-        this.primaryPublicEncryptionKeyConfiguration = primaryPublicEncryptionKeyConfiguration;
-        this.secondaryPublicEncryptionKeyConfiguration = secondaryPublicEncryptionKeyConfiguration;
+        this.publicEncryptionKeyConfigurations = publicEncryptionKeyConfigurations;
         this.publicSigningKeyConfigurations = publicSigningKeyConfiguration;
         this.publicKeyInputStreamFactory = publicKeyInputStreamFactory;
     }
 
-    public String getPrimaryEncryptionCertificateValue() {
-        return getCertificate(primaryPublicEncryptionKeyConfiguration);
-    }
-
-    public String getSecondaryEncryptionCertificateValue() {
-        return getCertificate(secondaryPublicEncryptionKeyConfiguration);
+    public List<Certificate> getEncryptionCertificates() {
+        List<Certificate> certs = new ArrayList<>();
+        for (PublicKeyConfiguration certConfig : publicEncryptionKeyConfigurations) {
+            certs.add(new Certificate(certConfig.getKeyName(), getCertificate(certConfig), Certificate.KeyUse.Encryption));
+        }
+        return certs;
     }
 
     public List<Certificate> getSigningCertificateValues() {
@@ -48,7 +45,6 @@ public class CertificateStore {
 
     private String getCertificate(PublicKeyConfiguration configuration) {
         try (InputStream inputStream = publicKeyInputStreamFactory.createInputStream(configuration.getKeyUri())) {
-
             String originalCertificate = StringUtils.newStringUtf8(FileUtils.readStream(inputStream));
             return stripHeaders(originalCertificate);
         } catch (IOException e) {
