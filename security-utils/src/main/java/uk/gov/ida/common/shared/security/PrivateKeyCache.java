@@ -22,17 +22,6 @@ public class PrivateKeyCache implements PrivateKeyStore {
         getKeys();
     }
 
-    @Deprecated
-    public PrivateKeyCache(
-            KeyConfiguration signingKeyConfiguration,
-            KeyConfiguration primaryEncryptionKeyConfiguration,
-            KeyConfiguration secondaryEncryptionKeyConfiguration,
-            PrivateKeyFactory privateKeyFactory,
-            NumberedPipeReader numberedPipeReader,
-            boolean secureKeyManagementEnabled) {
-        this(numberedPipeReader);
-    }
-
     @Override
     public PrivateKey getSigningPrivateKey() {
         return signingKey;
