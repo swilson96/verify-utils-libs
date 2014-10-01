@@ -35,7 +35,7 @@ public class CertificateStore {
         return certs;
     }
 
-    public List<Certificate> getSigningCertificateValues() {
+    public List<Certificate> getSigningCertificates() {
         List<Certificate> certs = new ArrayList<>();
         for (PublicKeyConfiguration certConfig : publicSigningKeyConfigurations) {
             certs.add(new Certificate(certConfig.getKeyName(), getCertificate(certConfig), Certificate.KeyUse.Signing));

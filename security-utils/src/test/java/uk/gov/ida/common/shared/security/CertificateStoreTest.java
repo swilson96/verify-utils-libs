@@ -89,7 +89,7 @@ public class CertificateStoreTest {
         when(publicKeyConfiguration.getKeyUri()).thenReturn("uri");
         when(publicKeyConfiguration.getKeyName()).thenReturn("primary");
 
-        List<Certificate> signingCertificateValues = certificateStore.getSigningCertificateValues();
+        List<Certificate> signingCertificateValues = certificateStore.getSigningCertificates();
 
         assertThat(signingCertificateValues).hasSize(1);
 
@@ -113,7 +113,7 @@ public class CertificateStoreTest {
         when(secondaryPublicKeyConfiguration.getKeyUri()).thenReturn("uri2");
         when(secondaryPublicKeyConfiguration.getKeyName()).thenReturn("secondary");
 
-        List<Certificate> signingCertificateValues = certificateStore.getSigningCertificateValues();
+        List<Certificate> signingCertificateValues = certificateStore.getSigningCertificates();
 
         assertThat(signingCertificateValues).hasSize(2);
 
