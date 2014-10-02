@@ -1,4 +1,4 @@
-package uk.gov.ida.shared.rest.truststore;
+package uk.gov.ida.truststore;
 
 import org.junit.Before;
 import org.junit.Test;
