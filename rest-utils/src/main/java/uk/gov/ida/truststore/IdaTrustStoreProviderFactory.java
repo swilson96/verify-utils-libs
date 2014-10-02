@@ -12,6 +12,6 @@ package uk.gov.ida.truststore;
  */
 public class IdaTrustStoreProviderFactory {
     public IdaTrustStoreProvider create(ClientTrustStoreConfiguration clientTrustStoreConfiguration) {
-        return new IdaTrustStoreProvider(clientTrustStoreConfiguration);
+        return new IdaTrustStoreProvider(clientTrustStoreConfiguration, new KeyStoreLoader());
     }
 }
