@@ -1,4 +1,4 @@
-package uk.gov.ida.shared.rest.truststore;
+package uk.gov.ida.truststore;
 
 
 import com.google.common.base.Throwables;
@@ -6,8 +6,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import uk.gov.ida.truststore.ClientTrustStoreConfiguration;
-import uk.gov.ida.truststore.IdaTrustStore;
 
 import java.security.KeyStore;
 import java.util.concurrent.Callable;

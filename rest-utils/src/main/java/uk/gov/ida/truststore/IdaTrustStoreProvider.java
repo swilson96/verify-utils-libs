@@ -1,4 +1,4 @@
-package uk.gov.ida.shared.rest.truststore;
+package uk.gov.ida.truststore;
 
 
 import com.google.inject.Inject;
