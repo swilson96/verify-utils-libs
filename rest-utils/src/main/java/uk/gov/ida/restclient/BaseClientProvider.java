@@ -1,12 +1,14 @@
 package uk.gov.ida.restclient;
 
+import com.google.common.base.Optional;
 import com.google.inject.Provider;
 import com.sun.jersey.api.client.Client;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
-import uk.gov.ida.truststore.IdaTrustStore;
+
+import java.security.KeyStore;
 
 public abstract class BaseClientProvider implements Provider<Client> {
 
@@ -16,7 +18,7 @@ public abstract class BaseClientProvider implements Provider<Client> {
             Environment environment,
             boolean doesAcceptSelfSignedCerts,
             JerseyClientConfiguration jerseyClientConfiguration,
-            IdaTrustStore idaTrustStore,
+            Optional<KeyStore> idaTrustStore,
             boolean enableStaleConnectionCheck,
             boolean retryTimeOutExceptions,
             String clientName) {

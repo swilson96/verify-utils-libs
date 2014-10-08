@@ -12,17 +12,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.configuration.DependentServiceConfiguration;
 import uk.gov.ida.restclient.RestfulClientConfiguration;
 import uk.gov.ida.truststore.ClientTrustStoreConfiguration;
-import uk.gov.ida.truststore.IdaTrustStoreProvider;
-import uk.gov.ida.truststore.IdaTrustStoreProviderFactory;
+import uk.gov.ida.truststore.KeyStoreProvider;
+import uk.gov.ida.truststore.KeyStoreProviderFactory;
 
 import static org.mockito.Answers.RETURNS_MOCKS;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static uk.gov.ida.configuration.DependentServiceConfigurationBuilder.aDependentServiceConfiguration;
 import static uk.gov.ida.jerseyclient.JerseyClientConfigurationBuilder.aJerseyClientConfiguration;
 
@@ -32,19 +28,19 @@ public class DependentServiceHealthCheckBundleTest {
     @Mock(answer = RETURNS_MOCKS)
     private Environment environment;
     @Mock
-    private IdaTrustStoreProviderFactory idaTrustStoreProviderFactory;
+    private KeyStoreProviderFactory trustStoreProviderFactory;
 
     private DependentServiceHealthCheckBundle bundle;
 
     @Before
     public void setUp() throws Exception {
-        bundle = new DependentServiceHealthCheckBundle(idaTrustStoreProviderFactory);
+        bundle = new DependentServiceHealthCheckBundle(trustStoreProviderFactory);
     }
 
     @Test
     public void run_shouldAddDependentServiceHealthChecksForAllDependentServiceConfigurations() throws Exception {
-        when(idaTrustStoreProviderFactory.create(any(ClientTrustStoreConfiguration.class)))
-                .thenReturn(mock(IdaTrustStoreProvider.class));
+        when(trustStoreProviderFactory.create(any(ClientTrustStoreConfiguration.class)))
+                .thenReturn(mock(KeyStoreProvider.class));
 
         HealthCheckRegistry healthCheckRegistry = mock(HealthCheckRegistry.class);
         when(environment.healthChecks()).thenReturn(healthCheckRegistry);

@@ -1,17 +1,18 @@
 package uk.gov.ida.restclient;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.truststore.IdaTrustStore;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -24,7 +25,7 @@ public abstract class SecureSSLClientConfigurationBuilder {
 
     public static SecureSSLClientConfiguration aConfigWithSecureSSLSchemeRegistry(
             SSLContext sslContext,
-            IdaTrustStore idaTrustStore) {
+            Optional<KeyStore> idaTrustStore) {
 
         final TrustManager[] trustManagers = getTrustManagers(idaTrustStore);
         try {
@@ -41,12 +42,12 @@ public abstract class SecureSSLClientConfigurationBuilder {
         return new SecureSSLClientConfiguration(schemeRegistry, new HashMap<String, Object>());
     }
 
-    private static TrustManager[] getTrustManagers(IdaTrustStore idaTrustStore) {
-        if (idaTrustStore.getKeyStore().isPresent()) {
+    private static TrustManager[] getTrustManagers(Optional<KeyStore> idaTrustStore) {
+        if (idaTrustStore.isPresent()) {
             try {
                 final TrustManagerFactory trustManagerFactory =
                         TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                trustManagerFactory.init(idaTrustStore.getKeyStore().get());
+                trustManagerFactory.init(idaTrustStore.get());
                 return trustManagerFactory.getTrustManagers();
             } catch (NoSuchAlgorithmException | KeyStoreException e) {
                 throw Throwables.propagate(e);

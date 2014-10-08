@@ -1,5 +1,6 @@
 package uk.gov.ida.restclient;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
@@ -9,9 +10,9 @@ import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.truststore.IdaTrustStore;
 
 import javax.net.ssl.SSLContext;
+import java.security.KeyStore;
 
 import static uk.gov.ida.restclient.IdaClientBuilder.anIdaJerseyClientWithScheme;
 import static uk.gov.ida.restclient.SecureSSLClientConfigurationBuilder.aConfigWithSecureSSLSchemeRegistry;
@@ -23,14 +24,14 @@ public class SecureSSLJerseyClientBuilder {
 
     private final Environment environment;
     private final JerseyClientConfiguration jerseyClientConfiguration;
-    private final IdaTrustStore idaTrustStore;
+    private final Optional<KeyStore> idaTrustStore;
     private boolean enableStaleConnectionCheck;
     private final HttpRequestRetryHandler retryHandler;
 
     public SecureSSLJerseyClientBuilder(
             Environment environment,
             JerseyClientConfiguration jerseyClientConfiguration,
-            IdaTrustStore idaTrustStore,
+            Optional<KeyStore> idaTrustStore,
             boolean enableStaleConnectionCheck,
             HttpRequestRetryHandler retryHandler) {
 
