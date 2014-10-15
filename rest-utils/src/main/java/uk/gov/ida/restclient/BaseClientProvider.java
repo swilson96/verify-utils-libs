@@ -51,7 +51,6 @@ public abstract class BaseClientProvider implements Provider<Client> {
 
         client = new IdaJerseyClientBuilder(environment, enableStaleConnectionCheck)
                 .using(jerseyClientConfiguration)
-                .using(environment)
                 .using(schemeRegistry)
                 .using(retryHandler)
                 .withProperty(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties)
