@@ -12,13 +12,12 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import java.security.KeyManagementException;
-import java.util.HashMap;
 
-public abstract class InsecureSSLClientConfigurationBuilder {
+public abstract class InsecureSSLSchemeRegistryBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InsecureSSLClientConfigurationBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InsecureSSLSchemeRegistryBuilder.class);
 
-    public static InsecureSSLClientConfiguration aConfigWithInsecureSSLSchemeRegistry(
+    public static SchemeRegistry aConfigWithInsecureSSLSchemeRegistry(
             SSLContext sslContext){
 
         final TrustManager[] trustManagers = getTrustManagers();
@@ -34,8 +33,7 @@ public abstract class InsecureSSLClientConfigurationBuilder {
         final SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(http);
         schemeRegistry.register(https);
-
-        return new InsecureSSLClientConfiguration(schemeRegistry, new HashMap<String, Object>());
+        return schemeRegistry;
     }
 
     private static TrustManager[] getTrustManagers() {

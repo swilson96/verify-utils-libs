@@ -16,14 +16,13 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.HashMap;
 
-public abstract class SecureSSLClientConfigurationBuilder {
+public abstract class SecureSSLSchemeRegistryBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SecureSSLClientConfigurationBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SecureSSLSchemeRegistryBuilder.class);
     public static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    public static SecureSSLClientConfiguration aConfigWithSecureSSLSchemeRegistry(
+    public static SchemeRegistry aConfigWithSecureSSLSchemeRegistry(
             SSLContext sslContext,
             Optional<KeyStore> idaTrustStore) {
 
@@ -39,7 +38,7 @@ public abstract class SecureSSLClientConfigurationBuilder {
         final SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(https);
 
-        return new SecureSSLClientConfiguration(schemeRegistry, new HashMap<String, Object>());
+        return schemeRegistry;
     }
 
     private static TrustManager[] getTrustManagers(Optional<KeyStore> idaTrustStore) {
