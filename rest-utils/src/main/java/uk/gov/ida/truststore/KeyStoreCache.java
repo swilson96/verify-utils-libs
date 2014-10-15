@@ -32,8 +32,7 @@ public class KeyStoreCache {
             return trustStoreCache.get(storeUri, new Callable<KeyStore>() {
                 @Override
                 public KeyStore call() throws Exception {
-                    KeyStore ks = keyStoreLoader.load(storeUri, password);
-                    return ks;
+                    return keyStoreLoader.load(storeUri, password);
                 }
             });
         } catch (ExecutionException e) {
