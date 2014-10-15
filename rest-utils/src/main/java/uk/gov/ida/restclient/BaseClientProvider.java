@@ -33,9 +33,11 @@ public abstract class BaseClientProvider implements Provider<Client> {
             boolean retryTimeOutExceptions,
             String clientName) {
 
-        HttpRequestRetryHandler retryHandler = new StandardHttpRequestRetryHandler(0, false);
+        HttpRequestRetryHandler retryHandler;
         if (retryTimeOutExceptions) {
             retryHandler = new TimeoutRequestRetryHandler(jerseyClientConfiguration.getRetries());
+        } else {
+            retryHandler = new StandardHttpRequestRetryHandler(0, false);
         }
 
         SSLContext sslContext = getSslContext();
