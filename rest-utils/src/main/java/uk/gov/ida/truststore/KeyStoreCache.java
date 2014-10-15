@@ -1,7 +1,6 @@
 package uk.gov.ida.truststore;
 
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -16,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 public class KeyStoreCache {
 
 
-    private final Cache<String, Optional<KeyStore>> trustStoreCache;
+    private final Cache<String, KeyStore> trustStoreCache;
     private final KeyStoreLoader keyStoreLoader;
     @Inject
     public KeyStoreCache(KeyStoreLoader keyStoreLoader) {
@@ -24,17 +23,17 @@ public class KeyStoreCache {
         trustStoreCache = CacheBuilder.newBuilder().build();
     }
 
-    public Optional<KeyStore> get(final ClientTrustStoreConfiguration configuration) {
+    public KeyStore get(final ClientTrustStoreConfiguration configuration) {
 
         final String storeUri = configuration.getStoreUri();
         final String password = configuration.getPassword();
 
         try {
-            return trustStoreCache.get(storeUri, new Callable<Optional<KeyStore>>() {
+            return trustStoreCache.get(storeUri, new Callable<KeyStore>() {
                 @Override
-                public Optional<KeyStore> call() throws Exception {
+                public KeyStore call() throws Exception {
                     KeyStore ks = keyStoreLoader.load(storeUri, password);
-                    return Optional.fromNullable(ks);
+                    return ks;
                 }
             });
         } catch (ExecutionException e) {

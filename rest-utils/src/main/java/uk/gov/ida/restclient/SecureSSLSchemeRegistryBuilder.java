@@ -1,6 +1,5 @@
 package uk.gov.ida.restclient;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -24,9 +23,9 @@ public abstract class SecureSSLSchemeRegistryBuilder {
 
     public static SchemeRegistry aConfigWithSecureSSLSchemeRegistry(
             SSLContext sslContext,
-            Optional<KeyStore> idaTrustStore) {
+            KeyStore trustStore) {
 
-        final TrustManager[] trustManagers = getTrustManagers(idaTrustStore);
+        final TrustManager[] trustManagers = getTrustManagers(trustStore);
         try {
             sslContext.init(null, trustManagers, SECURE_RANDOM);
         } catch (KeyManagementException e){
@@ -41,17 +40,14 @@ public abstract class SecureSSLSchemeRegistryBuilder {
         return schemeRegistry;
     }
 
-    private static TrustManager[] getTrustManagers(Optional<KeyStore> idaTrustStore) {
-        if (idaTrustStore.isPresent()) {
-            try {
-                final TrustManagerFactory trustManagerFactory =
-                        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                trustManagerFactory.init(idaTrustStore.get());
-                return trustManagerFactory.getTrustManagers();
-            } catch (NoSuchAlgorithmException | KeyStoreException e) {
-                throw Throwables.propagate(e);
-            }
+    private static TrustManager[] getTrustManagers(KeyStore trustStore) {
+        try {
+            final TrustManagerFactory trustManagerFactory =
+                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(trustStore);
+            return trustManagerFactory.getTrustManagers();
+        } catch (NoSuchAlgorithmException | KeyStoreException e) {
+            throw Throwables.propagate(e);
         }
-        return null;
     }
 }

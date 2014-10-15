@@ -1,6 +1,5 @@
 package uk.gov.ida.truststore;
 
-import com.google.common.base.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,8 +34,8 @@ public class KeyStoreCacheTest {
     @Test
     public void shouldLoadKeyStoreIfNotAlreadyLoaded() throws Exception {
         when(keyStoreLoader.load(configuration.getStoreUri(), configuration.getPassword())).thenReturn(keyStore);
-        Optional<KeyStore> keyStoreOptional = keyStoreCache.get(configuration);
-        assertThat(keyStoreOptional.get()).isEqualTo(keyStore);
+        KeyStore keyStore = keyStoreCache.get(configuration);
+        assertThat(keyStore).isEqualTo(this.keyStore);
     }
 
     @Test

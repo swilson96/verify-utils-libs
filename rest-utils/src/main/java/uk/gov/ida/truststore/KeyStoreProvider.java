@@ -1,13 +1,12 @@
 package uk.gov.ida.truststore;
 
 
-import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import java.security.KeyStore;
 
-public class KeyStoreProvider implements Provider<Optional<KeyStore>> {
+public class KeyStoreProvider implements Provider<KeyStore> {
 
     private final ClientTrustStoreConfiguration configuration;
     private final KeyStoreLoader keyStoreLoader;
@@ -19,8 +18,8 @@ public class KeyStoreProvider implements Provider<Optional<KeyStore>> {
     }
 
     @Override
-    public Optional<KeyStore> get() {
+    public KeyStore get() {
         KeyStore ks = keyStoreLoader.load(configuration.getStoreUri(), configuration.getPassword());
-        return Optional.fromNullable(ks);
+        return ks;
     }
 }

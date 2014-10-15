@@ -1,6 +1,5 @@
 package uk.gov.ida.restclient;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
@@ -30,7 +29,7 @@ public abstract class BaseClientProvider implements Provider<Client> {
             Environment environment,
             boolean doesAcceptSelfSignedCerts,
             JerseyClientConfiguration jerseyClientConfiguration,
-            Optional<KeyStore> idaTrustStore,
+            KeyStore idaTrustStore,
             boolean enableStaleConnectionCheck,
             boolean retryTimeOutExceptions,
             String clientName) {

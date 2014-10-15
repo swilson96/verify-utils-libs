@@ -11,7 +11,7 @@ public class DependentServiceHealthCheckClientProvider extends BaseClientProvide
     public DependentServiceHealthCheckClientProvider(
             final Environment environment,
             final RestfulClientConfiguration configuration,
-            final Optional<KeyStore> trustStore) {
+            final KeyStore trustStore) {
 
         super(
                 environment,

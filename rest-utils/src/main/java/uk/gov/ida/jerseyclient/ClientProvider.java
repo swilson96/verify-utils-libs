@@ -1,6 +1,5 @@
 package uk.gov.ida.jerseyclient;
 
-import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import io.dropwizard.setup.Environment;
 import uk.gov.ida.restclient.BaseClientProvider;
@@ -14,7 +13,7 @@ public class ClientProvider extends BaseClientProvider {
     public ClientProvider(
             Environment environment,
             RestfulClientConfiguration baseConfiguration,
-            Optional<KeyStore> idaTrustStore) {
+            KeyStore idaTrustStore) {
 
         super(
                 environment,

@@ -68,7 +68,7 @@ public class DependentServiceHealthCheckBundle implements ConfiguredBundle<Restf
             final RestfulClientConfiguration configuration,
             final Environment environment) {
 
-        final Optional<KeyStore> trustStore = getTrustStore(configuration);
+        final KeyStore trustStore = getTrustStore(configuration);
         BaseClientProvider clientProvider = new DependentServiceHealthCheckClientProvider(
                 environment,
                 configuration,
@@ -77,7 +77,7 @@ public class DependentServiceHealthCheckBundle implements ConfiguredBundle<Restf
         return clientProvider.get();
     }
 
-    private Optional<KeyStore> getTrustStore(final RestfulClientConfiguration configuration) {
+    private KeyStore getTrustStore(final RestfulClientConfiguration configuration) {
         final KeyStoreProvider idaTrustStoreProvider =
                 trustStoreProviderFactory.create(configuration.getClientTrustStoreConfiguration());
         return idaTrustStoreProvider.get();
