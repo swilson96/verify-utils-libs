@@ -19,7 +19,6 @@ public class KeyStoreProvider implements Provider<KeyStore> {
 
     @Override
     public KeyStore get() {
-        KeyStore ks = keyStoreLoader.load(configuration.getStoreUri(), configuration.getPassword());
-        return ks;
+        return keyStoreLoader.load(configuration.getStoreUri(), configuration.getPassword());
     }
 }
