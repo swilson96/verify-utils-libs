@@ -1,5 +1,6 @@
 package uk.gov.ida.healthcheck;
 
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.sun.jersey.api.client.Client;
 import io.dropwizard.ConfiguredBundle;
@@ -8,22 +9,22 @@ import io.dropwizard.setup.Environment;
 import uk.gov.ida.configuration.DependentServiceConfiguration;
 import uk.gov.ida.restclient.BaseClientProvider;
 import uk.gov.ida.restclient.RestfulClientConfiguration;
-import uk.gov.ida.truststore.IdaTrustStore;
-import uk.gov.ida.truststore.IdaTrustStoreProvider;
-import uk.gov.ida.truststore.IdaTrustStoreProviderFactory;
+import uk.gov.ida.truststore.KeyStoreProvider;
+import uk.gov.ida.truststore.KeyStoreProviderFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DependentServiceHealthCheckBundle implements ConfiguredBundle<RestfulClientConfiguration> {
 
-    private IdaTrustStoreProviderFactory trustStoreProviderFactory;
+    private KeyStoreProviderFactory trustStoreProviderFactory;
 
     @Inject
     public DependentServiceHealthCheckBundle(
-            IdaTrustStoreProviderFactory trustStoreProviderFactory) {
+            KeyStoreProviderFactory trustStoreProviderFactory) {
 
         this.trustStoreProviderFactory = trustStoreProviderFactory;
     }
@@ -67,7 +68,7 @@ public class DependentServiceHealthCheckBundle implements ConfiguredBundle<Restf
             final RestfulClientConfiguration configuration,
             final Environment environment) {
 
-        final IdaTrustStore trustStore = getTrustStore(configuration);
+        final KeyStore trustStore = getTrustStore(configuration);
         BaseClientProvider clientProvider = new DependentServiceHealthCheckClientProvider(
                 environment,
                 configuration,
@@ -76,8 +77,8 @@ public class DependentServiceHealthCheckBundle implements ConfiguredBundle<Restf
         return clientProvider.get();
     }
 
-    private IdaTrustStore getTrustStore(final RestfulClientConfiguration configuration) {
-        final IdaTrustStoreProvider idaTrustStoreProvider =
+    private KeyStore getTrustStore(final RestfulClientConfiguration configuration) {
+        final KeyStoreProvider idaTrustStoreProvider =
                 trustStoreProviderFactory.create(configuration.getClientTrustStoreConfiguration());
         return idaTrustStoreProvider.get();
     }

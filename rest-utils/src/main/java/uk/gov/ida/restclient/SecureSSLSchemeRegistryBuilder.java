@@ -6,12 +6,12 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.truststore.IdaTrustStore;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -23,9 +23,9 @@ public abstract class SecureSSLSchemeRegistryBuilder {
 
     public static SchemeRegistry aConfigWithSecureSSLSchemeRegistry(
             SSLContext sslContext,
-            IdaTrustStore idaTrustStore) {
+            KeyStore trustStore) {
 
-        final TrustManager[] trustManagers = getTrustManagers(idaTrustStore);
+        final TrustManager[] trustManagers = getTrustManagers(trustStore);
         try {
             sslContext.init(null, trustManagers, SECURE_RANDOM);
         } catch (KeyManagementException e){
@@ -40,17 +40,14 @@ public abstract class SecureSSLSchemeRegistryBuilder {
         return schemeRegistry;
     }
 
-    private static TrustManager[] getTrustManagers(IdaTrustStore idaTrustStore) {
-        if (idaTrustStore.getKeyStore().isPresent()) {
-            try {
-                final TrustManagerFactory trustManagerFactory =
-                        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                trustManagerFactory.init(idaTrustStore.getKeyStore().get());
-                return trustManagerFactory.getTrustManagers();
-            } catch (NoSuchAlgorithmException | KeyStoreException e) {
-                throw Throwables.propagate(e);
-            }
+    private static TrustManager[] getTrustManagers(KeyStore trustStore) {
+        try {
+            final TrustManagerFactory trustManagerFactory =
+                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(trustStore);
+            return trustManagerFactory.getTrustManagers();
+        } catch (NoSuchAlgorithmException | KeyStoreException e) {
+            throw Throwables.propagate(e);
         }
-        return null;
     }
 }
