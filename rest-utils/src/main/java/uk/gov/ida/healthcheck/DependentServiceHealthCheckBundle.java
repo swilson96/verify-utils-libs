@@ -1,6 +1,5 @@
 package uk.gov.ida.healthcheck;
 
-import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.sun.jersey.api.client.Client;
 import io.dropwizard.ConfiguredBundle;
@@ -78,9 +77,9 @@ public class DependentServiceHealthCheckBundle implements ConfiguredBundle<Restf
     }
 
     private KeyStore getTrustStore(final RestfulClientConfiguration configuration) {
-        final KeyStoreProvider idaTrustStoreProvider =
+        final KeyStoreProvider trustStoreProvider =
                 trustStoreProviderFactory.create(configuration.getClientTrustStoreConfiguration());
-        return idaTrustStoreProvider.get();
+        return trustStoreProvider.get();
     }
 
     private List<DependentServiceConfiguration> getDependentServices(

@@ -12,9 +12,8 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 
-import java.security.KeyStore;
-
 import javax.net.ssl.SSLContext;
+import java.security.KeyStore;
 import java.util.Map;
 
 import static uk.gov.ida.restclient.IdaClientBuilder.anIdaJerseyClientWithScheme;
@@ -29,7 +28,7 @@ public abstract class BaseClientProvider implements Provider<Client> {
             Environment environment,
             boolean doesAcceptSelfSignedCerts,
             JerseyClientConfiguration jerseyClientConfiguration,
-            KeyStore idaTrustStore,
+            KeyStore trustStore,
             boolean enableStaleConnectionCheck,
             boolean retryTimeOutExceptions,
             String clientName) {
@@ -44,7 +43,7 @@ public abstract class BaseClientProvider implements Provider<Client> {
         if (doesAcceptSelfSignedCerts) {
             schemeRegistry = aConfigWithInsecureSSLSchemeRegistry(sslContext);
         } else {
-            schemeRegistry = aConfigWithSecureSSLSchemeRegistry(sslContext,idaTrustStore);
+            schemeRegistry = aConfigWithSecureSSLSchemeRegistry(sslContext, trustStore);
 
         }
         Map<String, Object> configurationProperties = allowAllHostnameProperties(sslContext);

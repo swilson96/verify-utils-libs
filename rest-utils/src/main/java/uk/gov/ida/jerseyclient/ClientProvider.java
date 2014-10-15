@@ -13,13 +13,13 @@ public class ClientProvider extends BaseClientProvider {
     public ClientProvider(
             Environment environment,
             RestfulClientConfiguration baseConfiguration,
-            KeyStore idaTrustStore) {
+            KeyStore trustStore) {
 
         super(
                 environment,
                 baseConfiguration.doesAcceptSelfSignedCerts(),
                 baseConfiguration.getJerseyClientConfiguration(),
-                idaTrustStore,
+                trustStore,
                 baseConfiguration.getEnableStaleConnectionCheck(),
                 baseConfiguration.getEnableRetryTimeOutConnections(),
                 "MicroServiceClient"
