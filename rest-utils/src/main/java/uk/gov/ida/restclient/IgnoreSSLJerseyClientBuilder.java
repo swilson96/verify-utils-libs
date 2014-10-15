@@ -1,19 +1,23 @@
 package uk.gov.ida.restclient;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 
+import java.util.Map;
+
 import static uk.gov.ida.restclient.IdaClientBuilder.anIdaJerseyClientWithScheme;
-import static uk.gov.ida.restclient.InsecureSSLClientConfigurationBuilder.aConfigWithInsecureSSLSchemeRegistry;
+import static uk.gov.ida.restclient.InsecureSSLSchemeRegistryBuilder.aConfigWithInsecureSSLSchemeRegistry;
 
 
 public class IgnoreSSLJerseyClientBuilder {
@@ -37,19 +41,19 @@ public class IgnoreSSLJerseyClientBuilder {
     }
 
     public Client build(String clientName) {
-        InsecureSSLClientConfiguration insecureSSLClientConfiguration = getInsecureSSLClientConfiguration();
+        SSLClientConfiguration sslClientConfiguration = getInsecureSSLClientConfiguration();
         return anIdaJerseyClientWithScheme(
-            environment,
-            jerseyClientConfiguration,
-            insecureSSLClientConfiguration.getSchemeRegistry(),
-            insecureSSLClientConfiguration.getConfigurationProperties(),
-            clientName,
-            enableStaleConnectionCheck,
-            retryHandler
+                environment,
+                jerseyClientConfiguration,
+                sslClientConfiguration.getSchemeRegistry(),
+                sslClientConfiguration.getConfigurationProperties(),
+                clientName,
+                enableStaleConnectionCheck,
+                retryHandler
         );
     }
 
-    private InsecureSSLClientConfiguration getInsecureSSLClientConfiguration() {
+    private SSLClientConfiguration getInsecureSSLClientConfiguration() {
         SSLContext sslContext;
         try {
             sslContext = SSLContext.getInstance("TLSv1.2");
@@ -57,12 +61,12 @@ public class IgnoreSSLJerseyClientBuilder {
             LOG.error("Error creating SSL context.", e);
             throw Throwables.propagate(e);
         }
-        InsecureSSLClientConfiguration insecureSSLClientConfiguration = aConfigWithInsecureSSLSchemeRegistry(
+        SchemeRegistry schemeRegistry = aConfigWithInsecureSSLSchemeRegistry(
                 sslContext
         );
 
         HTTPSProperties httpsProperties = new HTTPSProperties(new AllowAllHostnameVerifier(), sslContext);
-        insecureSSLClientConfiguration.addProperty(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
-        return insecureSSLClientConfiguration;
+        Map<String, Object> configurationProperties = ImmutableMap.<String, Object>of(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
+        return new SSLClientConfiguration(schemeRegistry, configurationProperties);
     }
 }

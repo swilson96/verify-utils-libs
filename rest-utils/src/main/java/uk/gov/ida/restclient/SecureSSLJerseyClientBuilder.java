@@ -1,11 +1,13 @@
 package uk.gov.ida.restclient;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +15,10 @@ import uk.gov.ida.truststore.IdaTrustStore;
 
 import javax.net.ssl.SSLContext;
 
+import java.util.Map;
+
 import static uk.gov.ida.restclient.IdaClientBuilder.anIdaJerseyClientWithScheme;
-import static uk.gov.ida.restclient.SecureSSLClientConfigurationBuilder.aConfigWithSecureSSLSchemeRegistry;
+import static uk.gov.ida.restclient.SecureSSLSchemeRegistryBuilder.aConfigWithSecureSSLSchemeRegistry;
 
 
 public class SecureSSLJerseyClientBuilder {
@@ -42,18 +46,18 @@ public class SecureSSLJerseyClientBuilder {
     }
 
     public Client build(String clientName) {
-        SecureSSLClientConfiguration secureSSLClientConfiguration = getSecureSSLClientConfiguration();
+        SSLClientConfiguration sslClientConfiguration = getSecureSSLClientConfiguration();
         return anIdaJerseyClientWithScheme(
                 environment,
                 jerseyClientConfiguration,
-                secureSSLClientConfiguration.getSchemeRegistry(),
-                secureSSLClientConfiguration.getConfigurationProperties(),
+                sslClientConfiguration.getSchemeRegistry(),
+                sslClientConfiguration.getConfigurationProperties(),
                 clientName,
                 enableStaleConnectionCheck,
                 retryHandler);
     }
 
-    private SecureSSLClientConfiguration getSecureSSLClientConfiguration() {
+    private SSLClientConfiguration getSecureSSLClientConfiguration() {
         SSLContext sslContext;
         try {
             sslContext = SSLContext.getInstance("TLSv1.2");
@@ -61,13 +65,13 @@ public class SecureSSLJerseyClientBuilder {
             LOG.error("Error creating SSL context.", e);
             throw Throwables.propagate(e);
         }
-        SecureSSLClientConfiguration secureSSLClientConfiguration = aConfigWithSecureSSLSchemeRegistry(
+        SchemeRegistry schemeRegistry = aConfigWithSecureSSLSchemeRegistry(
                 sslContext,
                 idaTrustStore
         );
 
         HTTPSProperties httpsProperties = new HTTPSProperties(new AllowAllHostnameVerifier(), sslContext);
-        secureSSLClientConfiguration.addProperty(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
-        return secureSSLClientConfiguration;
+        Map<String, Object> configurationProperties = ImmutableMap.<String, Object>of(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
+        return new SSLClientConfiguration(schemeRegistry, configurationProperties);
     }
 }
