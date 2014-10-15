@@ -38,54 +38,38 @@ public abstract class BaseClientProvider implements Provider<Client> {
             retryHandler = new TimeoutRequestRetryHandler(jerseyClientConfiguration.getRetries());
         }
 
-        SSLClientConfiguration sslClientConfiguration;
+        SSLContext sslContext = getSslContext();
+        SchemeRegistry schemeRegistry;
         if (doesAcceptSelfSignedCerts) {
-            sslClientConfiguration = getInsecureSSLClientConfiguration();
+            schemeRegistry = aConfigWithInsecureSSLSchemeRegistry(sslContext);
         } else {
-            sslClientConfiguration = getSecureSSLClientConfiguration(idaTrustStore);
+            schemeRegistry = aConfigWithSecureSSLSchemeRegistry(sslContext,idaTrustStore);
+
         }
+        Map<String, Object> configurationProperties = allowAllHostnameProperties(sslContext);
+
         client = anIdaJerseyClientWithScheme(
                 environment,
                 jerseyClientConfiguration,
-                sslClientConfiguration.getSchemeRegistry(),
-                sslClientConfiguration.getConfigurationProperties(),
+                schemeRegistry,
+                configurationProperties,
                 clientName,
                 enableStaleConnectionCheck,
                 retryHandler
         );
     }
 
-    private SSLClientConfiguration getInsecureSSLClientConfiguration() {
-        SSLContext sslContext;
-        try {
-            sslContext = SSLContext.getInstance("TLSv1.2");
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-        SchemeRegistry schemeRegistry = aConfigWithInsecureSSLSchemeRegistry(
-                sslContext
-        );
-
+    private Map<String, Object> allowAllHostnameProperties(SSLContext sslContext) {
         HTTPSProperties httpsProperties = new HTTPSProperties(new AllowAllHostnameVerifier(), sslContext);
-        Map<String, Object> configurationProperties = ImmutableMap.<String, Object>of(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
-        return new SSLClientConfiguration(schemeRegistry, configurationProperties);
+        return ImmutableMap.<String, Object>of(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
     }
 
-    private SSLClientConfiguration getSecureSSLClientConfiguration(IdaTrustStore idaTrustStore) {
-        SSLContext sslContext;
+    private SSLContext getSslContext() {
         try {
-            sslContext = SSLContext.getInstance("TLSv1.2");
+            return SSLContext.getInstance("TLSv1.2");
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-        SchemeRegistry schemeRegistry = aConfigWithSecureSSLSchemeRegistry(
-                sslContext,
-                idaTrustStore
-        );
-
-        HTTPSProperties httpsProperties = new HTTPSProperties(new AllowAllHostnameVerifier(), sslContext);
-        Map<String, Object> configurationProperties = ImmutableMap.<String, Object>of(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
-        return new SSLClientConfiguration(schemeRegistry, configurationProperties);
     }
 
     @Override
