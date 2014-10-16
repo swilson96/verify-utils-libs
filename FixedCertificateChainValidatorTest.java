@@ -4,14 +4,13 @@ import com.google.common.base.Throwables;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.ida.matchingserviceadapter.configuration.verification.CertificateChainValidator;
+import uk.gov.ida.common.shared.security.X509CertificateFactory;
+import uk.gov.ida.common.shared.security.verification.CertificateChainValidator;
+import uk.gov.ida.common.shared.security.verification.PKIXParametersProvider;
+import uk.gov.ida.common.shared.security.verification.exceptions.CertificateChainValidationException;
+import uk.gov.ida.matchingserviceadapter.configuration.verification.FixedCertificateChainValidator;
 import uk.gov.ida.matchingserviceadapter.security.CertificateFactory;
-import uk.gov.ida.matchingserviceadapter.rest.CertificateDto;
-import uk.gov.ida.matchingserviceadapter.rest.transformers.CertificateDtoToX509CertificateTransformer;
-import uk.gov.ida.matchingserviceadapter.exceptions.CertificateChainValidationException;
-import uk.gov.ida.matchingserviceadapter.rest.truststore.IdaTrustStore;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,24 +22,17 @@ import java.security.cert.X509Certificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.ida.matchingserviceadapter.builders.CertificateDtoBuilder.aCertificateDto;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CertificateChainValidatorTest {
+public class FixedCertificateChainValidatorTest {
 
     private CertificateFactory certificateFactory;
-    private CertificateChainValidator certificateChainValidator;
-
-    @Mock
-    private CertificateDtoToX509CertificateTransformer certificateDtoToX509CertificateTransformer;
+    private FixedCertificateChainValidator certificateChainValidator;
 
     @Before
     public void setUp() throws Exception {
         certificateFactory = new CertificateFactory();
-        certificateChainValidator = new CertificateChainValidator(getTrustStore(), certificateDtoToX509CertificateTransformer);
+        certificateChainValidator = new FixedCertificateChainValidator(getTrustStore(), new CertificateChainValidator(new PKIXParametersProvider(), new X509CertificateFactory()));
     }
 
     @Test
@@ -70,26 +62,8 @@ public class CertificateChainValidatorTest {
         );
     }
 
-    @Test
-    public void validate_shouldHandleCertificateDtos() throws Exception {
-        final CertificateDto certificateDto = aCertificateDto().withCertificate(this.encryptionCertString).build();
-        when(certificateDtoToX509CertificateTransformer.transform(any(CertificateDto.class)))
-                .thenReturn(certificateFactory.createCertificate(this.encryptionCertString));
-
-        certificateChainValidator.validate(certificateDto);
-
-        verify(certificateDtoToX509CertificateTransformer).transform(certificateDto);
-    }
-
-    @Test(expected = CertificateChainValidationException.class)
-    public void validate_shouldWrapCertificateExceptionsGeneratedByTransformer() throws Exception {
-        when(certificateDtoToX509CertificateTransformer.transform(any(CertificateDto.class))).thenThrow(new CertificateException());
-
-        certificateChainValidator.validate(aCertificateDto().build());
-    }
-
     private void assertExceptionMessage(
-            CertificateChainValidator validator,
+            FixedCertificateChainValidator validator,
             X509Certificate certificate,
             Class exceptionClass,
             String value) {
@@ -104,7 +78,7 @@ public class CertificateChainValidatorTest {
         fail("Should have thrown exception.");
     }
 
-    public IdaTrustStore getTrustStore() {
+    public KeyStore getTrustStore() {
         KeyStore ks;
         try {
             ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -121,7 +95,7 @@ public class CertificateChainValidatorTest {
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
             throw Throwables.propagate(e);
         }
-        return new IdaTrustStore(ks);
+        return ks;
     }
 
     private final String intermediaryCACertString = "-----BEGIN CERTIFICATE-----\n" +
