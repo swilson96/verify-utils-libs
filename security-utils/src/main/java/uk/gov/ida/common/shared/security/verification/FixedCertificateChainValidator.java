@@ -1,9 +1,8 @@
-package uk.gov.ida.matchingserviceadapter.configuration.verification;
+package uk.gov.ida.common.shared.security.verification;
 
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.common.shared.security.verification.CertificateChainValidator;
 
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;

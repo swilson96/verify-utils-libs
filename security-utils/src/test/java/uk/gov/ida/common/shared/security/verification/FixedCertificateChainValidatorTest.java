@@ -1,4 +1,4 @@
-package uk.gov.ida.matchingserviceadapter.rest.configuration.verification;
+package uk.gov.ida.common.shared.security.verification;
 
 import com.google.common.base.Throwables;
 import org.junit.Before;
@@ -6,11 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
-import uk.gov.ida.common.shared.security.verification.CertificateChainValidator;
-import uk.gov.ida.common.shared.security.verification.PKIXParametersProvider;
 import uk.gov.ida.common.shared.security.verification.exceptions.CertificateChainValidationException;
-import uk.gov.ida.matchingserviceadapter.configuration.verification.FixedCertificateChainValidator;
-import uk.gov.ida.matchingserviceadapter.security.CertificateFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,12 +22,12 @@ import static org.assertj.core.api.Assertions.fail;
 @RunWith(MockitoJUnitRunner.class)
 public class FixedCertificateChainValidatorTest {
 
-    private CertificateFactory certificateFactory;
+    private X509CertificateFactory certificateFactory;
     private FixedCertificateChainValidator certificateChainValidator;
 
     @Before
     public void setUp() throws Exception {
-        certificateFactory = new CertificateFactory();
+        certificateFactory = new X509CertificateFactory();
         certificateChainValidator = new FixedCertificateChainValidator(getTrustStore(), new CertificateChainValidator(new PKIXParametersProvider(), new X509CertificateFactory()));
     }
 

@@ -1,6 +1,7 @@
-package uk.gov.ida.matchingserviceadapter.configuration.verification;
+package uk.gov.ida.common.shared.security.verification;
 
 import com.google.inject.Inject;
+import uk.gov.ida.common.shared.security.verification.FixedCertificateChainValidator;
 
 import java.security.cert.X509Certificate;
 
