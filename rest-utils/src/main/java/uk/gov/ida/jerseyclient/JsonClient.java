@@ -46,6 +46,10 @@ public class JsonClient<TSessionIdType> {
         responseProcessor.getJsonEntity(uriWithRequestId, null, null, executePost(postBody, uriWithRequestId));
     }
 
+    public void post(Object postBody, URI uri) {
+        responseProcessor.getJsonEntity(uri, null, null, executePost(postBody, uri));
+    }
+
     public <T> T get(URI uri, Class<T> clazz) {
         return responseProcessor.getJsonEntity(uri, null, clazz, executeGet(uri));
     }
