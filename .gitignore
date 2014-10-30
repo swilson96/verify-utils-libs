@@ -5,7 +5,6 @@ build
 .idea
 *.iml
 *.ipr
-.sass-cache
 *.iws
 out/**
 # Package Files #
@@ -17,6 +16,5 @@ configuration/erb/
 configuration/local-virtualbox
 configuration/local
 configuration/vagrant/
-hub/frontend/src/main/resources/assets/stylesheets
 jmeter/*errors*.csv
 *.swp
