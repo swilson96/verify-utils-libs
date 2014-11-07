@@ -13,6 +13,8 @@ public interface HubServiceDependencyConfiguration {
 
     ExternalServiceConfiguration getSamlProxy();
 
+    DependentServiceConfiguration getHubSamlProxy();
+
     DependentServiceConfiguration getHubConfig();
 
     ServiceInfoConfiguration getServiceInfo();
