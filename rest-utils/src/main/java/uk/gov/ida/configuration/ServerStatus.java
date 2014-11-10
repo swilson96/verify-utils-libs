@@ -1,10 +1,6 @@
 package uk.gov.ida.configuration;
 
-import com.google.inject.Singleton;
 
-
-
-@Singleton
 public class ServerStatus {
     private static ServerStatus instance = null;
     protected ServerStatus(){
