@@ -9,6 +9,7 @@ dependencies {
             "org.slf4j:slf4j-api:1.7.6",
             'joda-time:joda-time:2.3',
             'org.yaml:snakeyaml:1.10',
-            'javax.validation:validation-api:1.1.0.Final'
+            'javax.validation:validation-api:1.1.0.Final',
+            'log4j:log4j:1.2.14'
 
 }
