@@ -7,7 +7,6 @@ import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.common.CommonUrls;
-import uk.gov.ida.common.SessionId;
 import uk.gov.ida.configuration.DependentServiceConfiguration;
 import uk.gov.ida.exceptions.ApplicationException;
 import uk.gov.ida.jerseyclient.JsonClient;
@@ -40,7 +39,7 @@ public class EventSinkHttpProxy implements EventSinkProxy {
                 .path(path)
                 .build();
         try {
-            jsonClient.post(eventSinkHubEvent, uri, new SessionId(eventSinkHubEvent.getSessionId()));
+            jsonClient.post(eventSinkHubEvent, uri);
             LOG.info("Sent to Event Sink " + eventSinkHubEvent.getEventType() + " hub event to event-sink on " + uri);
 
         } catch (ApplicationException e) {

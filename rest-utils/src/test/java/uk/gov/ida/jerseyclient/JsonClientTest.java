@@ -11,11 +11,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.ida.common.SessionId;
 import uk.gov.ida.exceptions.ApplicationException;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
 import static org.mockito.Matchers.any;
@@ -24,8 +22,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.ida.common.CommonUrls.SESSION_ID_PARAM;
-import static uk.gov.ida.common.SessionId.createNewSessionId;
 import static uk.gov.ida.healthcheck.UniformInterfaceExceptionBuilder.aUniformInterfaceException;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -57,12 +53,10 @@ public class JsonClientTest {
     public void post_shouldDelegateToJsonResponseProcessorToCheckForErrors() throws Exception {
         ClientResponse clientResponse = createMockClient204NoContentResponse();
         when(builder.post(ClientResponse.class, responseBody)).thenReturn(clientResponse);
-        SessionId sessionId = createNewSessionId();
-        URI expectedUri = UriBuilder.fromUri(testUri).queryParam(SESSION_ID_PARAM, sessionId).build();
 
-        jsonClient.post(responseBody, testUri, sessionId);
+        jsonClient.post(responseBody, testUri);
 
-        verify(jsonResponseProcessor, times(1)).getJsonEntity(expectedUri, null, null, clientResponse);
+        verify(jsonResponseProcessor, times(1)).getJsonEntity(testUri, null, null, clientResponse);
     }
 
     @Test
@@ -76,16 +70,6 @@ public class JsonClientTest {
     }
 
     @Test
-    public void postWithSessionId_shouldDelegateToProcessor() throws Exception {
-        ClientResponse clientResponse = createMockClient204NoContentResponse();
-        when(builder.post(ClientResponse.class, responseBody)).thenReturn(clientResponse);
-
-        jsonClient.post(responseBody, testUri, createNewSessionId(), String.class);
-
-        verify(jsonResponseProcessor, times(1)).getJsonEntity(testUri, null, String.class, clientResponse);
-    }
-
-    @Test
     public void basicGet_shouldDelegateToProcessor() throws Exception {
         ClientResponse clientResponse = createMockClient204NoContentResponse();
         when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
@@ -93,17 +77,6 @@ public class JsonClientTest {
         jsonClient.get(testUri, String.class);
 
         verify(jsonResponseProcessor, times(1)).getJsonEntity(testUri, null, String.class, clientResponse);
-    }
-
-    @Test
-    public void getWithSessionId_shouldDelegateToProcessorWithAppendedSessionId() throws Exception {
-        ClientResponse clientResponse = createMockClient204NoContentResponse();
-        when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
-        SessionId sessionId = createNewSessionId();
-        URI expectedUri = UriBuilder.fromUri(testUri).queryParam(SESSION_ID_PARAM, sessionId.toString()).build();
-        jsonClient.get(testUri, sessionId, String.class);
-
-        verify(jsonResponseProcessor, times(1)).getJsonEntity(expectedUri, null, String.class, clientResponse);
     }
 
     @Test
@@ -128,14 +101,6 @@ public class JsonClientTest {
     }
 
     @Test(expected = ApplicationException.class)
-    public void getWithSessionId_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        reset(client);
-        when(client.resource(any(URI.class))).thenThrow(new ClientHandlerException());
-
-        jsonClient.get(testUri, createNewSessionId(), String.class);
-    }
-
-    @Test(expected = ApplicationException.class)
     public void getWithGenericType_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
         reset(client);
         when(client.resource(any(URI.class))).thenThrow(new ClientHandlerException());
@@ -152,19 +117,11 @@ public class JsonClientTest {
     }
 
     @Test(expected = ApplicationException.class)
-    public void postWithSessionId_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
+    public void postExpectingNoReturn_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
         reset(client);
         when(client.resource(any(URI.class))).thenThrow(new ClientHandlerException());
 
-        jsonClient.post("", testUri, createNewSessionId(), String.class);
-    }
-
-    @Test(expected = ApplicationException.class)
-    public void postWithSessionIdExpectingNoReturn_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        reset(client);
-        when(client.resource(any(URI.class))).thenThrow(new ClientHandlerException());
-
-        jsonClient.post("", testUri, createNewSessionId());
+        jsonClient.post("", testUri);
     }
 
     private ClientResponse createMockClient204NoContentResponse(){
