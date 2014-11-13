@@ -3,7 +3,7 @@ package uk.gov.ida.resources;
 import com.google.inject.Inject;
 import org.apache.http.HttpStatus;
 import uk.gov.ida.common.CommonUrls;
-import uk.gov.ida.configuration.ServerStatus;
+import uk.gov.ida.configuration.ServiceStatus;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,23 +12,20 @@ import javax.ws.rs.core.Response;
 @Path(CommonUrls.SERVICE_STATUS)
 public class ServiceStatusResource {
 
-    private ServerStatus serverStatus;
+    private ServiceStatus serviceStatus;
 
     @Inject
     public ServiceStatusResource() {
 
-        this.serverStatus = ServerStatus.getInstance();
+        this.serviceStatus = serviceStatus.getInstance();
     }
 
     @GET
     public Response isOnline(){
-        if (serverStatus.isShutdownSequenceStarted()){
-            return Response.noContent().status(HttpStatus.SC_SERVICE_UNAVAILABLE).build();
-        } else {
+        if (serviceStatus.isServerStatusOK()){
             return Response.ok().build();
+        } else {
+            return Response.status(HttpStatus.SC_SERVICE_UNAVAILABLE).build();
         }
     }
-
-
 }
-
