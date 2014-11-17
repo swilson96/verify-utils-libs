@@ -2,6 +2,7 @@ package uk.gov.ida.jerseyclient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
@@ -11,7 +12,10 @@ import uk.gov.ida.common.ErrorStatusDto;
 import uk.gov.ida.common.ExceptionType;
 import uk.gov.ida.exceptions.ApplicationException;
 
+import javax.ws.rs.core.NewCookie;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -121,6 +125,16 @@ public class JsonResponseProcessorTest {
     }
 
     @Test
+    public void testGetJsonEntityWithCookie() throws Exception {
+        NewCookie cookie = new NewCookie("name", "value");
+        ClientResponse clientResponse = createMockClientResponseWithCookie(200, "some entity", cookie);
+
+        Map.Entry<String,List<NewCookie>> jsonEntityWithCookie = responseProcessor.getJsonEntityWithCookie(uri, String.class, clientResponse);
+        assertThat(jsonEntityWithCookie.getKey()).isEqualTo("\"some entity\"");
+        assertThat(jsonEntityWithCookie.getValue()).containsExactly(cookie);
+    }
+
+    @Test
     public void getJsonEntity_shouldReturnEmptyStringWhenNoClassNorGenericTypeSupplied() throws Exception {
         Object jsonEntity = responseProcessor.getJsonEntity(uri, null, null, createMockClientResponse(200, "some entity"));
     }
@@ -154,6 +168,18 @@ public class JsonResponseProcessorTest {
     private ClientResponse createMockClientResponse(int status, Object responseEntity) throws JsonProcessingException {
         ClientResponse clientResponse = mock(ClientResponse.class);
         ObjectMapper objectMapper = new ObjectMapper();
+        when(clientResponse.getEntity(String.class)).thenReturn(objectMapper.writeValueAsString(responseEntity));
+        when(clientResponse.getEntity(ClientResponse.class)).thenThrow(new RuntimeException("Can't deserialize json to ClientResponse"));
+        when(clientResponse.hasEntity()).thenReturn(true);
+        when(clientResponse.getStatus()).thenReturn(status);
+        when(clientResponse.getStatusInfo()).thenReturn(ClientResponse.Status.fromStatusCode(status));
+        return clientResponse;
+    }
+
+    private ClientResponse createMockClientResponseWithCookie(int status, String responseEntity, NewCookie cookie) throws JsonProcessingException {
+        ClientResponse clientResponse = mock(ClientResponse.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        when(clientResponse.getCookies()).thenReturn(ImmutableList.of(cookie));
         when(clientResponse.getEntity(String.class)).thenReturn(objectMapper.writeValueAsString(responseEntity));
         when(clientResponse.getEntity(ClientResponse.class)).thenThrow(new RuntimeException("Can't deserialize json to ClientResponse"));
         when(clientResponse.hasEntity()).thenReturn(true);

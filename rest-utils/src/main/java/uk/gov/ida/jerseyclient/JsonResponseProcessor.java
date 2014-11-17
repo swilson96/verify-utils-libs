@@ -1,6 +1,7 @@
 package uk.gov.ida.jerseyclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -11,8 +12,13 @@ import uk.gov.ida.common.ErrorStatusDto;
 import uk.gov.ida.common.ExceptionType;
 import uk.gov.ida.exceptions.ApplicationException;
 
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.NewCookie;
 import java.io.IOException;
 import java.net.URI;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.ida.exceptions.ApplicationException.createExceptionFromErrorStatusDto;
@@ -40,6 +46,18 @@ public class JsonResponseProcessor {
             return getEntity(genericType, clazz, successResponse);
         } finally {
             clientResponse.close(); //Do this to avoid any possibility of a connection leak.
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Map.Entry<T, List<NewCookie>> getJsonEntityWithCookie(URI uri, Class<T> clazz, ClientResponse clientResponse) {
+        ClientResponse successResponse = filterErrorResponses(uri, clientResponse);
+        try {
+            T entity = getEntity(null, clazz, successResponse);
+            List<NewCookie> cookies = clientResponse.getCookies();
+            return new AbstractMap.SimpleImmutableEntry<>(entity, cookies);
+        } finally {
+            clientResponse.close();
         }
     }
 
