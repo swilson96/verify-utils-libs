@@ -50,6 +50,16 @@ public class JsonClientTest {
     }
 
     @Test
+    public void postAndReturnCookie_shouldDelegateToProcessor() throws Exception {
+        ClientResponse clientResponse = createMockClient204NoContentResponse();
+        when(builder.post(ClientResponse.class, responseBody)).thenReturn(clientResponse);
+
+        jsonClient.postAndReturnCookie(responseBody, testUri, String.class);
+
+        verify(jsonResponseProcessor, times(1)).getJsonEntityWithCookie(testUri, String.class, clientResponse);
+    }
+
+    @Test
     public void post_shouldDelegateToJsonResponseProcessorToCheckForErrors() throws Exception {
         ClientResponse clientResponse = createMockClient204NoContentResponse();
         when(builder.post(ClientResponse.class, responseBody)).thenReturn(clientResponse);

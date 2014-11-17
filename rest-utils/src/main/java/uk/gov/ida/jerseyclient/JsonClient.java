@@ -12,6 +12,7 @@ import uk.gov.ida.common.ExceptionType;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,10 @@ public class JsonClient {
 
     public <T> T post(Object postBody, URI uri, Class<T> clazz) {
         return responseProcessor.getJsonEntity(uri, null, clazz, executePost(postBody, uri));
+    }
+
+    public <T> Map.Entry<T, List<NewCookie>> postAndReturnCookie(Object postBody, URI uri, Class<T> clazz) {
+        return responseProcessor.getJsonEntityWithCookie(uri, clazz, executePost(postBody, uri));
     }
 
     public void post(Object postBody, URI uri) {
