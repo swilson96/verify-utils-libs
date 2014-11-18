@@ -54,9 +54,9 @@ public class JsonClientTest {
         ClientResponse clientResponse = createMockClient204NoContentResponse();
         when(builder.post(ClientResponse.class, responseBody)).thenReturn(clientResponse);
 
-        jsonClient.postAndReturnCookie(responseBody, testUri, String.class);
+        jsonClient.postAndReturnCookies(responseBody, testUri, String.class);
 
-        verify(jsonResponseProcessor, times(1)).getJsonEntityWithCookie(testUri, String.class, clientResponse);
+        verify(jsonResponseProcessor, times(1)).getJsonEntityWithCookies(testUri, String.class, clientResponse);
     }
 
     @Test
