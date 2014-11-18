@@ -125,7 +125,7 @@ public class JsonResponseProcessorTest {
     }
 
     @Test
-    public void testGetJsonEntityWithCookie() throws Exception {
+    public void getJsonEntity_shouldReturnCookieWithResponse() throws Exception {
         NewCookie cookie = new NewCookie("name", "value");
         ClientResponse clientResponse = createMockClientResponseWithCookie(200, "some entity", cookie);
 
@@ -136,7 +136,7 @@ public class JsonResponseProcessorTest {
 
     @Test
     public void getJsonEntity_shouldReturnEmptyStringWhenNoClassNorGenericTypeSupplied() throws Exception {
-        Object jsonEntity = responseProcessor.getJsonEntity(uri, null, null, createMockClientResponse(200, "some entity"));
+        responseProcessor.getJsonEntity(uri, null, null, createMockClientResponse(200, "some entity"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -176,7 +176,7 @@ public class JsonResponseProcessorTest {
         return clientResponse;
     }
 
-    private ClientResponse createMockClientResponseWithCookie(int status, String responseEntity, NewCookie cookie) throws JsonProcessingException {
+    private ClientResponse createMockClientResponseWithCookie(int status, Object responseEntity, NewCookie cookie) throws JsonProcessingException {
         ClientResponse clientResponse = mock(ClientResponse.class);
         ObjectMapper objectMapper = new ObjectMapper();
         when(clientResponse.getCookies()).thenReturn(ImmutableList.of(cookie));
