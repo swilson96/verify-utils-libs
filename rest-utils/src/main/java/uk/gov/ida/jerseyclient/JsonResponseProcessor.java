@@ -14,9 +14,7 @@ import uk.gov.ida.exceptions.ApplicationException;
 import javax.ws.rs.core.NewCookie;
 import java.io.IOException;
 import java.net.URI;
-import java.util.AbstractMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.ida.exceptions.ApplicationException.createExceptionFromErrorStatusDto;
@@ -24,7 +22,7 @@ import static uk.gov.ida.exceptions.ApplicationException.createUnauditedExceptio
 
 public class JsonResponseProcessor {
 
-    public class EntityAndCookies<T> {
+    public static class EntityAndCookies<T> {
         private T entity;
         private List<NewCookie> cookies;
 
