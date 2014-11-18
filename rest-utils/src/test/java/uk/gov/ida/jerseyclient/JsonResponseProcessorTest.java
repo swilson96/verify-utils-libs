@@ -14,8 +14,6 @@ import uk.gov.ida.exceptions.ApplicationException;
 
 import javax.ws.rs.core.NewCookie;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -129,9 +127,9 @@ public class JsonResponseProcessorTest {
         NewCookie cookie = new NewCookie("name", "value");
         ClientResponse clientResponse = createMockClientResponseWithCookie(200, "some entity", cookie);
 
-        Map.Entry<String,List<NewCookie>> jsonEntityWithCookie = responseProcessor.getJsonEntityWithCookie(uri, String.class, clientResponse);
-        assertThat(jsonEntityWithCookie.getKey()).isEqualTo("\"some entity\"");
-        assertThat(jsonEntityWithCookie.getValue()).containsExactly(cookie);
+        JsonResponseProcessor.EntityAndCookies<String> jsonEntityWithCookie = responseProcessor.getJsonEntityWithCookies(uri, String.class, clientResponse);
+        assertThat(jsonEntityWithCookie.getEntity()).isEqualTo("\"some entity\"");
+        assertThat(jsonEntityWithCookie.getCookies()).containsExactly(cookie);
     }
 
     @Test
