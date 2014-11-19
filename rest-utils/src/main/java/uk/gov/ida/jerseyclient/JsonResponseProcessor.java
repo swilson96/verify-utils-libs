@@ -11,35 +11,14 @@ import uk.gov.ida.common.ErrorStatusDto;
 import uk.gov.ida.common.ExceptionType;
 import uk.gov.ida.exceptions.ApplicationException;
 
-import javax.ws.rs.core.NewCookie;
 import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.ida.exceptions.ApplicationException.createExceptionFromErrorStatusDto;
 import static uk.gov.ida.exceptions.ApplicationException.createUnauditedException;
 
 public class JsonResponseProcessor {
-
-    public static class EntityAndCookies<T> {
-        private T entity;
-        private List<NewCookie> cookies;
-
-        public T getEntity() {
-            return entity;
-        }
-
-        public List<NewCookie> getCookies() {
-            return cookies;
-        }
-
-        public EntityAndCookies(T entity, List<NewCookie> cookies) {
-
-            this.entity = entity;
-            this.cookies = cookies;
-        }
-    }
 
     private final ObjectMapper objectMapper;
     private static final Logger LOG = LoggerFactory.getLogger(JsonResponseProcessor.class);
@@ -61,17 +40,6 @@ public class JsonResponseProcessor {
             return getEntity(genericType, clazz, successResponse);
         } finally {
             clientResponse.close(); //Do this to avoid any possibility of a connection leak.
-        }
-    }
-
-    public <T> EntityAndCookies<T> getJsonEntityWithCookies(URI uri, Class<T> clazz, ClientResponse clientResponse) {
-        ClientResponse successResponse = filterErrorResponses(uri, clientResponse);
-        try {
-            T entity = getEntity(null, clazz, successResponse);
-            List<NewCookie> cookies = clientResponse.getCookies();
-            return new EntityAndCookies<>(entity, cookies);
-        } finally {
-            clientResponse.close();
         }
     }
 

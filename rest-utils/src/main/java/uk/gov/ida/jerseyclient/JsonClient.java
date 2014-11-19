@@ -35,10 +35,6 @@ public class JsonClient {
         return responseProcessor.getJsonEntity(uri, null, clazz, executePost(postBody, uri));
     }
 
-    public <T> JsonResponseProcessor.EntityAndCookies<T> postAndReturnCookies(Object postBody, URI uri, Class<T> clazz) {
-        return responseProcessor.getJsonEntityWithCookies(uri, clazz, executePost(postBody, uri));
-    }
-
     public void post(Object postBody, URI uri) {
         responseProcessor.getJsonEntity(uri, null, null, executePost(postBody, uri));
     }

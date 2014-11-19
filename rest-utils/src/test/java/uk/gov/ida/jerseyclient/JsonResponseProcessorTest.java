@@ -123,16 +123,6 @@ public class JsonResponseProcessorTest {
     }
 
     @Test
-    public void getJsonEntity_shouldReturnCookieWithResponse() throws Exception {
-        NewCookie cookie = new NewCookie("name", "value");
-        ClientResponse clientResponse = createMockClientResponseWithCookie(200, "some entity", cookie);
-
-        JsonResponseProcessor.EntityAndCookies<String> jsonEntityWithCookie = responseProcessor.getJsonEntityWithCookies(uri, String.class, clientResponse);
-        assertThat(jsonEntityWithCookie.getEntity()).isEqualTo("\"some entity\"");
-        assertThat(jsonEntityWithCookie.getCookies()).containsExactly(cookie);
-    }
-
-    @Test
     public void getJsonEntity_shouldReturnEmptyStringWhenNoClassNorGenericTypeSupplied() throws Exception {
         responseProcessor.getJsonEntity(uri, null, null, createMockClientResponse(200, "some entity"));
     }
