@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -21,14 +22,13 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
 public abstract class XmlUtils {
-
     private static final Logger LOG = LoggerFactory.getLogger(XmlUtils.class);
 
-    public static String writeToString(Element element) {
+    public static String writeToString(Node node) {
         try {
             StringWriter docWriter = new StringWriter();
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.transform(new DOMSource(element), new StreamResult(docWriter));
+            transformer.transform(new DOMSource(node), new StreamResult(docWriter));
             return docWriter.toString();
         } catch (TransformerException ex) {
             LOG.error("Unable to convert Element to String", ex);
