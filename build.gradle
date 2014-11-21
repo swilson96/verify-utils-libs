@@ -32,7 +32,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     group = "uk.gov.ida"
-    version = "1.0.0-$System.env.BUILD_NUMBER"
+    version = "1.0.0-${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
 
     repositories {
         maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
@@ -64,3 +64,6 @@ subprojects {
 }
 
 task sonar(dependsOn: [':clean', ':build', 'sonarRunner'])
+
+defaultTasks 'jar', 'publishToMavenLocal'
+
