@@ -35,6 +35,10 @@ public class JsonClient {
         return responseProcessor.getJsonEntity(uri, null, clazz, executePost(postBody, uri));
     }
 
+    public <T> T post(Object postBody, URI uri, Class<T> clazz, Map<String, String> headers) {
+        return responseProcessor.getJsonEntity(uri, null, clazz, executePost(postBody, uri, headers));
+    }
+
     public void post(Object postBody, URI uri) {
         responseProcessor.getJsonEntity(uri, null, null, executePost(postBody, uri));
     }
@@ -87,6 +91,23 @@ public class JsonClient {
             @Override
             public ClientResponse apply(Optional<Object> input) {
                 return jerseyClient.resource(uri).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, postBody);
+            }
+        }, uri);
+    }
+
+    private ClientResponse executePost(final Object postBody, final URI uri, final Map<String, String> headers) {
+        return errorHandledClientResponse(new Function<Optional<Object>, ClientResponse>() {
+            @Override
+            public ClientResponse apply(Optional<Object> input) {
+                WebResource.Builder requestBuilder = jerseyClient.resource(uri).getRequestBuilder();
+                for(Map.Entry<String, String> headerDetail: headers.entrySet()){
+                    if(headerDetail.getValue() != null) {
+                        requestBuilder = requestBuilder.header(headerDetail.getKey(), headerDetail.getValue());
+                    }
+                }
+                return requestBuilder
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .post(ClientResponse.class, postBody);
             }
         }, uri);
     }
