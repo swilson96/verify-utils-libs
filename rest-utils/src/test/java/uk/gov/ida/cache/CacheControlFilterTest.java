@@ -17,12 +17,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CacheControlFilterTest {
-
     private CacheControlFilter filter;
 
     @Before
     public void setUp() throws Exception {
-        filter = new CacheControlFilter(new AssetCacheConfiguration(){
+        AssetCacheConfiguration assetCacheConfiguration = new AssetCacheConfiguration() {
             @Override
             public boolean shouldCacheAssets() {
                 return false;
@@ -32,7 +31,13 @@ public class CacheControlFilterTest {
             public String getAssetsCacheDuration() {
                 return null;
             }
-        });
+        };
+        filter = new CacheControlFilter(assetCacheConfiguration) {
+            @Override
+            protected boolean isCacheableAsset(String localAddr) {
+                return false;
+            }
+        };
     }
 
     @Test
@@ -43,8 +48,8 @@ public class CacheControlFilterTest {
         when(mockRequest.getRequestURI()).thenReturn("randomaddress");
         filter.doFilter(mockRequest, response, mock(FilterChain.class));
 
-        verify(response).setHeader(CacheControlFilter.CACHE_CONTROL_KEY, CacheControlFilter.CACHE_CONTROL_NO_CACHE_VALUE);
-        verify(response).setHeader(CacheControlFilter.PRAGMA_KEY, CacheControlFilter.PRAGMA_NO_CACHE_VALUE);
+        verify(response).setHeader("Cache-Control", "no-cache, no-store");
+        verify(response).setHeader("Pragma", "no-cache");
     }
 
     @Test
