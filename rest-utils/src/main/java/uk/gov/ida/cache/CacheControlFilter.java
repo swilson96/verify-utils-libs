@@ -1,5 +1,7 @@
 package uk.gov.ida.cache;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -11,15 +13,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class CacheControlFilter implements Filter {
+public abstract class CacheControlFilter implements Filter {
+    private static final String CACHE_CONTROL_KEY = org.apache.http.HttpHeaders.CACHE_CONTROL;
+    private static final String CACHE_CONTROL_NO_CACHE_VALUE = "no-cache, no-store";
+    private static final String PRAGMA_KEY = org.apache.http.HttpHeaders.PRAGMA;
+    private static final String PRAGMA_NO_CACHE_VALUE = "no-cache";
+    private static final String MAX_AGE = "max-age";
 
-    public static final String CACHE_CONTROL_KEY = org.apache.http.HttpHeaders.CACHE_CONTROL; //"Cache-Control"
-    public static final String CACHE_CONTROL_NO_CACHE_VALUE = "no-cache, no-store";
-    public static final String PRAGMA_KEY = org.apache.http.HttpHeaders.PRAGMA;
-    public static final String PRAGMA_NO_CACHE_VALUE = "no-cache";
-    public static final String MAX_AGE = "max-age";
+    private static final Logger LOG = LoggerFactory.getLogger(CacheControlFilter.class);
 
-    private AssetCacheConfiguration configuration;
+    private final AssetCacheConfiguration configuration;
 
     public CacheControlFilter(final AssetCacheConfiguration configuration) {
         this.configuration = configuration;
@@ -32,29 +35,17 @@ public class CacheControlFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (!isCacheableAsset(((HttpServletRequest) request).getRequestURI())) {
-            setNoCacheHeaders((HttpServletRequest) request, (HttpServletResponse) response);
-        } else if (!shouldCacheAssets()){
-            setNoCacheHeaders((HttpServletRequest) request, (HttpServletResponse) response);
+        if(configuration.shouldCacheAssets() &&
+                isCacheableAsset(((HttpServletRequest) request).getRequestURI())) {
+            LOG.debug("Setting caching headers on " + ((HttpServletRequest) request).getServletPath());
+            setCacheHeaders((HttpServletResponse) response);
         } else {
-            setCacheHeaders((HttpServletRequest) request, (HttpServletResponse) response);
+            LOG.debug("Setting no-cache headers on " + ((HttpServletRequest) request).getServletPath());
+            setNoCacheHeaders((HttpServletResponse) response);
         }
 
         // This line must be called last (a bit of a broken api)
         chain.doFilter(request, response);
-    }
-
-    private boolean shouldCacheAssets() {
-        return configuration.shouldCacheAssets();
-    }
-
-    private void setCacheHeaders(final HttpServletRequest request, final HttpServletResponse response) {
-        response.setHeader(CACHE_CONTROL_KEY, MAX_AGE + "=" + configuration.getAssetsCacheDuration());
-    }
-
-    private void setNoCacheHeaders(final HttpServletRequest request, final HttpServletResponse response) {
-        response.setHeader(CACHE_CONTROL_KEY, CACHE_CONTROL_NO_CACHE_VALUE);
-        response.setHeader(PRAGMA_KEY, PRAGMA_NO_CACHE_VALUE);
     }
 
     @Override
@@ -62,7 +53,19 @@ public class CacheControlFilter implements Filter {
         // Nothing to destroy
     }
 
-    public boolean isCacheableAsset(final String localAddr) {
-        return localAddr.contains("/assets/fonts/") || localAddr.contains("/assets/images/");
+    protected AssetCacheConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    protected abstract boolean isCacheableAsset(String localAddr);
+
+    private void setCacheHeaders(final HttpServletResponse response) {
+        response.setHeader(CACHE_CONTROL_KEY, MAX_AGE + "=" + configuration.getAssetsCacheDuration());
+    }
+
+    private void setNoCacheHeaders(final HttpServletResponse response) {
+        response.setHeader(CACHE_CONTROL_KEY, CACHE_CONTROL_NO_CACHE_VALUE);
+        response.setHeader(PRAGMA_KEY, PRAGMA_NO_CACHE_VALUE);
     }
 }
+
