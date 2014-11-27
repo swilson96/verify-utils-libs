@@ -14,6 +14,12 @@ public class DependentServiceConfiguration {
     protected DependentServiceConfiguration() {
     }
 
+    DependentServiceConfiguration(String host, String scheme, int port) {
+        this.host = host;
+        this.scheme = scheme;
+        this.port = port;
+    }
+
     @NotNull
     @Valid
     protected String host;
@@ -26,7 +32,7 @@ public class DependentServiceConfiguration {
     @Valid
     protected Integer port;
 
-    @NotNull
+    // still allowed for backwards compatibility
     @Valid
     protected String serviceName;
 
@@ -43,10 +49,6 @@ public class DependentServiceConfiguration {
 
     public Integer getPort() {
         return port;
-    }
-
-    public String getServiceName() {
-        return serviceName;
     }
 
     public String getPathPrefix() {

@@ -39,29 +39,13 @@ public class DependentServiceHealthCheckTest {
     }
 
     @Test
-    public void check_shouldReturnHealthyWhenDependentServiceReturnsCorrectServiceName() throws Exception {
+    public void check_shouldReturnHealthyWhenDependentServiceReturnsSuccessfully() throws Exception {
         when(client.resource(any(URI.class))).thenReturn(webResource);
-        when(webResource.get(ServiceNameDto.class)).thenReturn(new ServiceNameDto(dependentServiceConfiguration.getServiceName()));
+        when(webResource.get(ServiceNameDto.class)).thenReturn(new ServiceNameDto("arbitraryname"));
 
         HealthCheck.Result result = dependentServiceHealthCheck.check();
 
         assertThat(result).isEqualTo(HealthCheck.Result.healthy());
-    }
-
-    @Test
-    public void check_shouldReturnUnhealthyWhenDependentServiceReturnsWrongServiceName() throws Exception {
-        when(client.resource(any(URI.class))).thenReturn(webResource);
-        String expectedServiceName = dependentServiceConfiguration.getServiceName();
-        String actualServiceName = expectedServiceName + "foo";
-        when(webResource.get(ServiceNameDto.class)).thenReturn(new ServiceNameDto(actualServiceName));
-
-        HealthCheck.Result result = dependentServiceHealthCheck.check();
-
-        String expectedErrorMessage = format(
-            "Expected service name {0} but was {1}.",
-            expectedServiceName,
-            actualServiceName);
-        assertThat(result).isEqualTo(HealthCheck.Result.unhealthy(expectedErrorMessage));
     }
 
     @Test
@@ -76,8 +60,7 @@ public class DependentServiceHealthCheckTest {
             .path("service-name")
             .build();
         String expectedErrorMessage = format(
-            "Dependent service {0} at {1} gives Client response status: 500.",
-            dependentServiceConfiguration.getServiceName(),
+            "Dependent service at {0} gives Client response status: 500.",
             uri);
         assertThat(result).isEqualTo(HealthCheck.Result.unhealthy(expectedErrorMessage));
     }
@@ -95,8 +78,7 @@ public class DependentServiceHealthCheckTest {
             .path("service-name")
             .build();
         String expectedErrorMessage = format(
-            "Dependent service {0} at {1} gives {2}.",
-            dependentServiceConfiguration.getServiceName(),
+            "Dependent service at {0} gives {1}.",
             uri,
             exceptionMessage);
         assertThat(result).isEqualTo(HealthCheck.Result.unhealthy(expectedErrorMessage));
