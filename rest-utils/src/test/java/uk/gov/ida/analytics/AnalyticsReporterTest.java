@@ -1,6 +1,7 @@
 package uk.gov.ida.analytics;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.sun.jersey.api.client.AsyncWebResource;
@@ -23,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import static com.google.common.base.Optional.fromNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -111,4 +113,27 @@ public class AnalyticsReporterTest {
 
         assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
     }
+
+    @Test
+    public void shouldGeneratePiwikFraudUrl() throws MalformedURLException, URISyntaxException {
+        URIBuilder expectedURI = new URIBuilder("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite=9595&rec=1&apiv=1&e_c=fraud_response&e_a=fraud_response");
+        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
+        Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
+        Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateFraudURI(visitorId));
+        Map<String,NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
+            public String apply(NameValuePair from) {
+                return from.getName();
+            }
+        });
+
+        for(NameValuePair param : testURI.getQueryParams()){
+            assertThat(expectedParams).containsEntry(param.getName(), param);
+        }
+
+        assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
+
+    }
+
 }

@@ -54,6 +54,21 @@ public class AnalyticsReporter {
         return uriBuilder.build();
     }
 
+    public URI generateFraudURI(Optional<String> visitorId) throws MalformedURLException, URISyntaxException {
+        URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
+
+        if(visitorId.isPresent()) {
+            uriBuilder.addParameter("_id", visitorId.get());
+        }
+        uriBuilder.addParameter("idsite", analyticsConfiguration.getSiteId().toString());
+        uriBuilder.addParameter("apiv", "1");
+        uriBuilder.addParameter("rec", "1");
+        uriBuilder.addParameter("e_c", "fraud_response");// event category
+        uriBuilder.addParameter("e_a", "fraud_response");// event action
+
+        return uriBuilder.build();
+    }
+
     public void report(String friendlyDescription, HttpContext context) {
         try {
             if (analyticsConfiguration.getEnabled()) {
@@ -65,6 +80,19 @@ public class AnalyticsReporter {
                 }
             }
         } catch (Exception e) {
+            LOG.error("Analytics Reporting error", e);
+        }
+    }
+
+    public void reportFraud(HttpContext context) {
+        try {
+            if (analyticsConfiguration.getEnabled()) {
+                HttpRequestContext request = context.getRequest();
+                Optional<Cookie> piwikCookie = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID));
+                Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
+                piwikClient.reportWithoutContext(generateFraudURI(visitorId));
+            }
+        } catch(Exception e) {
             LOG.error("Analytics Reporting error", e);
         }
     }

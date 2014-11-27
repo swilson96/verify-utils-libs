@@ -22,4 +22,8 @@ public class PiwikClient {
                 .header("X-Forwarded-For", request.getHeaderValue("X-Forwarded-For"))
                 .get(String.class);
     }
+
+    public void reportWithoutContext(URI uri) {
+        client.asyncResource(uri).get(String.class);
+    }
 }
