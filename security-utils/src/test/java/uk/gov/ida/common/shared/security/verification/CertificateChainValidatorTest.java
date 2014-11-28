@@ -2,6 +2,7 @@ package uk.gov.ida.common.shared.security.verification;
 
 import com.google.common.base.Throwables;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -82,6 +83,7 @@ public class CertificateChainValidatorTest {
     }
 
     @Test
+    @Ignore("This test often fails due to the OCSP server not being available. Card #1837 (and possibly others) are raised to investigate")
     public void should_doAnOcspCheck() throws Exception {
         final X509Certificate encryptionCertificate = x509CertificateFactory.createCertificate(this.encryptionCertString);
 
