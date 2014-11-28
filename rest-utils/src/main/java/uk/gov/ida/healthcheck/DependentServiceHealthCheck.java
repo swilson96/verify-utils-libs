@@ -35,15 +35,10 @@ public class DependentServiceHealthCheck extends InjectableHealthCheck {
         }
         final URI uri = uriBuilder.path("service-name").build();
         try {
-            ServiceNameDto serviceNameDto = client.resource(uri).get(ServiceNameDto.class);
-            if (!serviceNameDto.getServiceName().equals(dependentServiceConfiguration.getServiceName())) {
-                String message = format("Expected service name {0} but was {1}.", dependentServiceConfiguration.getServiceName(), serviceNameDto.getServiceName());
-                return HealthCheck.Result.unhealthy(message);
-            } else {
-                return HealthCheck.Result.healthy();
-            }
+            client.resource(uri).get(ServiceNameDto.class);
+            return HealthCheck.Result.healthy();
         } catch (UniformInterfaceException e) {
-        // It looks like there are no guarantees that the ClientResponse within a UniformInterfaceException is closed, so we are going to try to close it every time
+            // It looks like there are no guarantees that the ClientResponse within a UniformInterfaceException is closed, so we are going to try to close it every time
             try {
                 e.getResponse().close();
             } catch (ClientHandlerException che) {
@@ -56,13 +51,13 @@ public class DependentServiceHealthCheck extends InjectableHealthCheck {
     }
 
     private Result handleFail(URI uri, Throwable exception) {
-        String message = format("Dependent service {0} at {1} gives {2}.", dependentServiceConfiguration.getServiceName(), uri, exception.getMessage());
+        String message = format("Dependent service at {0} gives {1}.", uri, exception.getMessage());
         LOG.info(message);
         return Result.unhealthy(message);
     }
 
     @Override
     public String getName() {
-        return "Service: " + dependentServiceConfiguration.getServiceName();
+        return "Service: " + dependentServiceConfiguration.toBaseUri();
     }
 }
