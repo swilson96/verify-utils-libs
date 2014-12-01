@@ -10,7 +10,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
-class KeyStoreLoader {
+public class KeyStoreLoader {
     public KeyStore load(String uri, String password) {
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
