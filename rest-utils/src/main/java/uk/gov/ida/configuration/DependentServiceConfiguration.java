@@ -55,6 +55,11 @@ public class DependentServiceConfiguration {
         return pathPrefix;
     }
 
+    // still allowed for backwards compatibility
+    public String getServiceName() {
+        return serviceName;
+    }
+
     public URI toBaseUri() {
         try {
             return new URIBuilder().setScheme(getScheme()).setHost(getHost()).setPort(getPort()).build();
