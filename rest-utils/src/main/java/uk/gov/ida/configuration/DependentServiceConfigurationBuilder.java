@@ -10,21 +10,19 @@ public class DependentServiceConfigurationBuilder {
         return new TestDependentServiceConfiguration(
                 "localhost",
                 "http",
-                8080,
-                "You're dependent on me!");
+                8080
+        );
     }
 
     private static class TestDependentServiceConfiguration extends DependentServiceConfiguration {
         private TestDependentServiceConfiguration(
                 String host,
                 String scheme,
-                int port,
-                String serviceName) {
+                int port) {
 
             this.host = host;
             this.scheme = scheme;
             this.port = port;
-            this.serviceName = serviceName;
         }
     }
 }
