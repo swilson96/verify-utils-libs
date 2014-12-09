@@ -1,28 +1,25 @@
 package uk.gov.ida.common.shared.security;
 
-import com.google.common.base.Optional;
-import junit.framework.TestCase;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.internal.runners.JUnit4ClassRunner;
+import org.junit.runner.RunWith;
 
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CryptoHelperTest extends TestCase {
+import static org.assertj.core.api.Assertions.assertThat;
+
+@RunWith(JUnit4ClassRunner.class)
+public class CryptoHelperTest {
 
     static final String EXAMPLE_IDP = "http://example.com/idp";
     static final int KEY_LENGTH_IN_BITS = 128;
     static final String KEY = base64(new byte[KEY_LENGTH_IN_BITS / 8]);
-    private CryptoHelper cryptoHelper;
+    private static CryptoHelper cryptoHelper;
 
     private static String base64(byte[] data) {
         return javax.xml.bind.DatatypeConverter.printBase64Binary(data);
@@ -33,25 +30,24 @@ public class CryptoHelperTest extends TestCase {
     }
 
     @BeforeClass
-    public void setUp() throws Exception {
+    public static void setUp() throws Exception {
         cryptoHelper = new CryptoHelper(KEY);
     }
 
     @Test
     public void testInitializationVectorIsCorrectLength() {
-        assertEquals(cryptoHelper.getInitializationVector().length, 16);
+        assertThat(cryptoHelper.NONCE_AND_IV_LENGTH).isEqualTo(16);
     }
 
     @Test
     public void testShouldDecryptToTheOriginalValue() {
-        assertEquals(EXAMPLE_IDP,
+        assertThat(EXAMPLE_IDP).isEqualTo(
                 cryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get()).get());
     }
 
     @Test
     public void testMultipleEncryptionsOfSameIDPEntityIDResultInDifferentValues() {
-        assertNotSame(
-                cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get(),
+        assertThat(cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get()).isNotEqualTo(
                 cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get()
         );
     }
@@ -59,7 +55,7 @@ public class CryptoHelperTest extends TestCase {
     @Test
     public void testEncryptedDataShouldNotContainUnencryptedData() {
         final String encrypted = unbase64(cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get()).toString();
-        assertFalse(encrypted.contains(EXAMPLE_IDP));
+        assertThat(encrypted).doesNotContain(EXAMPLE_IDP);
     }
 
     @Test
@@ -73,7 +69,7 @@ public class CryptoHelperTest extends TestCase {
         List<Object> shuffledKeys = new ArrayList(encryptedValues.keySet());
         Collections.shuffle(shuffledKeys);
         for(Object key:shuffledKeys) {
-            assertEquals(key, cryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValues.get(key)).get());
+            assertThat(key).isEqualTo(cryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValues.get(key)).get());
         }
 
     }
@@ -82,70 +78,36 @@ public class CryptoHelperTest extends TestCase {
     public void testEncryptedValuesShouldDecryptRepeatedly() {
         String encryptedValue = cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get();
         for (int i=0; i<100; i++) {
-            assertEquals(EXAMPLE_IDP, cryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValue).get());
+            assertThat(EXAMPLE_IDP).isEqualTo(cryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValue).get());
         }
      }
 
     @Test
-    public void testEncryptedValuesShouldNotDecryptIfIVIsChanged() {
+    public void testCannotDecryptWithChangedKey() {
         String encryptedValue = cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get();
-        CryptoHelper alteredCryptoHelper = new CryptoHelper(KEY) {
-            @Override
-            protected byte[] getInitializationVector() {
-                 return new byte[] {
-                        0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01};
-                    }
-            };
-        Optional<String> originalDecrypt = cryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValue);
-        Optional<String> alteredDecrypt = alteredCryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValue);
-        fail();
+        CryptoHelper otherCryptoHelper = new CryptoHelper(base64("sixteenbyteslong".getBytes()));
+        // Catch a BadPaddingException in decrypt
+        assertThat(otherCryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValue).isPresent()).isFalse();
     }
-//
-//
-//    // encrypted values should not decrypt if key is changed
-//    def newKey = base64([1] * (KEY_LENGTH_IN_BITS/8) as byte[])
-//    def g = new AesEncryptionThingy(newKey, iv, NONCE_LENGTH)
-//    try {
-//        assert g.decrypt(e.encrypt(EXAMPLE_IDP)) != EXAMPLE_IDP
-//    } catch(BadPaddingException _) { /* expected */ }
-//
-//    // encrypted values should not decrypt if IV is changed
-//    def newIv = base64([1] * (IV_LENGTH_IN_BITS/8) as byte[])
-//    def f = new AesEncryptionThingy(key, newIv, NONCE_LENGTH)
-//    assert f.decrypt(e.encrypt(EXAMPLE_IDP)) != EXAMPLE_IDP
-//
-//// big nonce should not be allowed
-//    try {
-//        new AesEncryptionThingy(key, iv, 16)
-//        fail("Should have failed due to nonce length 16.");
-//    } catch(IllegalArgumentException _) { /* expected */ }
-//
-//// zero nonce should not be allowed
-//    try {
-//        new AesEncryptionThingy(key, iv, 0)
-//        fail("Should have failed due to nonce length 0.");
-//    } catch(IllegalArgumentException _) { /* expected */ }
-//
-//// negative nonce should not be allowed
-//    try {
-//        new AesEncryptionThingy(key, iv, -1)
-//        fail("Should have failed due to nonce length -1.");
-//    } catch(IllegalArgumentException _) { /* expected */ }
-//
-//// really short entityId should encrypt to same length as really long entityId
-//    assert debase64(enc("h")).length ==
-//    debase64(enc("http://example.com/something/incredibly/long/which/wont/be/beaten/by/a/real/life/entityId/like_______________________________this")).length
-//
-//// really long entityIds should not be accepted
-//    try {
-//        enc("h" * 2000)
-//        fail("Should have failed due to very long idpEntityId");
-//    } catch(IllegalArgumentException _) { /* expected */ }
-//
-//    println "-----"
-//    println "TESTS PASSED."
-//    println "-----"
+
+    @Test
+    public void testCannotDecryptWithKeyOfWrongSize() {
+        String encryptedValue = cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get();
+        CryptoHelper otherCryptoHelper = new CryptoHelper(base64("NOTsixteenbyteslong".getBytes()));
+        // Catch a InvalidKeyException in decrypt
+        assertThat(otherCryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValue).isPresent()).isFalse();
+    }
+
+    @Test
+    public void testShortEntityIDProducesSameLengthEncryptedOutput() {
+        String veryLongIdpEntityId = "http://example.com/something/incredibly/long/which/wont/be/beaten/by/a/real/life/entityId/like_______________________________this";
+        String standedEntityIDEncryptionValue = cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(veryLongIdpEntityId).get();
+        String shortEntityIDEncryptionValue = cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited("h").get();
+        assertThat(unbase64(standedEntityIDEncryptionValue).length).isEqualTo(unbase64(shortEntityIDEncryptionValue).length);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testExtremelyLongEntityIDsShouldNotBeAccepted() {
+        cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(new String(new byte[2000]));
+    }
 }
