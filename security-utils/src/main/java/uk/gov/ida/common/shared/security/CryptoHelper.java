@@ -6,15 +6,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import static java.text.MessageFormat.format;
@@ -35,13 +31,15 @@ public class CryptoHelper {
     private static final Logger LOG = LoggerFactory.getLogger(CryptoHelper.class);
 
     /**
-     * the length in bytes of the nonce to be used for salting each value
+     * the length in bytes of the key, nonce and initialization vector (IV) to be
+     * used for salting each value (128 bits). The maximum supported by
+     * javax.crypto is currently 128 bits.
      */
-    static final int NONCE_AND_IV_LENGTH = 16;
+    static final int KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES = 16;
 
     private static final String UTF8 = "UTF-8";
     private static final String CIPHER_SUITE = "AES/CBC/PKCS5Padding";
-    private static final int PADDED_LENGTH = 512 + NONCE_AND_IV_LENGTH;
+    private static final int PADDED_LENGTH = 512 + KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES;
 
     private final SecretKeySpec aesKey;
     private final SecureRandom random;
@@ -51,7 +49,9 @@ public class CryptoHelper {
      * This helper is intended to obfuscate cookies relating to relying parties
      */
     public CryptoHelper(String base64EncodedAesKey) {
-        this.aesKey = new SecretKeySpec(unBase64(base64EncodedAesKey), "AES");
+        byte[] bytes = unBase64(base64EncodedAesKey);
+        if(bytes.length!= KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES) throw new IllegalArgumentException("Incorrect key length");
+        this.aesKey = new SecretKeySpec(bytes, "AES");
         this.random = new SecureRandom();
 
         byte[] ivBytes = getInitializationVector();
@@ -63,7 +63,7 @@ public class CryptoHelper {
         try {
             idpEntityIdAsByteArray = bytes(idpEntityId);
         } catch (UnsupportedEncodingException e) {
-            //fixme: log
+            LOG.warn(format("UnsupportedEncoding (not UTF8) for entityId: {0}", idpEntityId));
             return Optional.absent();
         }
         byte[] decryptedIdpNameWithNonce = addNonceAndPadding(idpEntityIdAsByteArray);
@@ -71,7 +71,7 @@ public class CryptoHelper {
         try {
             encryptedIdpNameWithNonce = encrypt(decryptedIdpNameWithNonce);
         } catch (GeneralSecurityException e) {
-            //fixme: log
+            LOG.warn(format("Unable to encode: {0}, exception message: {1}", decryptedIdpNameWithNonce, e.getMessage()));
             return Optional.absent();
         }
         return Optional.of(base64(encryptedIdpNameWithNonce));
@@ -118,27 +118,27 @@ public class CryptoHelper {
     }
 
     private byte[] addNonceAndPadding(byte[] withoutNonce) {
-        int lenWithNonce = withoutNonce.length + NONCE_AND_IV_LENGTH;
+        int lenWithNonce = withoutNonce.length + KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES;
         if(lenWithNonce > PADDED_LENGTH) {
             throw new IllegalArgumentException("That's a very long IDP entityId!");
         }
 
         byte[] withNonceAndPadding = new byte[PADDED_LENGTH];
-        System.arraycopy(newNonce(), 0, withNonceAndPadding, 0, NONCE_AND_IV_LENGTH);
-        System.arraycopy(withoutNonce, 0, withNonceAndPadding, NONCE_AND_IV_LENGTH, withoutNonce.length);
+        System.arraycopy(newNonce(), 0, withNonceAndPadding, 0, KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES);
+        System.arraycopy(withoutNonce, 0, withNonceAndPadding, KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES, withoutNonce.length);
 
         return withNonceAndPadding;
     }
 
     private byte[] removeNonceAndPadding(byte[] withNonce) {
         int paddingStart;
-        for(paddingStart= NONCE_AND_IV_LENGTH; paddingStart<withNonce.length; ++paddingStart) {
+        for(paddingStart= KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES; paddingStart<withNonce.length; ++paddingStart) {
             if(withNonce[paddingStart] == 0) break;
         }
-        int lenWithoutNonceOrPadding = paddingStart - NONCE_AND_IV_LENGTH;
+        int lenWithoutNonceOrPadding = paddingStart - KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES;
 
         byte[] withoutNonceOrPadding = new byte[lenWithoutNonceOrPadding];
-        System.arraycopy(withNonce, NONCE_AND_IV_LENGTH, withoutNonceOrPadding, 0, withoutNonceOrPadding.length);
+        System.arraycopy(withNonce, KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES, withoutNonceOrPadding, 0, withoutNonceOrPadding.length);
 
         return withoutNonceOrPadding;
     }
@@ -149,7 +149,7 @@ public class CryptoHelper {
         return cipher.doFinal(plaintext);
     }
 
-    private byte[] decrypt(byte[] ciphertext) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    private byte[] decrypt(byte[] ciphertext) throws GeneralSecurityException {
         Cipher cipher = Cipher.getInstance(CIPHER_SUITE);
         cipher.init(Cipher.DECRYPT_MODE, aesKey, iv);
         return cipher.doFinal(ciphertext);
@@ -160,7 +160,7 @@ public class CryptoHelper {
     }
 
     private byte[] newNonce() {
-        byte[] nonce = new byte[NONCE_AND_IV_LENGTH];
+        byte[] nonce = new byte[KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES];
         random.nextBytes(nonce);
         return nonce;
     }

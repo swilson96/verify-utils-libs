@@ -17,8 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CryptoHelperTest {
 
     static final String EXAMPLE_IDP = "http://example.com/idp";
-    static final int KEY_LENGTH_IN_BITS = 128;
-    static final String KEY = base64(new byte[KEY_LENGTH_IN_BITS / 8]);
+    static final String KEY = base64(new byte[CryptoHelper.KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES]);
     private static CryptoHelper cryptoHelper;
 
     private static String base64(byte[] data) {
@@ -36,7 +35,7 @@ public class CryptoHelperTest {
 
     @Test
     public void testInitializationVectorIsCorrectLength() {
-        assertThat(cryptoHelper.NONCE_AND_IV_LENGTH).isEqualTo(16);
+        assertThat(cryptoHelper.KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES).isEqualTo(16);
     }
 
     @Test
@@ -90,12 +89,9 @@ public class CryptoHelperTest {
         assertThat(otherCryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValue).isPresent()).isFalse();
     }
 
-    @Test
-    public void testCannotDecryptWithKeyOfWrongSize() {
-        String encryptedValue = cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(EXAMPLE_IDP).get();
-        CryptoHelper otherCryptoHelper = new CryptoHelper(base64("NOTsixteenbyteslong".getBytes()));
-        // Catch a InvalidKeyException in decrypt
-        assertThat(otherCryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(encryptedValue).isPresent()).isFalse();
+    @Test(expected=IllegalArgumentException.class)
+    public void testCannotConstructCryptoHelperWithIncorrectKeyLength() {
+        new CryptoHelper(base64(new byte[CryptoHelper.KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES+1]));
     }
 
     @Test
