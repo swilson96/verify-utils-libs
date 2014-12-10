@@ -96,7 +96,7 @@ public class CryptoHelper {
         try {
             return Optional.of(string(idpEntityIdAsByteArray));
         } catch (UnsupportedEncodingException e) {
-            //fixme: log
+            LOG.warn(format("UnsupportedEncoding (UTF8) could not encode entityId as utf8: {0}", idpEntityIdAsByteArray));
             return Optional.absent();
         }
     }
