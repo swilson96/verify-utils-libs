@@ -106,4 +106,9 @@ public class CryptoHelperTest {
     public void testExtremelyLongEntityIDsShouldNotBeAccepted() {
         cryptoHelper.encrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(new String(new byte[2000]));
     }
+
+    @Test
+    public void testDecryptingEmptyStringReturnsAbsent() {
+        assertThat(cryptoHelper.decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited("").isPresent()).isFalse();
+    }
 }

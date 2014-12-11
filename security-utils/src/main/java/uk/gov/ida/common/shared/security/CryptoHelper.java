@@ -78,6 +78,7 @@ public class CryptoHelper {
     }
 
     public Optional<String> decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(String base64EncodedEncryptedIdpNameWithNonce) {
+        if(base64EncodedEncryptedIdpNameWithNonce.isEmpty()) return Optional.absent();
         byte[] encryptedIdpNameWithNonce = unBase64(base64EncodedEncryptedIdpNameWithNonce);
         byte[] decryptedIdpNameWithNonce;
         try {
