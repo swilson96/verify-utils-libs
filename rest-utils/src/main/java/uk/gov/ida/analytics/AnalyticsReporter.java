@@ -1,5 +1,6 @@
 package uk.gov.ida.analytics;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.sun.jersey.api.core.HttpContext;
@@ -54,6 +55,20 @@ public class AnalyticsReporter {
         return uriBuilder.build();
     }
 
+    public URI generateCustomVariableURI(int index, String name, String value, Optional<String> visitorId) throws URISyntaxException {
+        String customVariable = "{\"" + index +"\":[\""+ name + "\",\""+ value +"\"]}";
+        URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
+        if(visitorId.isPresent()) {
+            uriBuilder.addParameter("_id", visitorId.get());
+        }
+        uriBuilder.addParameter("idsite", analyticsConfiguration.getSiteId().toString());
+        uriBuilder.addParameter("apiv", "1");
+        uriBuilder.addParameter("rec", "1");
+        uriBuilder.addParameter("_cvar",customVariable);
+
+        return uriBuilder.build();
+    }
+
     public URI generateFraudURI(Optional<String> visitorId) throws MalformedURLException, URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
 
@@ -67,6 +82,23 @@ public class AnalyticsReporter {
         uriBuilder.addParameter("e_a", "fraud_response");// event action
 
         return uriBuilder.build();
+    }
+
+    public void reportCustomVariable(int index, String name, String value, HttpContext context) {
+        try {
+            if (analyticsConfiguration.getEnabled()) {
+                HttpRequestContext request = context.getRequest();
+                Optional<String> visitorId = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID)).transform(new Function<Cookie, String>() {
+                    @Override
+                    public String apply(Cookie input) {
+                        return input.getValue();
+                    }
+                });
+                piwikClient.reportWithoutContext(generateCustomVariableURI(index, name, value, visitorId));
+            }
+        } catch (Exception e) {
+            LOG.error("Analytics Reporting error", e);
+        }
     }
 
     public void report(String friendlyDescription, HttpContext context) {

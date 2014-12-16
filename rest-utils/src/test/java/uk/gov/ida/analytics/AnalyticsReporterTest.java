@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.fromNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -57,6 +58,25 @@ public class AnalyticsReporterTest {
     public void setUp() throws Exception {
         doReturn(requestContext).when(context).getRequest();
         doReturn(ImmutableMap.of(PIWIK_VISITOR_ID, new Cookie(PIWIK_VISITOR_ID, visitorId))).when(requestContext).getCookies();
+    }
+
+    @Test
+    public void shouldCallGenerateUrlAndSendToPiwikAsynchronouslyWhenReportingCustomVariable() throws Exception {
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build());
+
+        analyticsReporter.reportCustomVariable(2, "IDP", "Experian", context);
+
+        URI expected = analyticsReporter.generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId));
+        verify(piwikClient).reportWithoutContext(expected);
+    }
+
+    @Test
+    public void shouldHandleAnyExceptionsWhenReportingCustomVariable() throws Exception {
+        AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
+
+        doThrow(new RuntimeException("error")).when(analyticsReporter).generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId));
+
+        analyticsReporter.reportCustomVariable(2, "IDP", "Experian", context);
     }
 
     @Test
@@ -134,6 +154,31 @@ public class AnalyticsReporterTest {
 
         assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
 
+    }
+
+    @Test
+    public void shouldGeneratePiwikCustomVariableUrl() throws URISyntaxException {
+        String customVariable = "{\"1\":[\"RP\",\"HMRC BLA\"]}";
+
+        URIBuilder expectedURI = new URIBuilder("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite=9595&rec=1&apiv=1");
+        expectedURI.addParameter("_cvar", customVariable);
+        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
+        Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
+        Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI(1, "RP", "HMRC BLA", visitorId));
+
+        Map<String,NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
+            public String apply(NameValuePair from) {
+                return from.getName();
+            }
+        });
+
+        for(NameValuePair param : testURI.getQueryParams()){
+            assertThat(expectedParams).containsEntry(param.getName(), param);
+        }
+
+        assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
     }
 
 }
