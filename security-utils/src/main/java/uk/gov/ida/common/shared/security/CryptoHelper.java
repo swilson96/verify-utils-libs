@@ -31,7 +31,7 @@ import static java.text.MessageFormat.format;
  *
  * It is not possible to encrypt a string terminated with padding nulls on the command line
  * as the shell removes them.  A Ruby script that can encrypt (and decrypt) these cookie
- * values is here: https://github.gds/williampalmer/cookie-crypto/
+ * values is in ida-utils/tools/cookie-crypto.rb
  *
  */
 public class CryptoHelper {
