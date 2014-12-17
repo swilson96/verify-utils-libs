@@ -28,7 +28,7 @@ def _decrypt data
 end
 
 def encrypt data
-  to_encode = (Random.new.bytes(16)+data).ljust(528)
+  to_encode = (Random.new.bytes(16)+data).ljust(528).gsub(" ", "\0")
   puts("encrypting:\n#{to_encode}")  
   puts("output:\n")
   enc = _encrypt(to_encode)
