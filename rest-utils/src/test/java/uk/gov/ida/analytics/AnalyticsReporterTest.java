@@ -58,6 +58,7 @@ public class AnalyticsReporterTest {
     public void setUp() throws Exception {
         doReturn(requestContext).when(context).getRequest();
         doReturn(ImmutableMap.of(PIWIK_VISITOR_ID, new Cookie(PIWIK_VISITOR_ID, visitorId))).when(requestContext).getCookies();
+        when(requestContext.getRequestUri()).thenReturn(URI.create("http://localhost"));
     }
 
     @Test
@@ -66,7 +67,7 @@ public class AnalyticsReporterTest {
 
         analyticsReporter.reportCustomVariable(2, "IDP", "Experian", context);
 
-        URI expected = analyticsReporter.generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId));
+        URI expected = analyticsReporter.generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId), context.getRequest());
         verify(piwikClient).report(expected, context.getRequest());
     }
 
@@ -74,7 +75,7 @@ public class AnalyticsReporterTest {
     public void shouldHandleAnyExceptionsWhenReportingCustomVariable() throws Exception {
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
 
-        doThrow(new RuntimeException("error")).when(analyticsReporter).generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId));
+        doThrow(new RuntimeException("error")).when(analyticsReporter).generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId), requestContext);
 
         analyticsReporter.reportCustomVariable(2, "IDP", "Experian", context);
     }
@@ -162,11 +163,12 @@ public class AnalyticsReporterTest {
 
         URIBuilder expectedURI = new URIBuilder("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite=9595&rec=1&apiv=1");
         expectedURI.addParameter("_cvar", customVariable);
+        expectedURI.addParameter("url", requestContext.getRequestUri().toString());
         AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
         Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
         Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
-        URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI(1, "RP", "HMRC BLA", visitorId));
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI(1, "RP", "HMRC BLA", visitorId, context.getRequest()));
 
         Map<String,NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
             public String apply(NameValuePair from) {

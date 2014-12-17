@@ -55,7 +55,7 @@ public class AnalyticsReporter {
         return uriBuilder.build();
     }
 
-    public URI generateCustomVariableURI(int index, String name, String value, Optional<String> visitorId) throws URISyntaxException {
+    public URI generateCustomVariableURI(int index, String name, String value, Optional<String> visitorId, HttpRequestContext request) throws URISyntaxException {
         String customVariable = "{\"" + index +"\":[\""+ name + "\",\""+ value +"\"]}";
         URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
         if(visitorId.isPresent()) {
@@ -65,6 +65,7 @@ public class AnalyticsReporter {
         uriBuilder.addParameter("apiv", "1");
         uriBuilder.addParameter("rec", "1");
         uriBuilder.addParameter("_cvar",customVariable);
+        uriBuilder.addParameter("url", request.getRequestUri().toString());
 
         return uriBuilder.build();
     }
@@ -94,7 +95,7 @@ public class AnalyticsReporter {
                         return input.getValue();
                     }
                 });
-                piwikClient.report(generateCustomVariableURI(index, name, value, visitorId), request);
+                piwikClient.report(generateCustomVariableURI(index, name, value, visitorId, request), request);
             }
         } catch (Exception e) {
             LOG.error("Analytics Reporting error", e);
