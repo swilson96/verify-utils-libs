@@ -5,7 +5,8 @@
 require 'base64'
 require 'OpenSSL'
 
-BASE64_KEY="base64keyhere"
+# Put your key in base64 here
+BASE64_KEY="MDAwMDAwMDAwMDAwMDAwMAo="
 KEY=Base64.decode64(BASE64_KEY)
 IV=Random.new.bytes(16)
 
@@ -28,7 +29,7 @@ def _decrypt data
 end
 
 def encrypt data
-  to_encode = (Random.new.bytes(16)+data).ljust(528).gsub(" ", "\0")
+  to_encode = (Random.new.bytes(16)+data).ljust(528, "\0")
   puts("encrypting:\n#{to_encode}")  
   puts("output:\n")
   enc = _encrypt(to_encode)
