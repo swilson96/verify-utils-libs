@@ -94,7 +94,7 @@ public class AnalyticsReporter {
                         return input.getValue();
                     }
                 });
-                piwikClient.reportWithoutContext(generateCustomVariableURI(index, name, value, visitorId));
+                piwikClient.report(generateCustomVariableURI(index, name, value, visitorId), request);
             }
         } catch (Exception e) {
             LOG.error("Analytics Reporting error", e);

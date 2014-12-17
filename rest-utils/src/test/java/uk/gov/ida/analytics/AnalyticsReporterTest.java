@@ -67,7 +67,7 @@ public class AnalyticsReporterTest {
         analyticsReporter.reportCustomVariable(2, "IDP", "Experian", context);
 
         URI expected = analyticsReporter.generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId));
-        verify(piwikClient).reportWithoutContext(expected);
+        verify(piwikClient).report(expected, context.getRequest());
     }
 
     @Test
