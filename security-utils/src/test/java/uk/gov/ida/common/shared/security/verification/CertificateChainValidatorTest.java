@@ -37,6 +37,17 @@ public class CertificateChainValidatorTest {
     }
 
     @Test
+    public void validate_shouldReturnAnExceptionContainingReasonAndDescription() throws Exception {
+        final X509Certificate otherChildCertificate =
+                x509CertificateFactory.createCertificate(childSignedByOtherRootCAString);
+
+        CertificateValidity certificateValidity = certificateChainValidator.validate(otherChildCertificate, getTrustStore());
+        assertThat(certificateValidity.isInvalid()).isEqualTo(true);
+        assertThat(certificateValidity.getReason().get()).isEqualTo(PKIXReason.NO_TRUST_ANCHOR);
+        assertThat(certificateValidity.getDescription().get()).isEqualTo("Path does not chain with any of the trust anchors");
+    }
+
+    @Test
     public void validate_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate intermediaryCACertificate = x509CertificateFactory.createCertificate(intermediaryCACertString);
 
