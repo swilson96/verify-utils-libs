@@ -12,6 +12,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -117,33 +119,36 @@ public class AnalyticsReporterTest {
     public void shouldGeneratePiwikUrl() throws MalformedURLException, URISyntaxException {
         DateTimeUtils.setCurrentMillisFixed(DateTime.now().getMillis());
 
-        DateTime now = DateTime.now();
+        try {
+            DateTime now = DateTime.now();
 
-        when(requestContext.getHeaderValue("Referer")).thenReturn("http://piwikserver/referrerUrl");
-        when(requestContext.getRequestUri()).thenReturn(new URI("http://piwikserver/requestUrl"));
+            when(requestContext.getHeaderValue("Referer")).thenReturn("http://piwikserver/referrerUrl");
+            when(requestContext.getRequestUri()).thenReturn(new URI("http://piwikserver/requestUrl"));
 
-        URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FrequestUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&r=613892&action_name=SERVER+friendly+description+of+URL");
-        expectedURI.addParameter("h", Integer.toString(now.getHourOfDay()));
-        expectedURI.addParameter("m", Integer.toString(now.getMinuteOfHour()));
-        expectedURI.addParameter("s", Integer.toString(now.getSecondOfMinute()));
-        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
-        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
+            URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FrequestUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&r=613892&action_name=SERVER+friendly+description+of+URL");
+            DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+            expectedURI.addParameter("cdt", fmt.print(now));
 
-        URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("SERVER friendly description of URL", requestContext, "abc", "613892"));
+            AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
+            AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
 
-        Map<String,NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
-            public String apply(NameValuePair from) {
-                return from.getName();
+            URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("SERVER friendly description of URL", requestContext, "abc", "613892"));
+
+            Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
+                public String apply(NameValuePair from) {
+                    return from.getName();
+                }
+            });
+
+            for (NameValuePair param : testURI.getQueryParams()) {
+                assertThat(expectedParams).containsEntry(param.getName(), param);
             }
-        });
 
-        for(NameValuePair param : testURI.getQueryParams()){
-            assertThat(expectedParams).containsEntry(param.getName(), param);
+            assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
+        } finally {
+            DateTimeUtils.setCurrentMillisSystem();
         }
 
-        assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
-
-        DateTimeUtils.setCurrentMillisSystem();
     }
 
     @Test
