@@ -10,6 +10,8 @@ import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.core.HttpRequestContext;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -113,10 +115,17 @@ public class AnalyticsReporterTest {
 
     @Test
     public void shouldGeneratePiwikUrl() throws MalformedURLException, URISyntaxException {
+        DateTimeUtils.setCurrentMillisFixed(DateTime.now().getMillis());
+
+        DateTime now = DateTime.now();
+
         when(requestContext.getHeaderValue("Referer")).thenReturn("http://piwikserver/referrerUrl");
         when(requestContext.getRequestUri()).thenReturn(new URI("http://piwikserver/requestUrl"));
 
         URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FrequestUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&r=613892&action_name=SERVER+friendly+description+of+URL");
+        expectedURI.addParameter("h", Integer.toString(now.getHourOfDay()));
+        expectedURI.addParameter("m", Integer.toString(now.getMinuteOfHour()));
+        expectedURI.addParameter("s", Integer.toString(now.getSecondOfMinute()));
         AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
 
@@ -133,6 +142,8 @@ public class AnalyticsReporterTest {
         }
 
         assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
+
+        DateTimeUtils.setCurrentMillisSystem();
     }
 
     @Test

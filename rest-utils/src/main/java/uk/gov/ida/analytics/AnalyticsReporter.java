@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.core.HttpRequestContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.configuration.AnalyticsConfiguration;
@@ -43,6 +44,10 @@ public class AnalyticsReporter {
         uriBuilder.addParameter("rec", "1");
         uriBuilder.addParameter("r", requestId);
         uriBuilder.addParameter("url", request.getRequestUri().toString());
+        DateTime now = DateTime.now();
+        uriBuilder.addParameter("h", Integer.toString(now.getHourOfDay()));
+        uriBuilder.addParameter("m", Integer.toString(now.getMinuteOfHour()));
+        uriBuilder.addParameter("s", Integer.toString(now.getSecondOfMinute()));
 
         // Only FireFox on Windows is unable to provide referrer on AJAX calls
         Optional<String> refererHeader = fromNullable(request.getHeaderValue(REFERER));
