@@ -25,6 +25,14 @@ import static java.text.MessageFormat.format;
  * resulting encrypted data does not allow anyone to draw inferences about
  * the unencrypted data.
  *
+ * For QA purposes it may be helpful to decrypt data encoded by this class on the
+ * command line.  This can be achieved using the following command:
+ * `echo "cookievalue" | base64 -D | openssl enc -d -aes-128-cbc -K <keyinhex> -iv 0000000000000000`
+ *
+ * It is not possible to encrypt a string terminated with padding nulls on the command line
+ * as the shell removes them.  A Ruby script that can encrypt (and decrypt) these cookie
+ * values is in ida-utils/tools/cookie-crypto.rb
+ *
  */
 public class CryptoHelper {
 
