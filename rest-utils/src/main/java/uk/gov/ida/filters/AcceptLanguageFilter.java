@@ -49,7 +49,7 @@ public class AcceptLanguageFilter implements Filter {
     public void destroy() {
     }
 
-    private class HideAcceptLanguage extends HttpServletRequestWrapper {
+    class HideAcceptLanguage extends HttpServletRequestWrapper {
 
         public HideAcceptLanguage(HttpServletRequest request) {
             super(request);
