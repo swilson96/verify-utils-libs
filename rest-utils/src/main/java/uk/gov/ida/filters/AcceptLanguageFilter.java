@@ -14,6 +14,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 
+/**
+ * Users browsing to the hub with Accept-Language codes which include
+ * integers for instance "es-419 – Spanish appropriate for the Latin
+ * America and Caribbean region". Are receiving 400 Bad Request from Jersey
+ * as it fails to parse the header.
+ *
+ * This is resolved in the following issue upstream,
+ *
+ * https://java.net/jira/browse/JERSEY-2478
+ *
+ * Once Dropwizard releases a new stable version including this fixed
+ * Jersey we should we remove this filter.
+ *
+ * We need to do this at the servlets level to intercept the header before
+ * Jersey attempts to parse out the headers to build its
+ * ContainerRequestContext.
+ *
+ * Followed some "recommendations" here:
+ * http://stackoverflow.com/questions/2811769/adding-an-http-header-to-the-request-in-a-servlet-filter
+ *
+ * Not sure how to test this as our existing tests don't start the full environment?
+ */
 public class AcceptLanguageFilter implements Filter {
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
