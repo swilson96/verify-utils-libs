@@ -53,7 +53,7 @@ public class JsonResponseProcessorTest {
     }
 
     @Test
-    public void getJson_shouldThrowUnauditedErrorExceptionIfClientErrorResponseIsReturned() throws Exception {
+    public void getJson_shouldThrowUnauditedErrorExceptionIfClientErrorResponseEntityAsStringIsReturned() throws Exception {
         ClientResponse clientResponse = createMockClientResponse(400, "Some Entity");
         try {
             responseProcessor.getJsonEntity(uri, null, Object.class, clientResponse);
@@ -66,19 +66,7 @@ public class JsonResponseProcessorTest {
     }
 
     @Test
-    public void getJson_shouldThrowResourceNotFoundExceptionIf404ResponseIsReturned() throws Exception {
-        ClientResponse clientResponse = createMockClientResponse(404, "Some Entity");
-        try {
-            responseProcessor.getJsonEntity(uri, null, Object.class, clientResponse);
-            fail("fail");
-        } catch(ApplicationException e) {
-            assertThat(e.getExceptionType()).isEqualTo(ExceptionType.CLIENT_ERROR);
-            assertThat(e.isAudited()).isEqualTo(false);
-        }
-    }
-
-    @Test
-    public void getJson_shouldThrowUnauditedErrorExceptionIfServerErrorResponseIsReturned() throws Exception {
+    public void getJson_shouldThrowUnauditedErrorExceptionIfServerErrorResponseAsStringIsReturned() throws Exception {
         ClientResponse clientResponse = createMockClientResponse(500, "There has been some internal server error");
         try {
             responseProcessor.getJsonEntity(uri, null, Object.class, clientResponse);
@@ -86,6 +74,7 @@ public class JsonResponseProcessorTest {
         } catch(ApplicationException e) {
             verify(clientResponse, times(1)).getEntity(String.class);
             assertThat(e.getExceptionType()).isEqualTo(ExceptionType.REMOTE_SERVER_ERROR);
+            assertThat(e.isAudited()).isEqualTo(false);
         }
     }
 
