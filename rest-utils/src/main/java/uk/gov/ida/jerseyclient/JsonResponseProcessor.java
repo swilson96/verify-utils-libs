@@ -77,7 +77,7 @@ public class JsonResponseProcessor {
         try {
             Optional<ErrorStatusDto> errorStatusDto = getErrorStatusDto(entity);
             if (errorStatusDto.isPresent()) {
-                return createExceptionFromErrorStatusDto(objectMapper.readValue(entity, ErrorStatusDto.class));
+                return createExceptionFromErrorStatusDto(errorStatusDto.get());
             } else {
                 return createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), exceptionType, entity));
             }
