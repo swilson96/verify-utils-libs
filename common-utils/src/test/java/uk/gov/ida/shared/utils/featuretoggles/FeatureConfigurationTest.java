@@ -21,7 +21,7 @@ public class FeatureConfigurationTest {
         FeatureConfiguration featureConfiguration = (FeatureConfiguration) yaml.load(is);
 
         assertThat(featureConfiguration.getFeatureClass()).isEqualTo("uk.gov.ida.shared.utils.featuretoggles.IdaFeatures");
-        assertThat(featureConfiguration.getFeatureCount()).isEqualTo(2);
+        assertThat(featureConfiguration.getFeatures().size()).isEqualTo(2);
         assertThat(featureConfiguration.getFeatures().get(0).isActive()).isEqualTo(false);
         assertThat(featureConfiguration.getFeatures().get(0).getFeatureName()).isEqualTo("UIRework");
         assertThat(featureConfiguration.getFeatures().get(1).isActive()).isEqualTo(true);
@@ -39,7 +39,7 @@ public class FeatureConfigurationTest {
         FeatureConfiguration featureConfiguration = (FeatureConfiguration) yaml.load(is);
 
         assertThat(featureConfiguration.getFeatureClass()).isEqualTo("uk.gov.ida.shared.utils.featuretoggles.IdaFeatures");
-        assertThat(featureConfiguration.getFeatureCount()).isEqualTo(0);
+        assertThat(featureConfiguration.getFeatures().size()).isEqualTo(0);
         assertThat(featureConfiguration.getFeatures()).isNotNull();
     }
 }

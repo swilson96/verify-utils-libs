@@ -16,7 +16,7 @@ public class FeatureConfiguration {
 
     @Valid
     // It is valid for us to have no features i.e. a null/empty list
-    public List<FeatureEntry> features;
+    public List<FeatureEntry> features = ImmutableList.of();
 
     @Valid
     @NotNull
@@ -32,14 +32,8 @@ public class FeatureConfiguration {
         return false;
     }
 
-    public int getFeatureCount() {
-        if(features==null) return 0;
-        return features.size();
-    }
-
     public List<FeatureEntry> getFeatures() {
-        if(features!=null) return features;
-        return ImmutableList.of();
+        return features;
     }
 
     public String getFeatureClass() { return featureClass; }
