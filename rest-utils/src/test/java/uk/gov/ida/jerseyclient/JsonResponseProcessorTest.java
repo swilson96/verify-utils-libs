@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
+import org.assertj.core.api.ObjectAssert;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.ida.common.ErrorStatusDto;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.ida.exceptions.ApplicationException.createExceptionFromErrorStatusDto;
 
 public class JsonResponseProcessorTest {
 
@@ -55,13 +57,34 @@ public class JsonResponseProcessorTest {
     @Test
     public void getJson_shouldThrowUnauditedErrorExceptionIfClientErrorResponseEntityAsStringIsReturned() throws Exception {
         ClientResponse clientResponse = createMockClientResponse(400, "Some Entity");
+        ApplicationException applicationException = createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), ExceptionType.CLIENT_ERROR, clientResponse.getEntity(String.class)));
         try {
             responseProcessor.getJsonEntity(uri, null, Object.class, clientResponse);
             fail("fail");
         } catch(ApplicationException e) {
-            verify(clientResponse, times(1)).getEntity(String.class);
-            assertThat(e.getExceptionType()).isEqualTo(ExceptionType.CLIENT_ERROR);
-            assertThat(e.isAudited()).isEqualTo(false);
+            verify(clientResponse, times(2)).getEntity(String.class);
+            assertThat(e.getExceptionType()).isEqualTo(applicationException.getExceptionType());
+            assertThat(e.getMessage()).isEqualTo(applicationException.getMessage());
+            assertThat(e.getUri()).isEqualTo(applicationException.getUri());
+            assertThat(e.isAudited()).isEqualTo(applicationException.isAudited());
+            assertThat(e.requiresAuditing()).isEqualTo(applicationException.requiresAuditing());
+        }
+    }
+
+    @Test
+    public void getJson_shouldReturnApplicationExceptionWithErrorStatusDtoIfClientResponseContainsMalformedErrorStatusDtoJsonString() throws Exception {
+        ClientResponse clientResponse = createMockClientResponse(400, "{\"extra\":\"shouldn't be here\",\"audited\":true,\"errorId\":\"1357ad59-5652-4bde-ac19-593c2316a389\",\"exceptionType\":\"INVALID_SAML\",\"clientMessage\":\"\"}");
+        ApplicationException applicationException = createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), ExceptionType.CLIENT_ERROR, clientResponse.getEntity(String.class)));
+        try {
+            responseProcessor.getJsonEntity(uri, null, Object.class, clientResponse);
+            fail("fail");
+        } catch(ApplicationException e) {
+            verify(clientResponse, times(2)).getEntity(String.class);
+            assertThat(e.getExceptionType()).isEqualTo(applicationException.getExceptionType());
+            assertThat(e.getMessage()).isEqualTo(applicationException.getMessage());
+            assertThat(e.getUri()).isEqualTo(applicationException.getUri());
+            assertThat(e.isAudited()).isEqualTo(applicationException.isAudited());
+            assertThat(e.requiresAuditing()).isEqualTo(applicationException.requiresAuditing());
         }
     }
 
