@@ -130,7 +130,7 @@ public class AnalyticsReporter {
                 HttpRequestContext request = context.getRequest();
                 Optional<Cookie> piwikCookie = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID));
                 Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
-                piwikClient.reportWithoutContext(generateFraudURI(visitorId));
+                piwikClient.report(generateFraudURI(visitorId), request);
             }
         } catch(Exception e) {
             LOG.error("Analytics Reporting error", e);

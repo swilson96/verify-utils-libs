@@ -23,7 +23,4 @@ public class PiwikClient {
                 .get(String.class);
     }
 
-    public void reportWithoutContext(URI uri) {
-        client.asyncResource(uri).get(String.class);
-    }
 }
