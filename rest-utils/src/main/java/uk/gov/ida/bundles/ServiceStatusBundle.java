@@ -7,7 +7,7 @@ import uk.gov.ida.configuration.ServiceStatus;
 import uk.gov.ida.resources.ServiceStatusResource;
 import uk.gov.ida.tasks.SetServiceUnavailableTask;
 
-public class ZddBundle implements Bundle {
+public class ServiceStatusBundle implements Bundle {
     @Override
     public void initialize(Bootstrap<?> bootstrap) {
 
