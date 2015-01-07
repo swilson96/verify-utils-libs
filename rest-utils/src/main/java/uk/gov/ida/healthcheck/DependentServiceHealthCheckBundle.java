@@ -1,6 +1,5 @@
 package uk.gov.ida.healthcheck;
 
-import com.google.inject.Inject;
 import com.sun.jersey.api.client.Client;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -21,10 +20,8 @@ public class DependentServiceHealthCheckBundle implements ConfiguredBundle<Restf
 
     private KeyStoreProviderFactory trustStoreProviderFactory;
 
-    @Inject
     public DependentServiceHealthCheckBundle(
             KeyStoreProviderFactory trustStoreProviderFactory) {
-
         this.trustStoreProviderFactory = trustStoreProviderFactory;
     }
 
