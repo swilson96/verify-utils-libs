@@ -30,9 +30,6 @@ public class DependentServiceHealthCheck extends InjectableHealthCheck {
     @Override
     protected HealthCheck.Result check() {
         UriBuilder uriBuilder = UriBuilder.fromUri(dependentServiceConfiguration.toBaseUri());
-        if (StringUtils.isNotEmpty(dependentServiceConfiguration.getPathPrefix())) {
-            uriBuilder.path(dependentServiceConfiguration.getPathPrefix());
-        }
         final URI uri = uriBuilder.path("service-name").build();
         try {
             client.resource(uri).get(ServiceNameDto.class);

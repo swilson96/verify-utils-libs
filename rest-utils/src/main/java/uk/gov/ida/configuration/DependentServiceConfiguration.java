@@ -36,9 +36,6 @@ public class DependentServiceConfiguration {
     @Valid
     protected String serviceName;
 
-    @Valid
-    protected String pathPrefix;
-
     public String getHost() {
         return host;
     }
@@ -49,10 +46,6 @@ public class DependentServiceConfiguration {
 
     public Integer getPort() {
         return port;
-    }
-
-    public String getPathPrefix() {
-        return pathPrefix;
     }
 
     // still allowed for backwards compatibility
