@@ -9,7 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @SuppressWarnings("unused")
-public class DependentServiceConfiguration {
+public class DependentServiceConfiguration implements ServiceConfiguration {
 
     protected DependentServiceConfiguration() {
     }
@@ -59,5 +59,10 @@ public class DependentServiceConfiguration {
         } catch (URISyntaxException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public URI getUri() {
+        return toBaseUri();
     }
 }

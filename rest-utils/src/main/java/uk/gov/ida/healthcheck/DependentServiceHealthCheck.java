@@ -1,14 +1,13 @@
 package uk.gov.ida.healthcheck;
 
-import com.hubspot.dropwizard.guice.InjectableHealthCheck;
 import com.codahale.metrics.health.HealthCheck;
+import com.hubspot.dropwizard.guice.InjectableHealthCheck;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.UniformInterfaceException;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.common.ServiceNameDto;
-import uk.gov.ida.configuration.DependentServiceConfiguration;
+import uk.gov.ida.configuration.ServiceConfiguration;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -19,17 +18,17 @@ public class DependentServiceHealthCheck extends InjectableHealthCheck {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(DependentServiceHealthCheck.class);
 
 
-    private final DependentServiceConfiguration dependentServiceConfiguration;
+    private final ServiceConfiguration dependentServiceConfiguration;
     private final Client client;
 
-    public DependentServiceHealthCheck(Client client, DependentServiceConfiguration dependentServiceConfiguration) {
+    public DependentServiceHealthCheck(Client client, ServiceConfiguration dependentServiceConfiguration) {
         this.client = client;
         this.dependentServiceConfiguration = dependentServiceConfiguration;
     }
 
     @Override
     protected HealthCheck.Result check() {
-        UriBuilder uriBuilder = UriBuilder.fromUri(dependentServiceConfiguration.toBaseUri());
+        UriBuilder uriBuilder = UriBuilder.fromUri(dependentServiceConfiguration.getUri());
         final URI uri = uriBuilder.path("service-name").build();
         try {
             client.resource(uri).get(ServiceNameDto.class);
@@ -55,6 +54,6 @@ public class DependentServiceHealthCheck extends InjectableHealthCheck {
 
     @Override
     public String getName() {
-        return "Service: " + dependentServiceConfiguration.toBaseUri();
+        return "Service: " + dependentServiceConfiguration.getUri();
     }
 }
