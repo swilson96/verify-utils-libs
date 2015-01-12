@@ -28,7 +28,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.fromNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -56,7 +55,9 @@ public class AnalyticsReporterTest {
 
     @Mock
     private PiwikClient piwikClient;
+
     private String visitorId = "123";
+    private String requestId = "613892";
 
     @Before
     public void setUp() throws Exception {
@@ -67,21 +68,15 @@ public class AnalyticsReporterTest {
 
     @Test
     public void shouldCallGenerateUrlAndSendToPiwikAsynchronouslyWhenReportingCustomVariable() throws Exception {
-        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build());
-
-        analyticsReporter.reportCustomVariable(2, "IDP", "Experian", context);
-
-        URI expected = analyticsReporter.generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId), context.getRequest());
-        verify(piwikClient).report(expected, context.getRequest());
-    }
-
-    @Test
-    public void shouldHandleAnyExceptionsWhenReportingCustomVariable() throws Exception {
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
+        CustomVariable customVariable = new CustomVariable(2, "IDP", "Experian");
+        String requestId = "foo";
+        doReturn(requestId).when(analyticsReporter).getRequestId();
 
-        doThrow(new RuntimeException("error")).when(analyticsReporter).generateCustomVariableURI(2, "IDP", "Experian", Optional.<String>of(visitorId), requestContext);
+        analyticsReporter.reportCustomVariable("friendly description of URL", context, customVariable);
 
-        analyticsReporter.reportCustomVariable(2, "IDP", "Experian", context);
+        URI expected = analyticsReporter.generateCustomVariableURI("friendly description of URL", context.getRequest(), requestId, Optional.of(customVariable), Optional.of(visitorId));
+        verify(piwikClient).report(expected, context.getRequest());
     }
 
     @Test
@@ -95,7 +90,7 @@ public class AnalyticsReporterTest {
 
         String requestId = "foo";
         doReturn(requestId).when(analyticsReporter).getRequestId();
-        doReturn(piwikUri).when(analyticsReporter).generateURI(friendlyDescription, requestContext, visitorId, requestId);
+        doReturn(piwikUri).when(analyticsReporter).generateCustomVariableURI(friendlyDescription, requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of(visitorId));
 
         analyticsReporter.report(friendlyDescription, context);
 
@@ -110,7 +105,7 @@ public class AnalyticsReporterTest {
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
 
         String requestId = "4";
-        doThrow(new RuntimeException("error")).when(analyticsReporter).generateURI(friendlyDescription, requestContext, visitorId, requestId);
+        doThrow(new RuntimeException("error")).when(analyticsReporter).generateCustomVariableURI(friendlyDescription, requestContext, this.requestId, Optional.<CustomVariable>absent(), Optional.of(visitorId));
 
         analyticsReporter.report(friendlyDescription, context);
     }
@@ -132,7 +127,7 @@ public class AnalyticsReporterTest {
             AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
             AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
 
-            URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("SERVER friendly description of URL", requestContext, "abc", "613892"));
+            URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI("SERVER friendly description of URL", requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of("abc")));
 
             Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
                 public String apply(NameValuePair from) {
@@ -175,16 +170,21 @@ public class AnalyticsReporterTest {
 
     @Test
     public void shouldGeneratePiwikCustomVariableUrl() throws URISyntaxException {
+
+        DateTime now = DateTime.now();
         String customVariable = "{\"1\":[\"RP\",\"HMRC BLA\"]}";
 
-        URIBuilder expectedURI = new URIBuilder("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite=9595&rec=1&apiv=1");
+        URIBuilder expectedURI = new URIBuilder("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite=9595&rec=1&apiv=1&action_name=page-title&r=613892&cookie=false");
         expectedURI.addParameter("_cvar", customVariable);
         expectedURI.addParameter("url", requestContext.getRequestUri().toString());
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        expectedURI.addParameter("cdt", fmt.print(now));
         AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
         Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
         Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
-        URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI(1, "RP", "HMRC BLA", visitorId, context.getRequest()));
+        Optional<CustomVariable> customVariableOptional = Optional.of(new CustomVariable(1, "RP", "HMRC BLA"));
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI("page-title", context.getRequest(), requestId, customVariableOptional, visitorId));
 
         Map<String,NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
             public String apply(NameValuePair from) {
