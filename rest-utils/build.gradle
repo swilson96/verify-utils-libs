@@ -20,6 +20,6 @@ dependencies {
             "com.sun.jersey:jersey-core:1.18.1",
             "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
             "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion",
-            "com.hubspot.dropwizard:dropwizard-guice:0.7.0"
-
+            "com.hubspot.dropwizard:dropwizard-guice:0.7.0",
+            "uk.gov.ida:dropwizard-logstash:0.7.0-18"
 }
