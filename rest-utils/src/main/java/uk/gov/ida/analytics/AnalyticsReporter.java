@@ -36,7 +36,7 @@ public class AnalyticsReporter {
         this.analyticsConfiguration = analyticsConfiguration;
     }
 
-    protected URI generateCustomVariableURI(String friendlyDescription, HttpRequestContext request, String requestId, Optional<CustomVariable> customVariable, Optional<String> visitorId) throws URISyntaxException {
+    protected URI generateURI(String friendlyDescription, HttpRequestContext request, String requestId, Optional<CustomVariable> customVariable, Optional<String> visitorId) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
         if(visitorId.isPresent()) {
             uriBuilder.addParameter("_id", visitorId.get());
@@ -47,7 +47,7 @@ public class AnalyticsReporter {
         uriBuilder.addParameter("rec", "1");
         uriBuilder.addParameter("r", requestId);
         if(customVariable.isPresent()) {
-            uriBuilder.addParameter("_cvar", customVariable.get().getAsJson());
+            uriBuilder.addParameter("_cvar", customVariable.get().getJson());
         }
         uriBuilder.addParameter("url", request.getRequestUri().toString());
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
@@ -110,7 +110,7 @@ public class AnalyticsReporter {
                         return input.getValue();
                     }
                 });
-                piwikClient.report(generateCustomVariableURI(friendlyDescription, request, getRequestId(), customVariable, visitorId), request);
+                piwikClient.report(generateURI(friendlyDescription, request, getRequestId(), customVariable, visitorId), request);
             }
         } catch (Exception e) {
             LOG.error("Analytics Reporting error", e);

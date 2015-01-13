@@ -83,7 +83,7 @@ public class AnalyticsReporterTest {
 
         analyticsReporter.reportCustomVariable("friendly description of URL", context, customVariable);
 
-        URI expected = analyticsReporter.generateCustomVariableURI("friendly description of URL", context.getRequest(), requestId, Optional.of(customVariable), Optional.of(visitorId));
+        URI expected = analyticsReporter.generateURI("friendly description of URL", context.getRequest(), requestId, Optional.of(customVariable), Optional.of(visitorId));
         verify(piwikClient).report(expected, context.getRequest());
     }
 
@@ -98,7 +98,7 @@ public class AnalyticsReporterTest {
 
         String requestId = "foo";
         doReturn(requestId).when(analyticsReporter).getRequestId();
-        doReturn(piwikUri).when(analyticsReporter).generateCustomVariableURI(friendlyDescription, requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of(visitorId));
+        doReturn(piwikUri).when(analyticsReporter).generateURI(friendlyDescription, requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of(visitorId));
 
         analyticsReporter.report(friendlyDescription, context);
 
@@ -112,7 +112,7 @@ public class AnalyticsReporterTest {
 
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
 
-        doThrow(new RuntimeException("error")).when(analyticsReporter).generateCustomVariableURI(friendlyDescription, requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of(visitorId));
+        doThrow(new RuntimeException("error")).when(analyticsReporter).generateURI(friendlyDescription, requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of(visitorId));
 
         analyticsReporter.report(friendlyDescription, context);
     }
@@ -131,7 +131,7 @@ public class AnalyticsReporterTest {
         AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
 
-        URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI("SERVER friendly description of URL", requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of("abc")));
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("SERVER friendly description of URL", requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of("abc")));
 
         Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
             public String apply(NameValuePair from) {
@@ -183,7 +183,7 @@ public class AnalyticsReporterTest {
         Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
         Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
         Optional<CustomVariable> customVariableOptional = Optional.of(new CustomVariable(1, "RP", "HMRC BLA"));
-        URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI("page-title", context.getRequest(), requestId, customVariableOptional, visitorId));
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("page-title", context.getRequest(), requestId, customVariableOptional, visitorId));
 
         Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
             public String apply(NameValuePair from) {

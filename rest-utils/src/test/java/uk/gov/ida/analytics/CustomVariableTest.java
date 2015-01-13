@@ -10,7 +10,7 @@ public class CustomVariableTest {
     public void testGetAsJson_shouldFormatJsonToPiwikCvarFormat() throws Exception {
         CustomVariable customVariable = new CustomVariable(1, "foo", "bar");
 
-        String customVariableAsJson = customVariable.getAsJson();
+        String customVariableAsJson = customVariable.getJson();
 
         assertEquals(customVariableAsJson, "{\"1\":[\"foo\",\"bar\"]}");
     }

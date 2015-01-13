@@ -29,7 +29,7 @@ public class CustomVariable {
         return value;
     }
 
-    String getAsJson() {
+    protected String getJson() {
         return format("{\"%s\":[\"%s\",\"%s\"]}", getIndex(), getName(), getValue());
     }
 
