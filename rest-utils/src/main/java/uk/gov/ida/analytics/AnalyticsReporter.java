@@ -36,32 +36,7 @@ public class AnalyticsReporter {
         this.analyticsConfiguration = analyticsConfiguration;
     }
 
-    public URI generateURI(String friendlyDescription, HttpRequestContext request, String visitorID) throws MalformedURLException, URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
-
-        uriBuilder.addParameter("_id", visitorID);
-        uriBuilder.addParameter("idsite", analyticsConfiguration.getSiteId().toString());
-        uriBuilder.addParameter("action_name", friendlyDescription);
-        uriBuilder.addParameter("apiv", "1");
-        uriBuilder.addParameter("rec", "1");
-        uriBuilder.addParameter("r", getRequestId());
-        uriBuilder.addParameter("url", request.getRequestUri().toString());
-        DateTime now = DateTime.now();
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-        uriBuilder.addParameter("cdt", fmt.print(now));
-
-        // Only FireFox on Windows is unable to provide referrer on AJAX calls
-        Optional<String> refererHeader = fromNullable(request.getHeaderValue(REFERER));
-        if(refererHeader.isPresent()) {
-            uriBuilder.addParameter("urlref", refererHeader.get());
-            uriBuilder.addParameter("ref", refererHeader.get());
-        }
-        uriBuilder.addParameter("cookie", "false");
-
-        return uriBuilder.build();
-    }
-
-    public URI generateCustomVariableURI(String friendlyDescription, HttpRequestContext request, String requestId, Optional<CustomVariable> customVariable, Optional<String> visitorId) throws URISyntaxException {
+    protected URI generateCustomVariableURI(String friendlyDescription, HttpRequestContext request, String requestId, Optional<CustomVariable> customVariable, Optional<String> visitorId) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
         if(visitorId.isPresent()) {
             uriBuilder.addParameter("_id", visitorId.get());
@@ -89,7 +64,7 @@ public class AnalyticsReporter {
         return uriBuilder.build();
     }
 
-    public URI generateFraudURI(Optional<String> visitorId) throws MalformedURLException, URISyntaxException {
+    protected URI generateFraudURI(Optional<String> visitorId) throws MalformedURLException, URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
 
         if(visitorId.isPresent()) {
@@ -108,23 +83,6 @@ public class AnalyticsReporter {
         reportToPiwik(friendlyDescription, context, Optional.of(customVariable));
     }
 
-    private void reportToPiwik(String friendlyDescription, HttpContext context, Optional<CustomVariable> customVariable) {
-        try {
-            if (analyticsConfiguration.getEnabled()) {
-                HttpRequestContext request = context.getRequest();
-                Optional<String> visitorId = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID)).transform(new Function<Cookie, String>() {
-                    @Override
-                    public String apply(Cookie input) {
-                        return input.getValue();
-                    }
-                });
-                piwikClient.report(generateCustomVariableURI(friendlyDescription, request, getRequestId(), customVariable, visitorId), request);
-            }
-        } catch (Exception e) {
-            LOG.error("Analytics Reporting error", e);
-        }
-    }
-
     public void report(String friendlyDescription, HttpContext context) {
         reportToPiwik(friendlyDescription, context, Optional.<CustomVariable>absent());
     }
@@ -138,6 +96,23 @@ public class AnalyticsReporter {
                 piwikClient.report(generateFraudURI(visitorId), request);
             }
         } catch(Exception e) {
+            LOG.error("Analytics Reporting error", e);
+        }
+    }
+
+    private void reportToPiwik(String friendlyDescription, HttpContext context, Optional<CustomVariable> customVariable) {
+        try {
+            if (analyticsConfiguration.getEnabled()) {
+                HttpRequestContext request = context.getRequest();
+                Optional<String> visitorId = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID)).transform(new Function<Cookie, String>() {
+                    @Override
+                    public String apply(Cookie input) {
+                        return input.getValue();
+                    }
+                });
+                piwikClient.report(generateCustomVariableURI(friendlyDescription, request, getRequestId(), customVariable, visitorId), request);
+            }
+        } catch (Exception e) {
             LOG.error("Analytics Reporting error", e);
         }
     }

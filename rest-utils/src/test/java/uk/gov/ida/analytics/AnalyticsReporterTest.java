@@ -14,6 +14,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,6 +65,13 @@ public class AnalyticsReporterTest {
         doReturn(requestContext).when(context).getRequest();
         doReturn(ImmutableMap.of(PIWIK_VISITOR_ID, new Cookie(PIWIK_VISITOR_ID, visitorId))).when(requestContext).getCookies();
         when(requestContext.getRequestUri()).thenReturn(URI.create("http://localhost"));
+
+        DateTimeUtils.setCurrentMillisFixed(DateTime.now().getMillis());
+    }
+
+    @After
+    public void tearDown() {
+        DateTimeUtils.setCurrentMillisSystem();
     }
 
     @Test
@@ -104,46 +112,38 @@ public class AnalyticsReporterTest {
 
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
 
-        String requestId = "4";
-        doThrow(new RuntimeException("error")).when(analyticsReporter).generateCustomVariableURI(friendlyDescription, requestContext, this.requestId, Optional.<CustomVariable>absent(), Optional.of(visitorId));
+        doThrow(new RuntimeException("error")).when(analyticsReporter).generateCustomVariableURI(friendlyDescription, requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of(visitorId));
 
         analyticsReporter.report(friendlyDescription, context);
     }
 
     @Test
     public void shouldGeneratePiwikUrl() throws MalformedURLException, URISyntaxException {
-        DateTimeUtils.setCurrentMillisFixed(DateTime.now().getMillis());
+        DateTime now = DateTime.now();
 
-        try {
-            DateTime now = DateTime.now();
+        when(requestContext.getHeaderValue("Referer")).thenReturn("http://piwikserver/referrerUrl");
+        when(requestContext.getRequestUri()).thenReturn(new URI("http://piwikserver/requestUrl"));
 
-            when(requestContext.getHeaderValue("Referer")).thenReturn("http://piwikserver/referrerUrl");
-            when(requestContext.getRequestUri()).thenReturn(new URI("http://piwikserver/requestUrl"));
+        URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FrequestUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&r=613892&action_name=SERVER+friendly+description+of+URL");
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        expectedURI.addParameter("cdt", fmt.print(now));
 
-            URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FrequestUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&r=613892&action_name=SERVER+friendly+description+of+URL");
-            DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-            expectedURI.addParameter("cdt", fmt.print(now));
+        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
 
-            AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
-            AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI("SERVER friendly description of URL", requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of("abc")));
 
-            URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI("SERVER friendly description of URL", requestContext, requestId, Optional.<CustomVariable>absent(), Optional.of("abc")));
-
-            Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
-                public String apply(NameValuePair from) {
-                    return from.getName();
-                }
-            });
-
-            for (NameValuePair param : testURI.getQueryParams()) {
-                assertThat(expectedParams).containsEntry(param.getName(), param);
+        Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
+            public String apply(NameValuePair from) {
+                return from.getName();
             }
+        });
 
-            assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
-        } finally {
-            DateTimeUtils.setCurrentMillisSystem();
+        for (NameValuePair param : testURI.getQueryParams()) {
+            assertThat(expectedParams).containsEntry(param.getName(), param);
         }
 
+        assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
     }
 
     @Test
@@ -154,13 +154,13 @@ public class AnalyticsReporterTest {
         Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
         Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
         URIBuilder testURI = new URIBuilder(analyticsReporter.generateFraudURI(visitorId));
-        Map<String,NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
+        Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
             public String apply(NameValuePair from) {
                 return from.getName();
             }
         });
 
-        for(NameValuePair param : testURI.getQueryParams()){
+        for (NameValuePair param : testURI.getQueryParams()) {
             assertThat(expectedParams).containsEntry(param.getName(), param);
         }
 
@@ -170,7 +170,6 @@ public class AnalyticsReporterTest {
 
     @Test
     public void shouldGeneratePiwikCustomVariableUrl() throws URISyntaxException {
-
         DateTime now = DateTime.now();
         String customVariable = "{\"1\":[\"RP\",\"HMRC BLA\"]}";
 
@@ -186,13 +185,13 @@ public class AnalyticsReporterTest {
         Optional<CustomVariable> customVariableOptional = Optional.of(new CustomVariable(1, "RP", "HMRC BLA"));
         URIBuilder testURI = new URIBuilder(analyticsReporter.generateCustomVariableURI("page-title", context.getRequest(), requestId, customVariableOptional, visitorId));
 
-        Map<String,NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
+        Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
             public String apply(NameValuePair from) {
                 return from.getName();
             }
         });
 
-        for(NameValuePair param : testURI.getQueryParams()){
+        for (NameValuePair param : testURI.getQueryParams()) {
             assertThat(expectedParams).containsEntry(param.getName(), param);
         }
 

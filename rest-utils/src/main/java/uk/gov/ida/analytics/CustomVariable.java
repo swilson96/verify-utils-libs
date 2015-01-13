@@ -1,6 +1,9 @@
 package uk.gov.ida.analytics;
 
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import static java.lang.String.format;
 
 public class CustomVariable {
@@ -28,5 +31,27 @@ public class CustomVariable {
 
     String getAsJson() {
         return format("{\"%s\":[\"%s\",\"%s\"]}", getIndex(), getName(), getValue());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CustomVariable that = (CustomVariable) o;
+        return new EqualsBuilder()
+                .append(index, that.index)
+                .append(name, that.name)
+                .append(value, that.value)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(59, 71)
+                .append(index)
+                .append(name)
+                .append(value)
+                .toHashCode();
     }
 }
