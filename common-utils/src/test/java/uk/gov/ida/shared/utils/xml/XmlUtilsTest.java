@@ -8,7 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 public class XmlUtilsTest {
-
+    /**
+     * Test for protection against the Billion Laughs attack.
+     * @see https://en.wikipedia.org/wiki/Billion_laughs
+     */
     @Test
     public void convertToElement_shouldDealWithEntityExpansionAttacks() throws Exception {
         String xmlString = "<?xml version=\"1.0\"?>\n" +
@@ -30,9 +33,28 @@ public class XmlUtilsTest {
         try {
             XmlUtils.convertToElement(xmlString);
             fail("fail");
+        } catch (SAXParseException e) {
+            // Exception was expected.
         }
-        catch (SAXParseException e) {
-            assertThat(e.getMessage()).contains("entity expansions");
+    }
+
+    /**
+     * Test to prevent XML External Entity processing (XXE attacks), i.e. access
+     * to arbitrary files etc. on the processing system.
+     * @see https://www.owasp.org/index.php/XML_External_Entity_%28XXE%29_Processing
+     */
+    @Test
+    public void convertToElement_shouldThrowExceptionIfProvidedWithDoctypeDeclaration() throws Exception {
+        String xmlString = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>" +
+                "<!DOCTYPE foo [" +
+                "  <!ELEMENT foo ANY >" +
+                "  <!ENTITY xxe SYSTEM \"file:///etc/passwd\" >]><foo>&xxe;</foo>";
+        try {
+            XmlUtils.convertToElement(xmlString);
+            fail("expected exception not thrown");
+        } catch (SAXParseException e) {
+            assertThat(e.getMessage()).contains("DOCTYPE is disallowed");
         }
     }
 }
+

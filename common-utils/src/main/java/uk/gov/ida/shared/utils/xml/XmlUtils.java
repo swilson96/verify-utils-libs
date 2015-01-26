@@ -7,7 +7,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,7 +20,17 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Due to security requirements, {@link javax.xml.parsers.DocumentBuilder} and
+ * {@link javax.xml.parsers.DocumentBuilderFactory} should *only* be used via
+ * the utility methods in this class.  For more information on the vulnerabilities
+ * identified, see the tests.
+ * @see uk.gov.ida.shared.utils.xml.XmlUtilsTest
+ */
 public abstract class XmlUtils {
+    private static final String FEATURE_DISALLOW_DOCTYPE_DECLARATIONS =
+            "http://apache.org/xml/features/disallow-doctype-decl";
+
     private static final Logger LOG = LoggerFactory.getLogger(XmlUtils.class);
 
     public static String writeToString(Node node) {
@@ -38,10 +47,11 @@ public abstract class XmlUtils {
 
     public static Element convertToElement(String xmlString) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        factory.setFeature(FEATURE_DISALLOW_DOCTYPE_DECLARATIONS, true);
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         return builder.parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8))).getDocumentElement();
     }
 }
+
