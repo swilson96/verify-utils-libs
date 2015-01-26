@@ -46,12 +46,13 @@ public abstract class XmlUtils {
     }
 
     public static Element convertToElement(String xmlString) throws ParserConfigurationException, SAXException, IOException {
+        return newDocumentBuilder().parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8))).getDocumentElement();
+    }
+
+    public static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setFeature(FEATURE_DISALLOW_DOCTYPE_DECLARATIONS, true);
         factory.setNamespaceAware(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        return builder.parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8))).getDocumentElement();
+        return factory.newDocumentBuilder();
     }
 }
-
