@@ -3,6 +3,7 @@ package uk.gov.ida.shared.utils.xml;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
+import static com.google.common.base.Throwables.propagate;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
@@ -49,6 +51,14 @@ public abstract class XmlUtils {
 
     public static Element convertToElement(String xmlString) throws ParserConfigurationException, SAXException, IOException {
         return newDocumentBuilder().parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8))).getDocumentElement();
+    }
+
+    public static Document convertToDocument(String xmlString) {
+        try {
+            return newDocumentBuilder().parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)));
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw propagate(e);
+        }
     }
 
     /**
