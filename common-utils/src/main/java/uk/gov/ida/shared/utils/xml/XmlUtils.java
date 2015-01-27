@@ -49,6 +49,9 @@ public abstract class XmlUtils {
         return newDocumentBuilder().parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8))).getDocumentElement();
     }
 
+    /**
+     * @return a namespace-aware document builder
+     */
     public static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setFeature(FEATURE_DISALLOW_DOCTYPE_DECLARATIONS, true);
