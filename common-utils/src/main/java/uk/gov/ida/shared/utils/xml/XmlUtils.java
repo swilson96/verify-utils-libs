@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+
 /**
  * Due to security requirements, {@link javax.xml.parsers.DocumentBuilder} and
  * {@link javax.xml.parsers.DocumentBuilderFactory} should *only* be used via
@@ -54,6 +56,8 @@ public abstract class XmlUtils {
      */
     public static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // Enable secure processing.  For more details, see https://jaxp.java.net/1.4/JAXP-Compatibility.html#JAXP_security
+        factory.setFeature(FEATURE_SECURE_PROCESSING, true);
         factory.setFeature(FEATURE_DISALLOW_DOCTYPE_DECLARATIONS, true);
         factory.setNamespaceAware(true);
         return factory.newDocumentBuilder();
