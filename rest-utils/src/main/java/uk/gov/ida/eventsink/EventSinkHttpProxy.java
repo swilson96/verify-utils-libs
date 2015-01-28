@@ -7,7 +7,6 @@ import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.common.CommonUrls;
-import uk.gov.ida.configuration.DependentServiceConfiguration;
 import uk.gov.ida.exceptions.ApplicationException;
 import uk.gov.ida.jerseyclient.JsonClient;
 
@@ -17,16 +16,16 @@ import java.net.URI;
 public class EventSinkHttpProxy implements EventSinkProxy {
     private static final Logger LOG = LoggerFactory.getLogger(EventSinkProxy.class);
     private final JsonClient jsonClient;
-    private final DependentServiceConfiguration eventSinkDependentServiceConfiguration;
     private final Environment environment;
+    private final URI eventSinkUri;
 
     @Inject
     public EventSinkHttpProxy(
             JsonClient jsonClient,
-            @EventSink DependentServiceConfiguration eventSinkDependentServiceConfiguration,
+            @EventSink URI eventSinkUri,
             Environment environment) {
         this.jsonClient = jsonClient;
-        this.eventSinkDependentServiceConfiguration = eventSinkDependentServiceConfiguration;
+        this.eventSinkUri = eventSinkUri;
         this.environment = environment;
     }
 
@@ -35,7 +34,7 @@ public class EventSinkHttpProxy implements EventSinkProxy {
     public void logHubEvent(EventSinkHubEvent eventSinkHubEvent) {
         String path = CommonUrls.HUB_SUPPORT_EVENT_SINK_RESOURCE;
         URI uri = UriBuilder
-                .fromUri(eventSinkDependentServiceConfiguration.toBaseUri())
+                .fromUri(eventSinkUri)
                 .path(path)
                 .build();
         try {
