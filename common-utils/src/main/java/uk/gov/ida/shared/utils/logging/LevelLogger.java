@@ -14,7 +14,7 @@ public class LevelLogger<T> {
         log = LoggerFactory.getLogger(clazz);
     }
 
-    public static <T> LevelLogger<T> getLevelLogger(Class<T> clazz) {
+    static <T> LevelLogger<T> getLevelLogger(Class<T> clazz) {
         return new LevelLogger<T>(clazz);
     }
 
