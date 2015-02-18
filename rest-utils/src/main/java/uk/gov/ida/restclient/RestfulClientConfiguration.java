@@ -10,8 +10,4 @@ public interface RestfulClientConfiguration {
 
     JerseyClientConfiguration getJerseyClientConfiguration();
     boolean doesAcceptSelfSignedCerts();
-
-    ClientTrustStoreConfiguration getClientTrustStoreConfiguration();
-
-    JerseyClientConfiguration getDependentServiceJerseyClientConfiguration();
 }
