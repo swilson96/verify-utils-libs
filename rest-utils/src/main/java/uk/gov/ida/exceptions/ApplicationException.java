@@ -125,8 +125,4 @@ public final class ApplicationException extends RuntimeException {
     public Optional<URI> getUri() {
         return uri;
     }
-
-    public boolean requiresAuditing() {
-        return exceptionType != ExceptionType.NETWORK_ERROR;
-    }
 }

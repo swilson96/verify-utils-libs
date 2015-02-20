@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
-import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import org.slf4j.Logger;
@@ -48,14 +47,10 @@ public class JsonResponseProcessor {
 
     private <T> T getEntity(GenericType<T> genericType, Class<T> entityClazz, ClientResponse clientResponse) {
         if (clientResponse.hasEntity()) {
-            try {
-                if (entityClazz != null) {
-                    return clientResponse.getEntity(entityClazz);
-                } else if (genericType != null) {
-                    return clientResponse.getEntity(genericType);
-                }
-            } catch (ClientHandlerException e) {
-                throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e);
+            if (entityClazz != null) {
+                return clientResponse.getEntity(entityClazz);
+            } else if (genericType != null) {
+                return clientResponse.getEntity(genericType);
             }
         }
         throw new IllegalArgumentException("Client response has no entity.");

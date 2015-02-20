@@ -90,40 +90,6 @@ public class JsonClientTest {
         verify(jsonResponseProcessor, times(1)).getJsonEntity(testUri, genericType, null, clientResponse);
     }
 
-    //Wire errors covered by logic in getClientResponseWithGet and getClientResponseWithPost
-
-    @Test(expected = ApplicationException.class)
-    public void get_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        reset(client);
-        when(client.resource(any(URI.class))).thenThrow(new ClientHandlerException());
-
-        jsonClient.get(testUri, String.class);
-    }
-
-    @Test(expected = ApplicationException.class)
-    public void getWithGenericType_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        reset(client);
-        when(client.resource(any(URI.class))).thenThrow(new ClientHandlerException());
-
-        jsonClient.get(testUri, new GenericType<String>(){});
-    }
-
-    @Test(expected = ApplicationException.class)
-    public void post_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        reset(client);
-        when(client.resource(any(URI.class))).thenThrow(new ClientHandlerException());
-
-        jsonClient.post("", testUri, String.class);
-    }
-
-    @Test(expected = ApplicationException.class)
-    public void postExpectingNoReturn_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        reset(client);
-        when(client.resource(any(URI.class))).thenThrow(new ClientHandlerException());
-
-        jsonClient.post("", testUri);
-    }
-
     private ClientResponse createMockClient204NoContentResponse(){
         ClientResponse clientResponse = mock(ClientResponse.class);
         when(clientResponse.getEntity(Matchers.<Class<?>>any())).thenThrow(aUniformInterfaceException().withStatus(204).build());
