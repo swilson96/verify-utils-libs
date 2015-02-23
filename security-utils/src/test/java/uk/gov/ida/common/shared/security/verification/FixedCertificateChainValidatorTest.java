@@ -50,28 +50,11 @@ public class FixedCertificateChainValidatorTest {
         final X509Certificate otherChildCertificate =
                 certificateFactory.createCertificate(childSignedByOtherRootCAString);
 
-        assertExceptionMessage(
-                certificateChainValidator,
-                otherChildCertificate,
-                CertificateChainValidationException.class,
-                "Certificate could not be chained to a trusted root CA certificate: EMAILADDRESS=mark.taylor1, CN=127.0.0.1, OU=GDS, O=Cabinet Office, L=London, ST=London, C=GB"
-        );
-    }
+        final CertificateValidity validate = certificateChainValidator.validate(otherChildCertificate);
 
-    private void assertExceptionMessage(
-            FixedCertificateChainValidator validator,
-            X509Certificate certificate,
-            Class exceptionClass,
-            String value) {
+        assertThat(validate.isValid()).isFalse();
+        assertThat(validate.getException().get().getMessage()).isEqualTo("Path does not chain with any of the trust anchors");
 
-        try {
-            validator.validate(certificate);
-        } catch (Exception e) {
-            assertThat(e.getClass()).isEqualTo(exceptionClass);
-            assertThat(e.getMessage()).isEqualTo(value);
-            return;
-        }
-        fail("Should have thrown exception.");
     }
 
     public KeyStore getTrustStore() {

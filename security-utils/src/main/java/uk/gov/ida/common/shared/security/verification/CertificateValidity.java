@@ -5,36 +5,26 @@ import com.google.common.base.Optional;
 import java.security.cert.CertPathValidatorException;
 
 public class CertificateValidity {
-    private final Optional<CertPathValidatorException.Reason> reason;
-    private final Optional<String> description;
+    private final Optional<CertPathValidatorException> exception;
 
     public static CertificateValidity valid() {
-        return new CertificateValidity(Optional.<CertPathValidatorException.Reason>absent(), Optional.<String>absent());
+        return new CertificateValidity(Optional.<CertPathValidatorException>absent());
     }
 
-    public static CertificateValidity invalid(CertPathValidatorException.Reason reason, String description) {
-        return new CertificateValidity(Optional.of(reason), Optional.of(description));
+    public static CertificateValidity invalid(CertPathValidatorException e) {
+        return new CertificateValidity(Optional.of(e));
     }
 
-
-    private CertificateValidity(Optional<CertPathValidatorException.Reason> reason, Optional<String> description) {
-        this.reason = reason;
-        this.description = description;
+    private CertificateValidity(Optional<CertPathValidatorException> exception) {
+        this.exception = exception;
     }
 
     public boolean isValid() {
-        return !isInvalid();
+        return !exception.isPresent();
     }
 
-    public boolean isInvalid() {
-        return reason.isPresent();
+    public Optional<CertPathValidatorException> getException() {
+        return exception;
     }
 
-    public Optional<CertPathValidatorException.Reason> getReason() {
-        return reason;
-    }
-
-    public Optional<String> getDescription() {
-        return description;
-    }
 }

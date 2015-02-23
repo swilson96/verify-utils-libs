@@ -12,11 +12,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertPathValidatorResult;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 import static com.google.common.collect.ImmutableList.of;
+import static uk.gov.ida.common.shared.security.verification.CertificateValidity.invalid;
 
 
 public class CertificateChainValidator {
@@ -51,23 +53,13 @@ public class CertificateChainValidator {
         }
     }
 
+
     public void validateOrThrow(X509Certificate certificate, KeyStore keyStore) {
-        CertPath certificatePath;
-
-        try {
-            certificatePath = certificateFactory.generateCertPath(of(certificate));
-        } catch (CertificateException e) {
-            throw new CertificateChainValidationException("Error generating certificate path for certificate: " + getDnForCertificate(certificate), e);
-        }
-
-        try {
-            certPathValidator.validate(certificatePath, pkixParametersProvider.getPkixParameters(keyStore));
-        } catch (CertPathValidatorException e) {
+        final CertificateValidity certificateValidity = validate(certificate, keyStore);
+        if(!certificateValidity.isValid()) {
             throw new CertificateChainValidationException(
-                    "Certificate could not be chained to a trusted root CA certificate: " + getDnForCertificate(certificate),
-                    e);
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new CertificateChainValidationException("Unable to proceed in validating certificate chain: " + getDnForCertificate(certificate), e);
+                    "Certificate could not be chained to a trusted root CA certificate: " + getDnForCertificate(certificate)
+                    , certificateValidity.getException().get());
         }
     }
 
@@ -83,16 +75,11 @@ public class CertificateChainValidator {
         try {
             certPathValidator.validate(certificatePath, pkixParametersProvider.getPkixParameters(trustStore));
         } catch (CertPathValidatorException e) {
-            return CertificateValidity.invalid(e.getReason(), e.getMessage());
+            return CertificateValidity.invalid(e);
         } catch (InvalidAlgorithmParameterException e) {
             throw new CertificateChainValidationException("Unable to proceed in validating certificate chain: " + getDnForCertificate(certificate), e);
         }
         return CertificateValidity.valid();
-    }
-
-    public CertificateValidity validate(String x509String, KeyStore trustStore) {
-        X509Certificate x509Certificate = x509certificateFactory.createCertificate(x509String);
-        return validate(x509Certificate, trustStore);
     }
 
     private String getDnForCertificate(X509Certificate certificate) {

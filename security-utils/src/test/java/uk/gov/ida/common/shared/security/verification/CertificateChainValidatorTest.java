@@ -42,32 +42,25 @@ public class CertificateChainValidatorTest {
                 x509CertificateFactory.createCertificate(childSignedByOtherRootCAString);
 
         CertificateValidity certificateValidity = certificateChainValidator.validate(otherChildCertificate, getTrustStore());
-        assertThat(certificateValidity.isInvalid()).isEqualTo(true);
-        assertThat(certificateValidity.getReason().get()).isEqualTo(PKIXReason.NO_TRUST_ANCHOR);
-        assertThat(certificateValidity.getDescription().get()).isEqualTo("Path does not chain with any of the trust anchors");
+        assertThat(certificateValidity.isValid()).isEqualTo(false);
+        assertThat(certificateValidity.getException().get().getReason()).isEqualTo(PKIXReason.NO_TRUST_ANCHOR);
+        assertThat(certificateValidity.getException().get().getMessage()).isEqualTo("Path does not chain with any of the trust anchors");
     }
 
     @Test
     public void validate_shouldPassACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate intermediaryCACertificate = x509CertificateFactory.createCertificate(intermediaryCACertString);
 
-        certificateChainValidator.validateOrThrow(intermediaryCACertificate, getTrustStore());
+        final CertificateValidity validate = certificateChainValidator.validate(intermediaryCACertificate, getTrustStore());
+        assertThat(validate.isValid()).isTrue();
     }
 
     @Test
     public void validate_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStore() throws Exception {
         final X509Certificate encryptionCertificate = x509CertificateFactory.createCertificate(this.encryptionCertString);
 
-        certificateChainValidator.validateOrThrow(encryptionCertificate, getTrustStore());
-    }
-
-    @Test
-    public void validate_shouldReturnValidACertSignedByAnUnknownRootCACert() throws Exception {
-        final X509Certificate encryptionCertificate = x509CertificateFactory.createCertificate(this.encryptionCertString);
-
-        CertificateValidity certificateValidity = certificateChainValidator.validate(encryptionCertificate, getTrustStore());
-        assertThat(certificateValidity.isValid()).isEqualTo(true);
-        assertThat(certificateValidity.getReason().isPresent()).isEqualTo(false);
+        final CertificateValidity validate = certificateChainValidator.validate(encryptionCertificate, getTrustStore());
+        assertThat(validate.isValid()).isTrue();
     }
 
     @Test
@@ -75,12 +68,9 @@ public class CertificateChainValidatorTest {
         final X509Certificate otherChildCertificate =
                 x509CertificateFactory.createCertificate(childSignedByOtherRootCAString);
 
-        assertExceptionMessage(
-                certificateChainValidator,
-                otherChildCertificate,
-                CertificateChainValidationException.class,
-                "Certificate could not be chained to a trusted root CA certificate: EMAILADDRESS=mark.taylor1, CN=127.0.0.1, OU=GDS, O=Cabinet Office, L=London, ST=London, C=GB"
-        );
+        final CertificateValidity certificateValidity = certificateChainValidator.validate(otherChildCertificate, getTrustStore());
+
+        assertThat(certificateValidity.isValid()).isFalse();
     }
 
     @Test
@@ -89,8 +79,22 @@ public class CertificateChainValidatorTest {
                 x509CertificateFactory.createCertificate(childSignedByOtherRootCAString);
 
         CertificateValidity certificateValidity = certificateChainValidator.validate(otherChildCertificate, getTrustStore());
-        assertThat(certificateValidity.isInvalid()).isEqualTo(true);
-        assertThat(certificateValidity.getReason().get()).isEqualTo(PKIXReason.NO_TRUST_ANCHOR);
+        assertThat(certificateValidity.isValid()).isFalse();
+        assertThat(certificateValidity.getException().get().getReason()).isEqualTo(PKIXReason.NO_TRUST_ANCHOR);
+    }
+
+    @Test(expected=CertificateChainValidationException.class)
+    public void validateOrThrow_shouldThrowOnInvalidCert() {
+        final X509Certificate otherChildCertificate =
+                x509CertificateFactory.createCertificate(childSignedByOtherRootCAString);
+        certificateChainValidator.validateOrThrow(otherChildCertificate, getTrustStore());
+    }
+
+    @Test
+    public void validateOrThrow_shouldPassACertSignedByAnIntermediaryCACertSignedByRootCACertInTrustStoreAndNotThrowAnException() {
+        final X509Certificate encryptionCertificate = x509CertificateFactory.createCertificate(this.encryptionCertString);
+
+        certificateChainValidator.validateOrThrow(encryptionCertificate, getTrustStore());
     }
 
     @Test
@@ -101,22 +105,6 @@ public class CertificateChainValidatorTest {
         CertificateChainValidator chainValidator = new CertificateChainValidator(new OCSPPKIXParametersProvider(), x509CertificateFactory);
         CertificateValidity validate = chainValidator.validate(encryptionCertificate, getTrustStore());
         assertThat(validate.isValid()).isEqualTo(true);
-    }
-
-    private void assertExceptionMessage(
-            CertificateChainValidator validator,
-            X509Certificate certificate,
-            Class exceptionClass,
-            String value) {
-
-        try {
-            validator.validateOrThrow(certificate, getTrustStore());
-        } catch (Exception e) {
-            assertThat(e.getClass()).isEqualTo(exceptionClass);
-            assertThat(e.getMessage()).isEqualTo(value);
-            return;
-        }
-        fail("Should have thrown exception.");
     }
 
     public KeyStore getTrustStore() {
