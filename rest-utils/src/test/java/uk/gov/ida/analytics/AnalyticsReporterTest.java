@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.configuration.AnalyticsConfiguration;
 import uk.gov.ida.configuration.AnalyticsConfigurationBuilder;
@@ -31,9 +32,8 @@ import java.util.Map;
 
 import static com.google.common.base.Optional.fromNullable;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -71,6 +71,14 @@ public class AnalyticsReporterTest {
     @After
     public void tearDown() {
         DateTimeUtils.setCurrentMillisSystem();
+    }
+
+    @Test
+    public void shouldReportFraudulentEventIfVisitorIdIsMissing() throws Exception {
+        when(requestContext.getCookies()).thenReturn(ImmutableMap.<String, Cookie>of());
+        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build());
+        analyticsReporter.reportFraud(context);
+        verify(piwikClient).report(any(URI.class), any(HttpRequestContext.class));
     }
 
     @Test

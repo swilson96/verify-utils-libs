@@ -91,7 +91,12 @@ public class AnalyticsReporter {
             if (analyticsConfiguration.getEnabled()) {
                 HttpRequestContext request = context.getRequest();
                 Optional<Cookie> piwikCookie = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID));
-                Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
+                Optional<String> visitorId = piwikCookie.transform(new Function<Cookie, String>() {
+                    @Override
+                    public String apply(Cookie input) {
+                        return input.getValue();
+                    }
+                });
                 piwikClient.report(generateFraudURI(visitorId), request);
             }
         } catch(Exception e) {
