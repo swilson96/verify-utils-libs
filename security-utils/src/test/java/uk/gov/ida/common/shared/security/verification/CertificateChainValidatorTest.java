@@ -19,7 +19,6 @@ import java.security.cert.PKIXReason;
 import java.security.cert.X509Certificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateChainValidatorTest {

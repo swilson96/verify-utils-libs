@@ -8,7 +8,7 @@ public class NoOpFixedCertificateChainValidator extends FixedCertificateChainVal
         super(null, null);
     }
 
-    public CertificateValidity validate(X509Certificate certificate) {
-        return CertificateValidity.valid();
+    @Override
+    public void validate(X509Certificate certificate) {
     }
 }
