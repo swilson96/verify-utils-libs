@@ -47,6 +47,15 @@ public class CertificateChainValidator {
         }
     }
 
+    public void validateOrThrow(X509Certificate certificate, KeyStore keyStore) {
+        final CertificateValidity certificateValidity = validate(certificate, keyStore);
+        if (!certificateValidity.isValid()) {
+            throw new CertificateChainValidationException(
+                    "Certificate is not valid: " + getDnForCertificate(certificate),
+                    certificateValidity.getException().get());
+        }
+    }
+
     public CertificateValidity validate(X509Certificate certificate, KeyStore trustStore) {
         CertPath certificatePath;
 
