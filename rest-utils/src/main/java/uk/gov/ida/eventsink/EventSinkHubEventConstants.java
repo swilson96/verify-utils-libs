@@ -25,6 +25,8 @@ public interface EventSinkHubEventConstants {
         String REQUESTER_ERROR = "requester_error";
         String CYCLE3_CANCEL = "cycle3_input_cancelled";
         String SESSION_TIMEOUT = "session_timeout";
+        String USER_ACCOUNT_CREATION_REQUEST_SENT = "user_account_creation_request_sent";
+        String USER_ACCOUNT_CREATED = "user_account_created";
     }
 
     interface ExternalCommunicationsTypes {
