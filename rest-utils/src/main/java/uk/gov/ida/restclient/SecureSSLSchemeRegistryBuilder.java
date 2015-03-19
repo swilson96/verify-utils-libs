@@ -34,11 +34,9 @@ public abstract class SecureSSLSchemeRegistryBuilder {
             throw Throwables.propagate(e);
         }
 
-        final Scheme http = new Scheme("http", 80, new PlainSocketFactory());
         final Scheme https = new Scheme("https", 443, new SSLSocketFactory(sslContext));
         final SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(https);
-        schemeRegistry.register(http);
 
         return schemeRegistry;
     }

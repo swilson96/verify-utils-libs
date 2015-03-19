@@ -1,4 +1,4 @@
-package uk.gov.ida.docchecking.sharedapi.configuration;
+package uk.gov.ida.configuration;
 
 public interface SSLContextConfiguration {
 
