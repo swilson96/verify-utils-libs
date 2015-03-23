@@ -1,7 +1,6 @@
 package uk.gov.ida.restclient;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
@@ -10,12 +9,11 @@ import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.security.KeyStore;
-import java.util.Map;
 
 import static uk.gov.ida.restclient.InsecureSSLSchemeRegistryBuilder.aConfigWithInsecureSSLSchemeRegistry;
 import static uk.gov.ida.restclient.SecureSSLSchemeRegistryBuilder.aConfigWithSecureSSLSchemeRegistry;
@@ -31,7 +29,8 @@ public abstract class BaseClientProvider implements Provider<Client> {
             KeyStore trustStore,
             boolean enableStaleConnectionCheck,
             boolean retryTimeOutExceptions,
-            String clientName) {
+            String clientName,
+            HostnameVerifier hostnameVerifier) {
 
         HttpRequestRetryHandler retryHandler;
         if (retryTimeOutExceptions) {
@@ -47,7 +46,7 @@ public abstract class BaseClientProvider implements Provider<Client> {
         } else {
             schemeRegistry = aConfigWithSecureSSLSchemeRegistry(sslContext, trustStore);
         }
-        HTTPSProperties httpsProperties = new HTTPSProperties(new AllowAllHostnameVerifier(), sslContext);
+        HTTPSProperties httpsProperties = new HTTPSProperties(hostnameVerifier, sslContext);
 
         client = new IdaJerseyClientBuilder(environment, enableStaleConnectionCheck)
                 .using(jerseyClientConfiguration)

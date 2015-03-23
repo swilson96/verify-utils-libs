@@ -2,6 +2,7 @@ package uk.gov.ida.jerseyclient;
 
 import com.google.inject.Inject;
 import io.dropwizard.setup.Environment;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import uk.gov.ida.restclient.BaseClientProvider;
 import uk.gov.ida.restclient.RestfulClientConfiguration;
 
@@ -22,7 +23,8 @@ public class ClientProvider extends BaseClientProvider {
                 trustStore,
                 baseConfiguration.getEnableStaleConnectionCheck(),
                 baseConfiguration.getEnableRetryTimeOutConnections(),
-                "MicroServiceClient"
+                "MicroServiceClient",
+                new AllowAllHostnameVerifier()
         );
     }
 }
