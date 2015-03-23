@@ -18,21 +18,20 @@ import static java.text.MessageFormat.format;
 /**
  * The initial purpose of this code was to obfuscate cookies in Frontend.
  * It has not been audited by a cryptographer.
- *
+ * <p/>
  * The length of data it will encrypt is PADDED_LENGTH bytes and
  * that should be changed/paramaterised if this code is reused.  The data
  * that is encrypted is padded to PADDED_LENGTH so the length of the
  * resulting encrypted data does not allow anyone to draw inferences about
  * the unencrypted data.
- *
+ * <p/>
  * For QA purposes it may be helpful to decrypt data encoded by this class on the
  * command line.  This can be achieved using the following command:
  * `echo "cookievalue" | base64 -D | openssl enc -d -aes-128-cbc -K <keyinhex> -iv 0000000000000000`
- *
+ * <p/>
  * It is not possible to encrypt a string terminated with padding nulls on the command line
  * as the shell removes them.  A Ruby script that can encrypt (and decrypt) these cookie
  * values is in ida-utils/tools/cookie-crypto.rb
- *
  */
 public class CryptoHelper {
 
@@ -58,7 +57,8 @@ public class CryptoHelper {
      */
     public CryptoHelper(String base64EncodedAesKey) {
         byte[] bytes = unBase64(base64EncodedAesKey);
-        if(bytes.length!= KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES) throw new IllegalArgumentException("Incorrect key length");
+        if (bytes.length != KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES)
+            throw new IllegalArgumentException("Incorrect key length");
         this.aesKey = new SecretKeySpec(bytes, "AES");
         this.random = new SecureRandom();
 
@@ -86,7 +86,10 @@ public class CryptoHelper {
     }
 
     public Optional<String> decrypt_yesIKnowThisCryptoCodeHasNotBeenAudited(String base64EncodedEncryptedIdpNameWithNonce) {
-        if(base64EncodedEncryptedIdpNameWithNonce.isEmpty()) return Optional.absent();
+        if (base64EncodedEncryptedIdpNameWithNonce.isEmpty()) {
+            LOG.warn("entityId is empty");
+            return Optional.absent();
+        }
         byte[] encryptedIdpNameWithNonce = unBase64(base64EncodedEncryptedIdpNameWithNonce);
         byte[] decryptedIdpNameWithNonce;
         try {
@@ -128,7 +131,7 @@ public class CryptoHelper {
 
     private byte[] addNonceAndPadding(byte[] withoutNonce) {
         int lenWithNonce = withoutNonce.length + KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES;
-        if(lenWithNonce > PADDED_LENGTH) {
+        if (lenWithNonce > PADDED_LENGTH) {
             throw new IllegalArgumentException("That's a very long IDP entityId!");
         }
 
@@ -141,8 +144,8 @@ public class CryptoHelper {
 
     private byte[] removeNonceAndPadding(byte[] withNonce) {
         int paddingStart;
-        for(paddingStart= KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES; paddingStart<withNonce.length; ++paddingStart) {
-            if(withNonce[paddingStart] == 0) break;
+        for (paddingStart = KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES; paddingStart < withNonce.length; ++paddingStart) {
+            if (withNonce[paddingStart] == 0) break;
         }
         int lenWithoutNonceOrPadding = paddingStart - KEY_AND_NONCE_AND_IV_LENGTH_IN_BYTES;
 
