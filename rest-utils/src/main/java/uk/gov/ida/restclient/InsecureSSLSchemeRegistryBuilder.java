@@ -6,6 +6,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public abstract class InsecureSSLSchemeRegistryBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(InsecureSSLSchemeRegistryBuilder.class);
 
     public static SchemeRegistry aConfigWithInsecureSSLSchemeRegistry(
-            SSLContext sslContext){
+            SSLContext sslContext, X509HostnameVerifier hostnameVerifier){
 
         final TrustManager[] trustManagers = getTrustManagers();
         try {
@@ -29,7 +30,7 @@ public abstract class InsecureSSLSchemeRegistryBuilder {
         }
 
         final Scheme http = new Scheme("http", 80, new PlainSocketFactory());
-        final Scheme https = new Scheme("https", 443, new SSLSocketFactory(sslContext, new AllowAllHostnameVerifier()));
+        final Scheme https = new Scheme("https", 443, new SSLSocketFactory(sslContext, hostnameVerifier));
         final SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(http);
         schemeRegistry.register(https);

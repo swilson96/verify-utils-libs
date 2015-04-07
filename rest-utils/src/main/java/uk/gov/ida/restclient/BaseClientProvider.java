@@ -41,7 +41,7 @@ public abstract class BaseClientProvider implements Provider<Client> {
         SSLContext sslContext = getSslContext();
         SchemeRegistry schemeRegistry;
         if (doesAcceptSelfSignedCerts) {
-            schemeRegistry = aConfigWithInsecureSSLSchemeRegistry(sslContext);
+            schemeRegistry = aConfigWithInsecureSSLSchemeRegistry(sslContext, hostnameVerifier);
         } else {
             schemeRegistry = aConfigWithSecureSSLSchemeRegistry(sslContext, trustStore, hostnameVerifier);
         }
