@@ -4,14 +4,13 @@ import com.google.common.base.Throwables;
 import com.google.inject.Provider;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.security.KeyStore;
 
@@ -30,7 +29,7 @@ public abstract class BaseClientProvider implements Provider<Client> {
             boolean enableStaleConnectionCheck,
             boolean retryTimeOutExceptions,
             String clientName,
-            HostnameVerifier hostnameVerifier) {
+            X509HostnameVerifier hostnameVerifier) {
 
         HttpRequestRetryHandler retryHandler;
         if (retryTimeOutExceptions) {
@@ -44,15 +43,13 @@ public abstract class BaseClientProvider implements Provider<Client> {
         if (doesAcceptSelfSignedCerts) {
             schemeRegistry = aConfigWithInsecureSSLSchemeRegistry(sslContext);
         } else {
-            schemeRegistry = aConfigWithSecureSSLSchemeRegistry(sslContext, trustStore);
+            schemeRegistry = aConfigWithSecureSSLSchemeRegistry(sslContext, trustStore, hostnameVerifier);
         }
-        HTTPSProperties httpsProperties = new HTTPSProperties(hostnameVerifier, sslContext);
 
         client = new IdaJerseyClientBuilder(environment, enableStaleConnectionCheck)
                 .using(jerseyClientConfiguration)
                 .using(schemeRegistry)
                 .using(retryHandler)
-                .withProperty(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties)
                 .withProperty(ApacheHttpClient4Config.PROPERTY_ENABLE_BUFFERING, true)
                 .build(clientName);
     }
