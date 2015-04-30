@@ -3,7 +3,6 @@ package uk.gov.ida.jerseyclient;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -75,12 +74,9 @@ public class JsonResponseProcessor {
     private ApplicationException createErrorStatus(ClientResponse clientResponse, ExceptionType exceptionType, URI uri) {
         String entity = clientResponse.getEntity(String.class);
         try {
-            Optional<ErrorStatusDto> errorStatusDto = getErrorStatusDto(entity);
-            if (errorStatusDto.isPresent()) {
-                return createExceptionFromErrorStatusDto(errorStatusDto.get());
-            } else {
-                return createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), exceptionType, entity));
-            }
+            return createExceptionFromErrorStatusDto(objectMapper.readValue(entity, ErrorStatusDto.class), uri);
+        } catch (JsonParseException | JsonMappingException e) {
+            return createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), exceptionType, entity), uri);
         } catch (IOException e) {
             LOG.error("Unexpected status code [{}] returned from service using URI: {}. Body: {}",
                     clientResponse.getStatus(), uri, entity);
@@ -88,12 +84,4 @@ public class JsonResponseProcessor {
         }
     }
 
-    private Optional<ErrorStatusDto> getErrorStatusDto(String entity) throws IOException {
-        try {
-            ErrorStatusDto errorStatusDto = objectMapper.readValue(entity, ErrorStatusDto.class);
-            return Optional.of(errorStatusDto);
-        } catch (JsonParseException | JsonMappingException e) {
-            return Optional.absent();
-        }
-    }
 }
