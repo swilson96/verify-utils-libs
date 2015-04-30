@@ -64,19 +64,15 @@ public final class ApplicationException extends RuntimeException {
         }
     }
 
-    private ApplicationException(
-            ErrorStatusDto errorStatus) {
-
+    private ApplicationException(ErrorStatusDto errorStatus, URI uri) {
         this(
                 errorStatus.getExceptionType(),
                 errorStatus.isAudited(),
                 errorStatus.getErrorId(),
-                errorStatus.getClientMessage()
+                null,
+                fromNullable(uri),
+                fromNullable(errorStatus.getClientMessage())
         );
-    }
-
-    private ApplicationException(ExceptionType exceptionType, boolean audited, UUID errorId, String clientMessage) {
-        this(exceptionType, audited, errorId, null, Optional.<URI>absent(), fromNullable(clientMessage));
     }
 
     public static ApplicationException createUnauditedException(ExceptionType exceptionType, UUID errorId) {
@@ -99,8 +95,8 @@ public final class ApplicationException extends RuntimeException {
         return new ApplicationException(exceptionType, false, errorId, null, fromNullable(uri), Optional.<String>absent());
     }
 
-    public static ApplicationException createExceptionFromErrorStatusDto(ErrorStatusDto errorStatusDto) {
-        return new ApplicationException(errorStatusDto);
+    public static ApplicationException createExceptionFromErrorStatusDto(ErrorStatusDto errorStatusDto, final URI uri) {
+        return new ApplicationException(errorStatusDto, uri);
     }
 
     private static String getUriErrorMessage(Optional<URI> uri) {

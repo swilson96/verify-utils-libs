@@ -2,18 +2,15 @@ package uk.gov.ida.jerseyclient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
-import org.assertj.core.api.ObjectAssert;
 import org.junit.Before;
 import org.junit.Test;
 import uk.gov.ida.common.ErrorStatusDto;
 import uk.gov.ida.common.ExceptionType;
 import uk.gov.ida.exceptions.ApplicationException;
 
-import javax.ws.rs.core.NewCookie;
 import java.net.URI;
 import java.util.UUID;
 
@@ -57,7 +54,7 @@ public class JsonResponseProcessorTest {
     @Test
     public void getJson_shouldThrowUnauditedErrorExceptionIfClientErrorResponseEntityAsStringIsReturned() throws Exception {
         ClientResponse clientResponse = createMockClientResponse(400, "Some Entity");
-        ApplicationException applicationException = createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), ExceptionType.CLIENT_ERROR, clientResponse.getEntity(String.class)));
+        ApplicationException applicationException = createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), ExceptionType.CLIENT_ERROR, clientResponse.getEntity(String.class)), uri);
         try {
             responseProcessor.getJsonEntity(uri, null, Object.class, clientResponse);
             fail("fail");
@@ -74,7 +71,7 @@ public class JsonResponseProcessorTest {
     @Test
     public void getJson_shouldReturnApplicationExceptionWithErrorStatusDtoIfClientResponseContainsMalformedErrorStatusDtoJsonString() throws Exception {
         ClientResponse clientResponse = createMockClientResponse(400, "{\"extra\":\"shouldn't be here\",\"audited\":true,\"errorId\":\"1357ad59-5652-4bde-ac19-593c2316a389\",\"exceptionType\":\"INVALID_SAML\",\"clientMessage\":\"\"}");
-        ApplicationException applicationException = createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), ExceptionType.CLIENT_ERROR, clientResponse.getEntity(String.class)));
+        ApplicationException applicationException = createExceptionFromErrorStatusDto(ErrorStatusDto.createUnauditedErrorStatus(UUID.randomUUID(), ExceptionType.CLIENT_ERROR, clientResponse.getEntity(String.class)), uri);
         try {
             responseProcessor.getJsonEntity(uri, null, Object.class, clientResponse);
             fail("fail");
@@ -168,18 +165,6 @@ public class JsonResponseProcessorTest {
     private ClientResponse createMockClientResponse(int status, Object responseEntity) throws JsonProcessingException {
         ClientResponse clientResponse = mock(ClientResponse.class);
         ObjectMapper objectMapper = new ObjectMapper();
-        when(clientResponse.getEntity(String.class)).thenReturn(objectMapper.writeValueAsString(responseEntity));
-        when(clientResponse.getEntity(ClientResponse.class)).thenThrow(new RuntimeException("Can't deserialize json to ClientResponse"));
-        when(clientResponse.hasEntity()).thenReturn(true);
-        when(clientResponse.getStatus()).thenReturn(status);
-        when(clientResponse.getStatusInfo()).thenReturn(ClientResponse.Status.fromStatusCode(status));
-        return clientResponse;
-    }
-
-    private ClientResponse createMockClientResponseWithCookie(int status, Object responseEntity, NewCookie cookie) throws JsonProcessingException {
-        ClientResponse clientResponse = mock(ClientResponse.class);
-        ObjectMapper objectMapper = new ObjectMapper();
-        when(clientResponse.getCookies()).thenReturn(ImmutableList.of(cookie));
         when(clientResponse.getEntity(String.class)).thenReturn(objectMapper.writeValueAsString(responseEntity));
         when(clientResponse.getEntity(ClientResponse.class)).thenThrow(new RuntimeException("Can't deserialize json to ClientResponse"));
         when(clientResponse.hasEntity()).thenReturn(true);
