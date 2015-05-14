@@ -1,6 +1,10 @@
 apply plugin: 'idea'
 apply plugin: 'java'
-apply from: 'sonar.gradle'
+apply plugin: "idaSonar"
+
+idaSonar {
+    name = 'ida-utils-sonar'
+}
 
 idea {
     project {
@@ -21,7 +25,7 @@ buildscript {
         maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
     }
     dependencies {
-        classpath 'uk.gov.ida:ida-gradle:1.0.0-4'
+        classpath 'uk.gov.ida:ida-gradle:1.1.0-10'
     }
 }
 
@@ -52,13 +56,12 @@ subprojects {
                     classifier "sources"
                 }
             }
-
-            repositories {
-                maven {
-                    url "/srv/maven" // change to point to your repo, e.g. http://my.org/repo
-                }
+        }
+        repositories {
+            mavenLocal()
+            maven {
+                url "/srv/maven" // change to point to your repo, e.g. http://my.org/repo
             }
-
         }
     }
 }
