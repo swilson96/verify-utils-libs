@@ -22,7 +22,7 @@ idea {
 
 buildscript {
     repositories {
-        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/remote-repos' }
     }
     dependencies {
         classpath 'uk.gov.ida:ida-gradle:1.1.0-10'
@@ -39,7 +39,7 @@ subprojects {
     version = "1.0.0-${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
 
     repositories {
-        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/remote-repos' }
     }
 
 
