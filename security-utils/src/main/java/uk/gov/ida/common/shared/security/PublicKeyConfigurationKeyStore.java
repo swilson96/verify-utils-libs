@@ -8,7 +8,6 @@ import uk.gov.ida.common.shared.configuration.PublicSigningKeyConfiguration;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.PublicKey;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +43,7 @@ public class PublicKeyConfigurationKeyStore implements InternalPublicKeyStore {
         try (InputStream inputStream = publicKeyInputStreamFactory.createInputStream(publicKeyUri)) {
             String keyAsString = StringUtils.newStringUtf8(FileUtils.readStream(inputStream));
             return publicKeyFactory.createPublicKey(keyAsString);
-        } catch (IOException | CertificateException e) {
+        } catch (IOException e) {
             throw propagate(e);
         }
     }

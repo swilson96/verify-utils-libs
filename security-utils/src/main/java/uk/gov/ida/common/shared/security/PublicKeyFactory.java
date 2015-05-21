@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 
 public class PublicKeyFactory {
 
@@ -15,7 +14,7 @@ public class PublicKeyFactory {
         this.certificateFactory = certificateFactory;
     }
 
-    public PublicKey createPublicKey(String partialCert) throws CertificateException {
+    public PublicKey createPublicKey(String partialCert) {
         Certificate certificate = certificateFactory.createCertificate(partialCert);
         return certificate.getPublicKey();
     }
