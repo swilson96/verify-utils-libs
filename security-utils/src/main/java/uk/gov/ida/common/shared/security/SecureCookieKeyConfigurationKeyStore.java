@@ -35,8 +35,9 @@ public class SecureCookieKeyConfigurationKeyStore implements SecureCookieKeyStor
     }
 
     private static Key getSecureCookieKey(String keyUri) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        InputStream inputStream = new FileInputStream(new File(keyUri));
-        byte[] ous = FileUtils.readStream(inputStream);
-        return new SecretKeySpec(ous, "HmacSHA1");
+        try(InputStream inputStream = new FileInputStream(new File(keyUri))) {
+            byte[] ous = FileUtils.readStream(inputStream);
+            return new SecretKeySpec(ous, "HmacSHA1");
+        }
     }
 }
