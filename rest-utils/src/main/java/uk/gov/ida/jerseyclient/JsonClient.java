@@ -3,12 +3,19 @@ package uk.gov.ida.jerseyclient;
 import com.google.inject.Inject;
 import com.sun.jersey.api.client.GenericType;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.ida.exceptions.ApplicationException.createUnauditedException;
+import static com.google.common.base.Optional.absent;
 
 public class JsonClient {
 
@@ -45,4 +52,65 @@ public class JsonClient {
         return responseProcessor.getJsonEntity(uri, genericType, null, errorHandlingClient.get(uri));
     }
 
+    private Response executeGet(final URI uri) {
+        return errorHandledClientResponse(new Function<Optional<Object>, Response>() {
+            @Override
+            public Response apply(Optional<Object> input) {
+                return getInvocationBuilder(uri)
+                        .get();
+            }
+        }, uri);
+    }
+
+    private Invocation.Builder getInvocationBuilder(URI uri) {
+        return jerseyClient.target(uri)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+    }
+
+    private Response executeGet(final URI uri, final List<Cookie> cookies, final Map<String, String> headers) {
+        return errorHandledClientResponse(new Function<Optional<Object>, Response>() {
+            @Override
+            public Response apply(Optional<Object> input) {
+                Invocation.Builder invocationBuilder = getInvocationBuilder(uri);
+                for(Cookie cookie: cookies){
+                    invocationBuilder = invocationBuilder.cookie(cookie);
+                }
+                for(Map.Entry<String, String> headerDetail: headers.entrySet()){
+                    if(headerDetail.getValue() != null) {
+                        invocationBuilder = invocationBuilder.header(headerDetail.getKey(), headerDetail.getValue());
+                    }
+                }
+                return invocationBuilder.get();
+            }
+        }, uri);
+    }
+
+    private Response executePost(final Object postBody, final URI uri) {
+        return errorHandledClientResponse(new Function<Optional<Object>, Response>() {
+            @Override
+            public Response apply(Optional<Object> input) {
+                return getInvocationBuilder(uri).post(Entity.json(postBody));
+            }
+        }, uri);
+    }
+
+    private Response executePost(final Object postBody, final URI uri, final Map<String, String> headers) {
+        return errorHandledClientResponse(new Function<Optional<Object>, Response>() {
+            @Override
+            public Response apply(Optional<Object> input) {
+                Invocation.Builder invocationBuilder = getInvocationBuilder(uri);
+                for(Map.Entry<String, String> headerDetail: headers.entrySet()){
+                    if(headerDetail.getValue() != null) {
+                        invocationBuilder = invocationBuilder.header(headerDetail.getKey(), headerDetail.getValue());
+                    }
+                }
+                return invocationBuilder.post(Entity.json(postBody));
+            }
+        }, uri);
+    }
+
+    private Response errorHandledClientResponse(Function<Optional<Object>, Response> request, URI uri) {
+        return request.apply(absent());
+    }
 }
