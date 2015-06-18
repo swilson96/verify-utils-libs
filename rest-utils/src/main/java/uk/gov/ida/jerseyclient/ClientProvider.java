@@ -21,7 +21,6 @@ public class ClientProvider extends BaseClientProvider {
                 baseConfiguration.doesAcceptSelfSignedCerts(),
                 baseConfiguration.getJerseyClientConfiguration(),
                 trustStore,
-                baseConfiguration.getEnableStaleConnectionCheck(),
                 baseConfiguration.getEnableRetryTimeOutConnections(),
                 "MicroServiceClient",
                 new AllowAllHostnameVerifier()
