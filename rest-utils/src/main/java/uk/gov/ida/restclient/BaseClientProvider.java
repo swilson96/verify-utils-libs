@@ -1,21 +1,29 @@
 package uk.gov.ida.restclient;
 
-import com.google.common.base.Throwables;
 import com.google.inject.Provider;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
-import javax.net.ssl.SSLContext;
+import javax.validation.Validation;
+import javax.ws.rs.client.Client;
+import java.net.ProxySelector;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
-
-import static uk.gov.ida.restclient.InsecureSSLSchemeRegistryBuilder.aConfigWithInsecureSSLSchemeRegistry;
-import static uk.gov.ida.restclient.SecureSSLSchemeRegistryBuilder.aConfigWithSecureSSLSchemeRegistry;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 public abstract class BaseClientProvider implements Provider<Client> {
 
@@ -27,38 +35,45 @@ public abstract class BaseClientProvider implements Provider<Client> {
             JerseyClientConfiguration jerseyClientConfiguration,
             KeyStore trustStore,
             boolean enableStaleConnectionCheck,
-            boolean retryTimeOutExceptions,
+            boolean enableRetryTimeOutConnections,
             String clientName,
             X509HostnameVerifier hostnameVerifier) {
 
+        JerseyClientBuilder jerseyClientBuilder = new JerseyClientBuilder(environment)
+                .using(jerseyClientConfiguration)
+                .using(getHttpRequestRetryHandler(jerseyClientConfiguration, enableRetryTimeOutConnections))
+                .using(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+                .using(getConnectionSocketFactoryRegistry(doesAcceptSelfSignedCerts, trustStore, hostnameVerifier));
+
+        HttpClientBuilder httpClientBuilder = new HttpClientBuilder(environment).name(clientName);
+        jerseyClientBuilder.setApacheHttpClientBuilder(httpClientBuilder);
+        jerseyClientBuilder.withProvider(new JacksonMessageBodyProvider(environment.getObjectMapper(), Validation.buildDefaultValidatorFactory().getValidator()));
+
+        // There used to be a property ApacheHttpClient4Config.PROPERTY_ENABLE_BUFFERING set but this appears to be gone in dropwizard 8
+
+        client = jerseyClientBuilder.build(clientName);
+    }
+
+    private HttpRequestRetryHandler getHttpRequestRetryHandler(JerseyClientConfiguration jerseyClientConfiguration, boolean enableRetryTimeOutConnections) {
         HttpRequestRetryHandler retryHandler;
-        if (retryTimeOutExceptions) {
+        if (enableRetryTimeOutConnections) {
             retryHandler = new TimeoutRequestRetryHandler(jerseyClientConfiguration.getRetries());
         } else {
             retryHandler = new StandardHttpRequestRetryHandler(0, false);
         }
-
-        SSLContext sslContext = getSslContext();
-        SchemeRegistry schemeRegistry;
-        if (doesAcceptSelfSignedCerts) {
-            schemeRegistry = aConfigWithInsecureSSLSchemeRegistry(sslContext, hostnameVerifier);
-        } else {
-            schemeRegistry = aConfigWithSecureSSLSchemeRegistry(sslContext, trustStore, hostnameVerifier);
-        }
-
-        client = new IdaJerseyClientBuilder(environment, enableStaleConnectionCheck)
-                .using(jerseyClientConfiguration)
-                .using(schemeRegistry)
-                .using(retryHandler)
-                .withProperty(ApacheHttpClient4Config.PROPERTY_ENABLE_BUFFERING, true)
-                .build(clientName);
+        return retryHandler;
     }
 
-    private SSLContext getSslContext() {
+    private Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(boolean doesAcceptSelfSignedCerts, KeyStore trustStore, X509HostnameVerifier hostnameVerifier) {
         try {
-            return SSLContext.getInstance("TLSv1.2");
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+            SSLContextBuilder sslcontext = SSLContexts.custom();
+            if (!doesAcceptSelfSignedCerts) {
+                sslcontext = sslcontext.loadTrustMaterial(trustStore);
+            }
+            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslcontext.build(), new String[]{"TLSv1.2"}, null, hostnameVerifier);
+            return RegistryBuilder.<ConnectionSocketFactory>create().register("https", sslConnectionSocketFactory).build();
+        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+            throw new RuntimeException(e);
         }
     }
 

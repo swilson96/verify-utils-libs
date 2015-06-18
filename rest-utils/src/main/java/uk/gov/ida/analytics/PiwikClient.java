@@ -1,9 +1,9 @@
 package uk.gov.ida.analytics;
 
 import com.google.inject.Inject;
-import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.core.HttpRequestContext;
 
+import javax.ws.rs.client.Client;
 import java.net.URI;
 
 public class PiwikClient {
@@ -16,10 +16,11 @@ public class PiwikClient {
     }
 
     public void report(URI uri, HttpRequestContext request) {
-        client.asyncResource(uri)
+        client.target(uri).request()
                 .header("User-Agent", request.getHeaderValue("User-Agent"))
                 .header("Accept-Language", request.getHeaderValue("Accept-Language"))
                 .header("X-Forwarded-For", request.getHeaderValue("X-Forwarded-For"))
+                .async()
                 .get(String.class);
     }
 
