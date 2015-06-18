@@ -34,7 +34,6 @@ public abstract class BaseClientProvider implements Provider<Client> {
             boolean doesAcceptSelfSignedCerts,
             JerseyClientConfiguration jerseyClientConfiguration,
             KeyStore trustStore,
-            boolean enableStaleConnectionCheck,
             boolean enableRetryTimeOutConnections,
             String clientName,
             X509HostnameVerifier hostnameVerifier) {
@@ -48,8 +47,6 @@ public abstract class BaseClientProvider implements Provider<Client> {
         HttpClientBuilder httpClientBuilder = new HttpClientBuilder(environment).name(clientName);
         jerseyClientBuilder.setApacheHttpClientBuilder(httpClientBuilder);
         jerseyClientBuilder.withProvider(new JacksonMessageBodyProvider(environment.getObjectMapper(), Validation.buildDefaultValidatorFactory().getValidator()));
-
-        // There used to be a property ApacheHttpClient4Config.PROPERTY_ENABLE_BUFFERING set but this appears to be gone in dropwizard 8
 
         client = jerseyClientBuilder.build(clientName);
     }
