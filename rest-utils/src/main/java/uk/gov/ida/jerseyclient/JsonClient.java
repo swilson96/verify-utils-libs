@@ -3,22 +3,19 @@ package uk.gov.ida.jerseyclient;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
-import com.sun.jersey.api.client.WebResource;
-import uk.gov.ida.common.ExceptionType;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static com.google.common.base.Optional.absent;
-import static uk.gov.ida.exceptions.ApplicationException.createUnauditedException;
 
 public class JsonClient {
 
@@ -55,68 +52,65 @@ public class JsonClient {
         return responseProcessor.getJsonEntity(uri, genericType, null, executeGet(uri));
     }
 
-    private ClientResponse executeGet(final URI uri) {
-        return errorHandledClientResponse(new Function<Optional<Object>, ClientResponse>() {
+    private Response executeGet(final URI uri) {
+        return errorHandledClientResponse(new Function<Optional<Object>, Response>() {
             @Override
-            public ClientResponse apply(Optional<Object> input) {
-                return jerseyClient.resource(uri)
-                        .accept(MediaType.APPLICATION_JSON_TYPE)
-                        .get(ClientResponse.class);
+            public Response apply(Optional<Object> input) {
+                return getInvocationBuilder(uri)
+                        .get();
             }
         }, uri);
     }
 
-    private ClientResponse executeGet(final URI uri, final List<Cookie> cookies, final Map<String, String> headers) {
-        return errorHandledClientResponse(new Function<Optional<Object>, ClientResponse>() {
+    private Invocation.Builder getInvocationBuilder(URI uri) {
+        return jerseyClient.target(uri)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+    }
+
+    private Response executeGet(final URI uri, final List<Cookie> cookies, final Map<String, String> headers) {
+        return errorHandledClientResponse(new Function<Optional<Object>, Response>() {
             @Override
-            public ClientResponse apply(Optional<Object> input) {
-                WebResource.Builder requestBuilder = jerseyClient.resource(uri).getRequestBuilder();
+            public Response apply(Optional<Object> input) {
+                Invocation.Builder invocationBuilder = getInvocationBuilder(uri);
                 for(Cookie cookie: cookies){
-                    requestBuilder = requestBuilder.cookie(cookie);
+                    invocationBuilder = invocationBuilder.cookie(cookie);
                 }
                 for(Map.Entry<String, String> headerDetail: headers.entrySet()){
                     if(headerDetail.getValue() != null) {
-                        requestBuilder = requestBuilder.header(headerDetail.getKey(), headerDetail.getValue());
+                        invocationBuilder = invocationBuilder.header(headerDetail.getKey(), headerDetail.getValue());
                     }
                 }
-                return requestBuilder
-                        .accept(MediaType.APPLICATION_JSON_TYPE)
-                        .get(ClientResponse.class);
+                return invocationBuilder.get();
             }
         }, uri);
     }
 
-    private ClientResponse executePost(final Object postBody, final URI uri) {
-        return errorHandledClientResponse(new Function<Optional<Object>, ClientResponse>() {
+    private Response executePost(final Object postBody, final URI uri) {
+        return errorHandledClientResponse(new Function<Optional<Object>, Response>() {
             @Override
-            public ClientResponse apply(Optional<Object> input) {
-                return jerseyClient.resource(uri).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, postBody);
+            public Response apply(Optional<Object> input) {
+                return getInvocationBuilder(uri).post(Entity.json(postBody));
             }
         }, uri);
     }
 
-    private ClientResponse executePost(final Object postBody, final URI uri, final Map<String, String> headers) {
-        return errorHandledClientResponse(new Function<Optional<Object>, ClientResponse>() {
+    private Response executePost(final Object postBody, final URI uri, final Map<String, String> headers) {
+        return errorHandledClientResponse(new Function<Optional<Object>, Response>() {
             @Override
-            public ClientResponse apply(Optional<Object> input) {
-                WebResource.Builder requestBuilder = jerseyClient.resource(uri).getRequestBuilder();
+            public Response apply(Optional<Object> input) {
+                Invocation.Builder invocationBuilder = getInvocationBuilder(uri);
                 for(Map.Entry<String, String> headerDetail: headers.entrySet()){
                     if(headerDetail.getValue() != null) {
-                        requestBuilder = requestBuilder.header(headerDetail.getKey(), headerDetail.getValue());
+                        invocationBuilder = invocationBuilder.header(headerDetail.getKey(), headerDetail.getValue());
                     }
                 }
-                return requestBuilder
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .post(ClientResponse.class, postBody);
+                return invocationBuilder.post(Entity.json(postBody));
             }
         }, uri);
     }
 
-    private ClientResponse errorHandledClientResponse(Function<Optional<Object>, ClientResponse> request, URI uri) {
-        try {
-            return request.apply(absent());
-        } catch (ClientHandlerException e) {
-            throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e, uri);
-        }
+    private Response errorHandledClientResponse(Function<Optional<Object>, Response> request, URI uri) {
+        return request.apply(absent());
     }
 }
