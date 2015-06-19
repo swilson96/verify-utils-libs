@@ -10,6 +10,8 @@ import uk.gov.ida.common.ErrorStatusDto;
 import uk.gov.ida.common.ExceptionType;
 import uk.gov.ida.exceptions.ApplicationException;
 
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.ResponseProcessingException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -45,12 +47,17 @@ public class JsonResponseProcessor {
     }
 
     private <T> T getEntity(GenericType<T> genericType, Class<T> entityClazz, Response response) {
-        if (response.hasEntity()) {
-            if (entityClazz != null) {
-                return response.readEntity(entityClazz);
-            } else if (genericType != null) {
-                return response.readEntity(genericType);
+        try {
+            if (response.hasEntity()) {
+                if (entityClazz != null) {
+                    return response.readEntity(entityClazz);
+                } else if (genericType != null) {
+                    return response.readEntity(genericType);
+                }
             }
+        }
+        catch (ProcessingException e) {
+            throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e);
         }
         throw new IllegalArgumentException("Client response has no entity.");
     }

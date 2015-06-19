@@ -17,7 +17,7 @@ public class ServiceStatusBundle implements Bundle {
     @Override
     public void run(Environment environment) {
         environment.jersey().register(new ServiceStatusResource());
-        environment.jersey().getResourceConfig().getContainerResponseFilters().add(new ConnectionCloseFilter());
+        environment.jersey().register(new ConnectionCloseFilter());
         environment.admin().addTask(new SetServiceUnavailableTask(ServiceStatus.getInstance()));
     }
 }

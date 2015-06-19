@@ -1,67 +1,76 @@
 package uk.gov.ida.jerseyclient;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.common.ExceptionType;
 import uk.gov.ida.exceptions.ApplicationException;
 
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.UUID;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static uk.gov.ida.healthcheck.UniformInterfaceExceptionBuilder.aUniformInterfaceException;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JsonClientTest {
 
-    @Mock
     private ErrorHandlingClient errorHandlingClient;
+    private Client client;
+    @Mock
+    private WebTarget webTarget;
     @Mock
     private JsonResponseProcessor jsonResponseProcessor;
+    @Mock
+    private Invocation.Builder builder;
 
     private JsonClient jsonClient;
     private URI testUri = URI.create("/some-uri");
-    private String responseBody = "some-response-body";
+    private String requestBody = "some-request-body";
 
     @Before
     public void setup() {
-        jsonClient = new JsonClient(errorHandlingClient, jsonResponseProcessor);
+        when(client.target(any(String.class))).thenReturn(webTarget);
+        when(client.target(any(URI.class))).thenReturn(webTarget);
+        when(webTarget.request(any(MediaType.class))).thenReturn(builder);
+        when(builder.accept(any(MediaType.class))).thenReturn(builder);
+        jsonClient = new JsonClient(client, jsonResponseProcessor);
     }
 
     @Test
     public void post_shouldDelegateToJsonResponseProcessorToCheckForErrors() throws Exception {
-        ClientResponse clientResponse = createMockClient204NoContentResponse();
-        when(errorHandlingClient.post(testUri, responseBody)).thenReturn(clientResponse);
+        Response clientResponse = Response.noContent().build();
+        when(builder.post(Entity.json(requestBody))).thenReturn(clientResponse);
 
-        jsonClient.post(responseBody, testUri);
+        jsonClient.post(requestBody, testUri);
 
         verify(jsonResponseProcessor, times(1)).getJsonEntity(testUri, null, null, clientResponse);
     }
 
     @Test
     public void basicPost_shouldDelegateToProcessor() throws Exception {
-        ClientResponse clientResponse = createMockClient204NoContentResponse();
-        when(errorHandlingClient.post(testUri, responseBody)).thenReturn(clientResponse);
+        Response clientResponse = Response.noContent().build();
+        when(builder.post(Entity.json(requestBody))).thenReturn(clientResponse);
 
-        jsonClient.post(responseBody, testUri, String.class);
+        jsonClient.post(requestBody, testUri, String.class);
 
         verify(jsonResponseProcessor, times(1)).getJsonEntity(testUri, null, String.class, clientResponse);
     }
 
     @Test
     public void basicGet_shouldDelegateToProcessor() throws Exception {
-        ClientResponse clientResponse = createMockClient204NoContentResponse();
-        when(errorHandlingClient.get(testUri)).thenReturn(clientResponse);
+        Response clientResponse = Response.noContent().build();
+        when(builder.get()).thenReturn(clientResponse);
 
         jsonClient.get(testUri, String.class);
 
@@ -70,8 +79,8 @@ public class JsonClientTest {
 
     @Test
     public void getWithGenericType_shouldDelegateToprocessor() throws Exception {
-        ClientResponse clientResponse = createMockClient204NoContentResponse();
-        when(errorHandlingClient.get(testUri)).thenReturn(clientResponse);
+        Response clientResponse = Response.noContent().build();
+        when(builder.get()).thenReturn(clientResponse);
         GenericType<String> genericType = new GenericType<String>() {};
 
         jsonClient.get(testUri, genericType);
@@ -79,18 +88,18 @@ public class JsonClientTest {
         verify(jsonResponseProcessor, times(1)).getJsonEntity(testUri, genericType, null, clientResponse);
     }
 
-    //Wire errors covered by logic in getClientResponseWithGet and getClientResponseWithPost
+    //Wire errors covered by logic in getResponseWithGet and getResponseWithPost
 
     @Test(expected = ApplicationException.class)
     public void get_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        when(errorHandlingClient.get(testUri)).thenThrow(ApplicationException.createAuditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID()));
+        when(builder.get()).thenThrow(new ProcessingException("Bob"));
 
         jsonClient.get(testUri, String.class);
     }
 
     @Test(expected = ApplicationException.class)
     public void getWithGenericType_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        when(errorHandlingClient.get(testUri)).thenThrow(ApplicationException.createAuditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID()));
+        when(builder.get()).thenThrow(new ProcessingException("Bob"));
 
         jsonClient.get(testUri, new GenericType<String>(){});
     }
@@ -98,7 +107,7 @@ public class JsonClientTest {
     @Test(expected = ApplicationException.class)
     public void post_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
         final String postBody = "";
-        when(errorHandlingClient.post(testUri, postBody)).thenThrow(ApplicationException.createAuditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID()));
+        when(builder.post(any(Entity.class))).thenThrow(new ProcessingException("Bob"));
 
         jsonClient.post(postBody, testUri, String.class);
     }
@@ -106,17 +115,8 @@ public class JsonClientTest {
     @Test(expected = ApplicationException.class)
     public void postExpectingNoReturn_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
         final String postBody = "";
-        when(errorHandlingClient.post(testUri, postBody)).thenThrow(ApplicationException.createAuditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID()));
+        when(builder.post(any(Entity.class))).thenThrow(new ProcessingException("Bob"));
 
         jsonClient.post(postBody, testUri);
-    }
-
-    private ClientResponse createMockClient204NoContentResponse(){
-        ClientResponse clientResponse = mock(ClientResponse.class);
-        when(clientResponse.getEntity(Matchers.<Class<?>>any())).thenThrow(aUniformInterfaceException().withStatus(204).build());
-        when(clientResponse.getEntity(any(GenericType.class))).thenThrow(aUniformInterfaceException().withStatus(204).build());
-        when(clientResponse.hasEntity()).thenReturn(false);
-        when(clientResponse.getStatus()).thenReturn(204);
-        return clientResponse;
     }
 }
