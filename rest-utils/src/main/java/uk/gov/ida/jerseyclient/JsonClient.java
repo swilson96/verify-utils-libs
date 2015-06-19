@@ -3,10 +3,13 @@ package uk.gov.ida.jerseyclient;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
+import uk.gov.ida.common.ExceptionType;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.ResponseProcessingException;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
@@ -14,8 +17,10 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.google.common.base.Optional.absent;
+import static uk.gov.ida.exceptions.ApplicationException.createUnauditedException;
 
 public class JsonClient {
 
@@ -111,6 +116,10 @@ public class JsonClient {
     }
 
     private Response errorHandledClientResponse(Function<Optional<Object>, Response> request, URI uri) {
-        return request.apply(absent());
+        try {
+            return request.apply(absent());
+        } catch (ProcessingException e) {
+            throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e, uri);
+        }
     }
 }

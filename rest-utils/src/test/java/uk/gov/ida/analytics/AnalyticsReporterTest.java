@@ -4,8 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.sun.jersey.api.client.AsyncWebResource;
-import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.core.HttpContext;
 import com.sun.jersey.api.core.HttpRequestContext;
 import org.apache.http.NameValuePair;
@@ -19,11 +17,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.configuration.AnalyticsConfiguration;
 import uk.gov.ida.configuration.AnalyticsConfigurationBuilder;
 
+import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Cookie;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -33,6 +31,8 @@ import java.util.Map;
 import static com.google.common.base.Optional.fromNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
@@ -50,9 +50,6 @@ public class AnalyticsReporterTest {
 
     @Mock
     private HttpContext context;
-
-    @Mock
-    private AsyncWebResource asyncWebResource;
 
     @Mock
     private PiwikClient piwikClient;
