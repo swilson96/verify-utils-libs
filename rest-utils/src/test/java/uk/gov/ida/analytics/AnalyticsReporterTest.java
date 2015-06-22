@@ -4,10 +4,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.sun.jersey.api.core.HttpContext;
-import com.sun.jersey.api.core.HttpRequestContext;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.format.DateTimeFormat;
@@ -46,10 +45,11 @@ public class AnalyticsReporterTest {
     private Client client;
 
     @Mock
-    private HttpRequestContext requestContext;
+    private ContainerRequest requestContext;
+//    private HttpRequestContext requestContext;
 
-    @Mock
-    private HttpContext context;
+//    @Mock
+//    private HttpContext context;
 
     @Mock
     private PiwikClient piwikClient;
@@ -58,7 +58,7 @@ public class AnalyticsReporterTest {
 
     @Before
     public void setUp() throws Exception {
-        doReturn(requestContext).when(context).getRequest();
+//        doReturn(requestContext).when(context).getRequest();
         doReturn(ImmutableMap.of(PIWIK_VISITOR_ID, new Cookie(PIWIK_VISITOR_ID, visitorId))).when(requestContext).getCookies();
         when(requestContext.getRequestUri()).thenReturn(URI.create("http://localhost"));
 
@@ -74,8 +74,8 @@ public class AnalyticsReporterTest {
     public void shouldReportFraudulentEventIfVisitorIdIsMissing() throws Exception {
         when(requestContext.getCookies()).thenReturn(ImmutableMap.<String, Cookie>of());
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build());
-        analyticsReporter.reportFraud(context);
-        verify(piwikClient).report(any(URI.class), any(HttpRequestContext.class));
+        analyticsReporter.reportFraud(requestContext);
+        verify(piwikClient).report(any(URI.class), any(ContainerRequest.class));
     }
 
     @Test
@@ -83,10 +83,10 @@ public class AnalyticsReporterTest {
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
         CustomVariable customVariable = new CustomVariable(2, "IDP", "Experian");
 
-        analyticsReporter.reportCustomVariable("friendly description of URL", context, customVariable);
+        analyticsReporter.reportCustomVariable("friendly description of URL", requestContext, customVariable);
 
-        URI expected = analyticsReporter.generateURI("friendly description of URL", context.getRequest(), Optional.of(customVariable), Optional.of(visitorId));
-        verify(piwikClient).report(expected, context.getRequest());
+        URI expected = analyticsReporter.generateURI("friendly description of URL", requestContext, Optional.of(customVariable), Optional.of(visitorId));
+        verify(piwikClient).report(expected, requestContext);
     }
 
     @Test
@@ -94,13 +94,13 @@ public class AnalyticsReporterTest {
         String friendlyDescription = "friendly description of URL";
         URI piwikUri = mock(URI.class);
 
-        when(requestContext.getHeaderValue("User-Agent")).thenReturn("Chrome");
+        when(requestContext.getHeaderString("User-Agent")).thenReturn("Chrome");
 
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
 
         doReturn(piwikUri).when(analyticsReporter).generateURI(friendlyDescription, requestContext, Optional.<CustomVariable>absent(), Optional.of(visitorId));
 
-        analyticsReporter.report(friendlyDescription, context);
+        analyticsReporter.report(friendlyDescription, requestContext);
 
         verify(piwikClient).report(piwikUri, requestContext);
     }
@@ -114,14 +114,14 @@ public class AnalyticsReporterTest {
 
         doThrow(new RuntimeException("error")).when(analyticsReporter).generateURI(friendlyDescription, requestContext, Optional.<CustomVariable>absent(), Optional.of(visitorId));
 
-        analyticsReporter.report(friendlyDescription, context);
+        analyticsReporter.report(friendlyDescription, requestContext);
     }
 
     @Test
     public void shouldGeneratePiwikUrl() throws MalformedURLException, URISyntaxException {
         DateTime now = DateTime.now();
 
-        when(requestContext.getHeaderValue("Referer")).thenReturn("http://piwikserver/referrerUrl");
+        when(requestContext.getHeaderString("Referer")).thenReturn("http://piwikserver/referrerUrl");
         when(requestContext.getRequestUri()).thenReturn(new URI("http://piwikserver/requestUrl"));
 
         URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FrequestUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&action_name=SERVER+friendly+description+of+URL");
@@ -183,7 +183,7 @@ public class AnalyticsReporterTest {
         Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
         Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
         Optional<CustomVariable> customVariableOptional = Optional.of(new CustomVariable(1, "RP", "HMRC BLA"));
-        URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("page-title", context.getRequest(), customVariableOptional, visitorId));
+        URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("page-title", requestContext, customVariableOptional, visitorId));
 
         Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
             public String apply(NameValuePair from) {
