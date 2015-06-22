@@ -3,9 +3,8 @@ package uk.gov.ida.analytics;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
-import com.sun.jersey.api.core.HttpContext;
-import com.sun.jersey.api.core.HttpRequestContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -36,7 +35,7 @@ public class AnalyticsReporter {
         this.analyticsConfiguration = analyticsConfiguration;
     }
 
-    protected URI generateURI(String friendlyDescription, HttpRequestContext request, Optional<CustomVariable> customVariable, Optional<String> visitorId) throws URISyntaxException {
+    protected URI generateURI(String friendlyDescription, ContainerRequest request, Optional<CustomVariable> customVariable, Optional<String> visitorId) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
         if(visitorId.isPresent()) {
             uriBuilder.addParameter("_id", visitorId.get());
@@ -53,7 +52,7 @@ public class AnalyticsReporter {
         uriBuilder.addParameter("cdt", fmt.print(DateTime.now()));
 
         // Only FireFox on Windows is unable to provide referrer on AJAX calls
-        Optional<String> refererHeader = fromNullable(request.getHeaderValue(REFERER));
+        Optional<String> refererHeader = fromNullable(request.getHeaderString(REFERER));
         if(refererHeader.isPresent()) {
             uriBuilder.addParameter("urlref", refererHeader.get());
             uriBuilder.addParameter("ref", refererHeader.get());
@@ -78,43 +77,41 @@ public class AnalyticsReporter {
         return uriBuilder.build();
     }
 
-    public void reportCustomVariable(String friendlyDescription, HttpContext context, CustomVariable customVariable) {
+    public void reportCustomVariable(String friendlyDescription, ContainerRequest context, CustomVariable customVariable) {
         reportToPiwik(friendlyDescription, context, Optional.of(customVariable));
     }
 
-    public void report(String friendlyDescription, HttpContext context) {
+    public void report(String friendlyDescription, ContainerRequest context) {
         reportToPiwik(friendlyDescription, context, Optional.<CustomVariable>absent());
     }
 
-    public void reportFraud(HttpContext context) {
+    public void reportFraud(ContainerRequest context) {
         try {
             if (analyticsConfiguration.getEnabled()) {
-                HttpRequestContext request = context.getRequest();
-                Optional<Cookie> piwikCookie = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID));
+                Optional<Cookie> piwikCookie = fromNullable(context.getCookies().get(PIWIK_VISITOR_ID));
                 Optional<String> visitorId = piwikCookie.transform(new Function<Cookie, String>() {
                     @Override
                     public String apply(Cookie input) {
                         return input.getValue();
                     }
                 });
-                piwikClient.report(generateFraudURI(visitorId), request);
+                piwikClient.report(generateFraudURI(visitorId), context);
             }
         } catch(Exception e) {
             LOG.error("Analytics Reporting error", e);
         }
     }
 
-    private void reportToPiwik(String friendlyDescription, HttpContext context, Optional<CustomVariable> customVariable) {
+    private void reportToPiwik(String friendlyDescription, ContainerRequest context, Optional<CustomVariable> customVariable) {
         try {
             if (analyticsConfiguration.getEnabled()) {
-                HttpRequestContext request = context.getRequest();
-                Optional<String> visitorId = fromNullable(request.getCookies().get(PIWIK_VISITOR_ID)).transform(new Function<Cookie, String>() {
+                Optional<String> visitorId = fromNullable(context.getCookies().get(PIWIK_VISITOR_ID)).transform(new Function<Cookie, String>() {
                     @Override
                     public String apply(Cookie input) {
                         return input.getValue();
                     }
                 });
-                piwikClient.report(generateURI(friendlyDescription, request, customVariable, visitorId), request);
+                piwikClient.report(generateURI(friendlyDescription, context, customVariable, visitorId), context);
             }
         } catch (Exception e) {
             LOG.error("Analytics Reporting error", e);
