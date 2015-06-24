@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.UUID;
 
-import static uk.gov.ida.healthcheck.UniformInterfaceExceptionBuilder.aUniformInterfaceException;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -78,7 +78,7 @@ public class JsonClientTest {
     }
 
     @Test
-    public void getWithGenericType_shouldDelegateToprocessor() throws Exception {
+    public void getWithGenericType_shouldDelegateToProcessor() throws Exception {
         Response clientResponse = Response.noContent().build();
         when(builder.get()).thenReturn(clientResponse);
         GenericType<String> genericType = new GenericType<String>() {};
@@ -106,17 +106,15 @@ public class JsonClientTest {
 
     @Test(expected = ApplicationException.class)
     public void post_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        final String postBody = "";
         when(builder.post(any(Entity.class))).thenThrow(new ProcessingException("Bob"));
 
-        jsonClient.post(postBody, testUri, String.class);
+        jsonClient.post("", testUri, String.class);
     }
 
     @Test(expected = ApplicationException.class)
     public void postExpectingNoReturn_shouldThrowApplicationExceptionWhenAWireProblemOccurs() throws Exception {
-        final String postBody = "";
         when(builder.post(any(Entity.class))).thenThrow(new ProcessingException("Bob"));
 
-        jsonClient.post(postBody, testUri);
+        jsonClient.post("", testUri);
     }
 }
