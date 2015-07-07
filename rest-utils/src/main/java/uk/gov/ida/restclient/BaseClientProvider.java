@@ -5,7 +5,6 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.setup.Environment;
-import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -15,7 +14,6 @@ import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
 import javax.validation.Validation;
@@ -41,23 +39,12 @@ public abstract class BaseClientProvider implements Provider<Client> {
 
         JerseyClientBuilder jerseyClientBuilder = new JerseyClientBuilder(environment)
                 .using(jerseyClientConfiguration)
-                .using(getHttpRequestRetryHandler(jerseyClientConfiguration, enableRetryTimeOutConnections))
                 .using(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
                 .using(getConnectionSocketFactoryRegistry(doesAcceptSelfSignedCerts, trustStore, hostnameVerifier));
 
         jerseyClientBuilder.withProvider(new JacksonMessageBodyProvider(environment.getObjectMapper(), Validation.buildDefaultValidatorFactory().getValidator()));
 
         client = jerseyClientBuilder.build(clientName);
-    }
-
-    private HttpRequestRetryHandler getHttpRequestRetryHandler(JerseyClientConfiguration jerseyClientConfiguration, boolean enableRetryTimeOutConnections) {
-        HttpRequestRetryHandler retryHandler;
-        if (enableRetryTimeOutConnections) {
-            retryHandler = new TimeoutRequestRetryHandler(jerseyClientConfiguration.getRetries());
-        } else {
-            retryHandler = new StandardHttpRequestRetryHandler(0, false);
-        }
-        return retryHandler;
     }
 
     private Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(boolean doesAcceptSelfSignedCerts, KeyStore trustStore, X509HostnameVerifier hostnameVerifier) {
