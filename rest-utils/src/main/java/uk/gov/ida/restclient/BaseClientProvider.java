@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import com.google.inject.Provider;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.setup.Environment;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.config.Registry;
@@ -19,7 +18,6 @@ import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import javax.validation.Validation;
 import javax.ws.rs.client.Client;
 import java.net.ProxySelector;
 import java.security.KeyManagementException;
@@ -46,8 +44,6 @@ public abstract class BaseClientProvider implements Provider<Client> {
                 .using(getHttpRequestRetryHandler(jerseyClientConfiguration, enableRetryTimeOutConnections))
                 .using(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
                 .using(getConnectionSocketFactoryRegistry(doesAcceptSelfSignedCerts, trustStore, hostnameVerifier));
-
-        jerseyClientBuilder.withProvider(new JacksonMessageBodyProvider(environment.getObjectMapper(), Validation.buildDefaultValidatorFactory().getValidator()));
 
         client = jerseyClientBuilder.build(clientName);
     }
