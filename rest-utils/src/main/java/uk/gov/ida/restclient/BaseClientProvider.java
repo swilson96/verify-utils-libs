@@ -1,5 +1,6 @@
 package uk.gov.ida.restclient;
 
+import com.google.common.base.Throwables;
 import com.google.inject.Provider;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
@@ -11,13 +12,13 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.validation.Validation;
 import javax.ws.rs.client.Client;
 import java.net.ProxySelector;
@@ -25,6 +26,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 public abstract class BaseClientProvider implements Provider<Client> {
 
@@ -50,6 +52,17 @@ public abstract class BaseClientProvider implements Provider<Client> {
         client = jerseyClientBuilder.build(clientName);
     }
 
+    static TrustManager[] getTrustManagers(KeyStore trustStore) {
+        try {
+            final TrustManagerFactory trustManagerFactory =
+                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(trustStore);
+            return trustManagerFactory.getTrustManagers();
+        } catch (NoSuchAlgorithmException | KeyStoreException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     private HttpRequestRetryHandler getHttpRequestRetryHandler(JerseyClientConfiguration jerseyClientConfiguration, boolean enableRetryTimeOutConnections) {
         HttpRequestRetryHandler retryHandler;
         if (enableRetryTimeOutConnections) {
@@ -62,18 +75,18 @@ public abstract class BaseClientProvider implements Provider<Client> {
 
     private Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(boolean doesAcceptSelfSignedCerts, KeyStore trustStore, X509HostnameVerifier hostnameVerifier) {
         try {
-            SSLContextBuilder sslcontextBuilder = SSLContexts.custom();
-            if (doesAcceptSelfSignedCerts) {
-               sslcontextBuilder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            if(doesAcceptSelfSignedCerts) {
+                sslContext.init(null, new TrustManager[]{new InsecureTrustManager()}, new SecureRandom());
             } else {
-               sslcontextBuilder = sslcontextBuilder.loadTrustMaterial(trustStore);
+                sslContext.init(null, getTrustManagers(trustStore), new SecureRandom());
             }
-            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslcontextBuilder.build(), new String[]{"TLSv1.2"}, null, hostnameVerifier);
+            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContext, new String[]{"TLSv1.2"}, null, hostnameVerifier);
             return RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("https", sslConnectionSocketFactory)
                     .register("http", new PlainConnectionSocketFactory())
                     .build();
-        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
             throw new RuntimeException(e);
         }
     }
