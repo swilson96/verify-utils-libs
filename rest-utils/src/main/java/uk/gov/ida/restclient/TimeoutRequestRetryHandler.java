@@ -23,6 +23,7 @@ public class TimeoutRequestRetryHandler implements HttpRequestRetryHandler {
 
     @Override
     public boolean retryRequest(IOException e, int executionCount, HttpContext httpContext) {
+        LOG.info("Retry request made.", e);
         if (e instanceof ConnectTimeoutException && executionCount <= numRetries) {
             String uri = null;
             String httpMethod = null;
