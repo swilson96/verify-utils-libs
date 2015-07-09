@@ -3,6 +3,7 @@ package uk.gov.ida.common;
 import org.apache.log4j.Level;
 
 public enum ExceptionType {
+    METADATA_PROVIDER_EXCEPTION,
     DUPLICATE_SESSION(Level.INFO),
     FORBIDDEN_RESOURCE(Level.INFO),
     CLIENT_ERROR,

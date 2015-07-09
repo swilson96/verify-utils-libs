@@ -8,6 +8,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.UUID;
 
+import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.fromNullable;
 import static java.text.MessageFormat.format;
 
@@ -77,6 +78,10 @@ public final class ApplicationException extends RuntimeException {
 
     public static ApplicationException createUnauditedException(ExceptionType exceptionType, UUID errorId) {
         return new ApplicationException(exceptionType, false, errorId);
+    }
+
+    public static ApplicationException createUnauditedException(ExceptionType exceptionType, String message, Throwable cause) {
+        return new ApplicationException(exceptionType, false, UUID.randomUUID(), cause, Optional.<URI>absent(), Optional.of(message));
     }
 
     public static ApplicationException createUnauditedException(ExceptionType exceptionType, UUID errorId, Throwable cause, URI uri) {
