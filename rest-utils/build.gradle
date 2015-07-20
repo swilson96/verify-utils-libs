@@ -9,7 +9,7 @@ dependencies {
             "org.powermock:powermock-core:1.5"
 
     def dependencyVersions = [
-            dropwizardVersion:"0.8.1"
+            dropwizardVersion:"0.8.3-IDA"
     ]
 
     compile "com.google.inject:guice:3.0",
