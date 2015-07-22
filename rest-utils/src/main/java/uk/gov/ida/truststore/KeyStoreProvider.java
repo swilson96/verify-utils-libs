@@ -2,7 +2,7 @@ package uk.gov.ida.truststore;
 
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
+import javax.inject.Provider;
 
 import java.security.KeyStore;
 

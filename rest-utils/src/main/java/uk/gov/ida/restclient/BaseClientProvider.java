@@ -1,7 +1,7 @@
 package uk.gov.ida.restclient;
 
 import com.google.common.base.Throwables;
-import com.google.inject.Provider;
+import javax.inject.Provider;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
