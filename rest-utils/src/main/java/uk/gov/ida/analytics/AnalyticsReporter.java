@@ -2,7 +2,7 @@ package uk.gov.ida.analytics;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.joda.time.DateTime;

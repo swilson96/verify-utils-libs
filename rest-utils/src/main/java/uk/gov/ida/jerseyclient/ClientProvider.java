@@ -1,6 +1,6 @@
 package uk.gov.ida.jerseyclient;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import io.dropwizard.setup.Environment;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import uk.gov.ida.restclient.BaseClientProvider;

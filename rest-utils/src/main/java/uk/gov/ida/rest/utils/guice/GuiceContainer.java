@@ -1,16 +1,5 @@
 package uk.gov.ida.rest.utils.guice;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Scope;
-import com.google.inject.servlet.ServletScopes;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
-
-import javax.servlet.ServletException;
-import javax.ws.rs.core.Application;
-import java.util.Map;
-
 //public class GuiceContainer extends ServletContainer {
 //
 //    private static final long serialVersionUID = 1931878850157940335L;

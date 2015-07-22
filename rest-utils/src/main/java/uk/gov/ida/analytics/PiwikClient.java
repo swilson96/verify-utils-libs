@@ -1,6 +1,6 @@
 package uk.gov.ida.analytics;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import org.glassfish.jersey.server.ContainerRequest;
 
 import javax.ws.rs.client.Client;

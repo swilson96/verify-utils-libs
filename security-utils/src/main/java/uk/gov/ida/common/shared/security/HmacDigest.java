@@ -1,6 +1,6 @@
 package uk.gov.ida.common.shared.security;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import uk.gov.ida.common.shared.configuration.SecureCookieKeyStore;
 
 import javax.crypto.Mac;

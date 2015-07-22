@@ -1,6 +1,6 @@
 package uk.gov.ida.resources;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import org.apache.http.HttpStatus;
 import uk.gov.ida.common.CommonUrls;
 import uk.gov.ida.configuration.ServiceStatus;

@@ -4,7 +4,7 @@ package uk.gov.ida.truststore;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import com.google.inject.Singleton;
 
 import java.security.KeyStore;

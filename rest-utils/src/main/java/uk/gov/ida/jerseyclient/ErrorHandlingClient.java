@@ -1,6 +1,6 @@
 package uk.gov.ida.jerseyclient;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import org.glassfish.jersey.client.ClientResponse;
 import uk.gov.ida.common.ExceptionType;
 

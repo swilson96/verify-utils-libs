@@ -1,6 +1,6 @@
 package uk.gov.ida.jerseyclient;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.GenericType;

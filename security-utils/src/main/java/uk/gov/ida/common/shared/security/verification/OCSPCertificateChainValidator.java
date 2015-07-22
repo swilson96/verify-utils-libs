@@ -1,6 +1,6 @@
 package uk.gov.ida.common.shared.security.verification;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
 
 public class OCSPCertificateChainValidator extends CertificateChainValidator {
