@@ -2,7 +2,7 @@ package uk.gov.ida.eventsink;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

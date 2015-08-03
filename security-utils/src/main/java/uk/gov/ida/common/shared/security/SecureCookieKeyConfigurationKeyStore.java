@@ -1,7 +1,7 @@
 package uk.gov.ida.common.shared.security;
 
 import com.google.common.base.Throwables;
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import uk.gov.ida.common.shared.configuration.KeyConfiguration;
 import uk.gov.ida.common.shared.configuration.SecureCookieKeyConfiguration;
 import uk.gov.ida.common.shared.configuration.SecureCookieKeyStore;

@@ -2,7 +2,7 @@ package uk.gov.ida.truststore;
 
 
 import com.google.common.base.Throwables;
-import com.google.inject.Provider;
+import javax.inject.Provider;
 
 import java.io.IOException;
 import java.security.KeyStore;

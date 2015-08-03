@@ -12,12 +12,11 @@ dependencies {
             dropwizardVersion:"0.8.3-IDA"
     ]
 
-    compile "com.google.inject:guice:3.0",
+    compile "javax.inject:javax.inject:1",
             "javax.servlet:javax.servlet-api:3.0.1",
             "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
             "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion",
             "javax.ws.rs:javax.ws.rs-api:2.0.1",
-            "com.hubspot.dropwizard:dropwizard-guice:0.8.1.1",
             "uk.gov.ida:dropwizard-logstash:0.7.0-18",
             "org.apache.commons:commons-lang3:3.4"
 }

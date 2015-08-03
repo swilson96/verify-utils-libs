@@ -1,6 +1,6 @@
 package uk.gov.ida.common.shared.security;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 import org.apache.commons.codec.binary.StringUtils;
 import uk.gov.ida.common.shared.configuration.PublicKeyConfiguration;
 import uk.gov.ida.common.shared.configuration.PublicSigningKeyConfiguration;
