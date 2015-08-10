@@ -1,13 +1,7 @@
 package uk.gov.ida.common.shared.security;
 
-import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-
-import static org.apache.commons.codec.binary.StringUtils.getBytesUtf8;
 import static org.apache.commons.codec.binary.StringUtils.newStringUtf8;
 
 abstract class StringEncoding {
