@@ -1,7 +1,6 @@
 package uk.gov.ida.restclient;
 
 import com.google.common.base.Throwables;
-import javax.inject.Provider;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
@@ -15,6 +14,7 @@ import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
+import javax.inject.Provider;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -71,13 +71,13 @@ public abstract class BaseClientProvider implements Provider<Client> {
 
     private Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(boolean doesAcceptSelfSignedCerts, KeyStore trustStore, X509HostnameVerifier hostnameVerifier) {
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
             if(doesAcceptSelfSignedCerts) {
                 sslContext.init(null, new TrustManager[]{new InsecureTrustManager()}, new SecureRandom());
             } else {
                 sslContext.init(null, getTrustManagers(trustStore), new SecureRandom());
             }
-            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContext, new String[]{"TLSv1.2"}, null, hostnameVerifier);
+            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
             return RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("https", sslConnectionSocketFactory)
                     .register("http", new PlainConnectionSocketFactory())
