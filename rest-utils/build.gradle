@@ -1,22 +1,17 @@
 dependencies {
-    testCompile "junit:junit:4.11",
-            "org.assertj:assertj-core:1.6.0",
-            "org.mockito:mockito-core:1.9.5",
-            "org.powermock:powermock-module-junit4:1.5",
-            "org.powermock:powermock-module-junit4-common:1.5",
-            "org.powermock:powermock-api-support:1.5",
-            "org.powermock:powermock-api-mockito:1.5",
-            "org.powermock:powermock-core:1.5"
+    testCompile "junit:junit:4.12",
+            "org.assertj:assertj-core:1.7.1",
+            "org.mockito:mockito-core:1.10.17"
 
     def dependencyVersions = [
             dropwizardVersion:"0.8.3-IDA"
     ]
 
     compile "javax.inject:javax.inject:1",
-            "javax.servlet:javax.servlet-api:3.0.1",
+            "javax.servlet:javax.servlet-api:3.1.0",
             "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
             "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion",
             "javax.ws.rs:javax.ws.rs-api:2.0.1",
-            "uk.gov.ida:dropwizard-logstash:0.7.0-18",
-            "org.apache.commons:commons-lang3:3.4"
+            "uk.gov.ida:dropwizard-logstash:0.8.0-22",
+            "org.apache.commons:commons-lang3:3.3.2"
 }

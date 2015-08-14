@@ -1,11 +1,9 @@
 package uk.gov.ida.common.shared.security;
 
-import com.google.common.io.Files;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.security.PrivateKey;
 import java.util.List;
@@ -13,8 +11,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Files.class)
+@RunWith(MockitoJUnitRunner.class)
 public class PrivateKeyCacheTest {
     @Mock
     private PrivateKey signingPrivateKey;

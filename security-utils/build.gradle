@@ -1,18 +1,13 @@
 dependencies {
-    testCompile 'junit:junit:4.11',
-            'org.assertj:assertj-core:1.6.0',
-            'org.mockito:mockito-core:1.9.5',
-            'org.powermock:powermock-module-junit4:1.5',
-            'org.powermock:powermock-module-junit4-common:1.5',
-            'org.powermock:powermock-api-support:1.5',
-            'org.powermock:powermock-api-mockito:1.5',
-            'org.powermock:powermock-core:1.5'
+    testCompile 'junit:junit:4.12',
+            'org.assertj:assertj-core:1.7.1',
+            'org.mockito:mockito-core:1.10.17'
 
     compile "javax.inject:javax.inject:1",
-            "com.google.guava:guava:16.0",
-            'com.fasterxml.jackson.core:jackson-annotations:2.3.1',
+            "com.google.guava:guava:18.0",
+            'com.fasterxml.jackson.core:jackson-annotations:2.5.1',
             'javax.validation:validation-api:1.1.0.Final',
-            'commons-codec:commons-codec:1.7',
-            'org.slf4j:slf4j-api:1.7.6'
+            'commons-codec:commons-codec:1.6',
+            'org.slf4j:slf4j-api:1.7.10'
 
 }

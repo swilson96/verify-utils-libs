@@ -33,9 +33,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
 import static uk.gov.ida.analytics.AnalyticsReporter.PIWIK_VISITOR_ID;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -92,7 +89,7 @@ public class AnalyticsReporterTest {
     @Test
     public void shouldCallGenerateUrlAndSendToPiwkAsynchronously() throws MalformedURLException, URISyntaxException {
         String friendlyDescription = "friendly description of URL";
-        URI piwikUri = mock(URI.class);
+        URI piwikUri = URI.create("piwik");
 
         when(requestContext.getHeaderString("User-Agent")).thenReturn("Chrome");
 
