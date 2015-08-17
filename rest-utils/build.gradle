@@ -12,6 +12,6 @@ dependencies {
             "io.dropwizard:dropwizard-core:$dependencyVersions.dropwizardVersion",
             "io.dropwizard:dropwizard-client:$dependencyVersions.dropwizardVersion",
             "javax.ws.rs:javax.ws.rs-api:2.0.1",
-            "uk.gov.ida:dropwizard-logstash:0.8.0-22",
+            "uk.gov.ida:dropwizard-logstash:0.8.0-25",
             "org.apache.commons:commons-lang3:3.3.2"
 }
