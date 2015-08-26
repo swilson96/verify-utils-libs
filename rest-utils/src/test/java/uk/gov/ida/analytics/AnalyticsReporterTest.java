@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 import static com.google.common.base.Optional.fromNullable;
+import static java.text.MessageFormat.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -43,10 +44,6 @@ public class AnalyticsReporterTest {
 
     @Mock
     private ContainerRequest requestContext;
-//    private HttpRequestContext requestContext;
-
-//    @Mock
-//    private HttpContext context;
 
     @Mock
     private PiwikClient piwikClient;
@@ -55,7 +52,6 @@ public class AnalyticsReporterTest {
 
     @Before
     public void setUp() throws Exception {
-//        doReturn(requestContext).when(context).getRequest();
         doReturn(ImmutableMap.of(PIWIK_VISITOR_ID, new Cookie(PIWIK_VISITOR_ID, visitorId))).when(requestContext).getCookies();
         when(requestContext.getRequestUri()).thenReturn(URI.create("http://localhost"));
 
@@ -121,11 +117,12 @@ public class AnalyticsReporterTest {
         when(requestContext.getHeaderString("Referer")).thenReturn("http://piwikserver/referrerUrl");
         when(requestContext.getRequestUri()).thenReturn(new URI("http://piwikserver/requestUrl"));
 
-        URIBuilder expectedURI = new URIBuilder("http://piwik-digds.rhcloud.com/analytics?idsite=9595&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FrequestUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&action_name=SERVER+friendly+description+of+URL");
+        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
+        URIBuilder expectedURI = new URIBuilder(format("http://piwik-digds.rhcloud.com/analytics?idsite={0}&rec=1&apiv=1&url=http%3A%2F%2Fpiwikserver%2FrequestUrl&urlref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&_id=abc&ref=http%3A%2F%2Fpiwikserver%2FreferrerUrl&cookie=false&action_name=SERVER+friendly+description+of+URL", analyticsConfiguration.getSiteId()));
+
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
         expectedURI.addParameter("cdt", fmt.print(now));
 
-        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
 
         URIBuilder testURI = new URIBuilder(analyticsReporter.generateURI("SERVER friendly description of URL", requestContext, Optional.<CustomVariable>absent(), Optional.of("abc")));
@@ -145,8 +142,8 @@ public class AnalyticsReporterTest {
 
     @Test
     public void shouldGeneratePiwikFraudUrl() throws MalformedURLException, URISyntaxException {
-        URIBuilder expectedURI = new URIBuilder("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite=9595&rec=1&apiv=1&e_c=fraud_response&e_a=fraud_response");
         AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
+        URIBuilder expectedURI = new URIBuilder(format("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite={0}&rec=1&apiv=1&e_c=fraud_response&e_a=fraud_response", analyticsConfiguration.getSiteId()));
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
         Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
         Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
@@ -170,12 +167,12 @@ public class AnalyticsReporterTest {
         DateTime now = DateTime.now();
         String customVariable = "{\"1\":[\"RP\",\"HMRC BLA\"]}";
 
-        URIBuilder expectedURI = new URIBuilder("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite=9595&rec=1&apiv=1&action_name=page-title&cookie=false");
+        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
+        URIBuilder expectedURI = new URIBuilder(format("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite={0}&rec=1&apiv=1&action_name=page-title&cookie=false", analyticsConfiguration.getSiteId()));
         expectedURI.addParameter("_cvar", customVariable);
         expectedURI.addParameter("url", requestContext.getRequestUri().toString());
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
         expectedURI.addParameter("cdt", fmt.print(now));
-        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
         AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
         Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
         Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());

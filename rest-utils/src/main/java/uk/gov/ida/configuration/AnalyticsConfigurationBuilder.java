@@ -9,7 +9,7 @@ public class AnalyticsConfigurationBuilder {
     }
 
     public AnalyticsConfiguration build() {
-        return new TestAnalyticsConfiguration(enabled, 9595, "http://piwik-digds.rhcloud.com/analytics", "http://analytics-1/analytics");
+        return new TestAnalyticsConfiguration(enabled, 1, "https://localhost:1235/piwik.php", "https://localhost:1235/piwik.php");
 
     }
 
