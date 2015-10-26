@@ -10,8 +10,6 @@ trap "handle_failure" ERR INT TERM
 
 ./gradlew clean test
 
-log "SUCCESS!\n"
-
 tput setaf 3
 printf "\nOnce you publish a new version of ida-utils "
 tput bold
