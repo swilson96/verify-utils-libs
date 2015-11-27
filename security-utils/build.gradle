@@ -6,6 +6,7 @@ dependencies {
     compile "javax.inject:javax.inject:1",
             "com.google.guava:guava:18.0",
             'com.fasterxml.jackson.core:jackson-annotations:2.5.1',
+            'com.fasterxml.jackson.core:jackson-databind:2.5.1',
             'javax.validation:validation-api:1.1.0.Final',
             'commons-codec:commons-codec:1.6',
             'org.slf4j:slf4j-api:1.7.10'

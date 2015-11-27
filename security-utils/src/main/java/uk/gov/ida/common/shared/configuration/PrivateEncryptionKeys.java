@@ -10,4 +10,4 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Qualifier
 @Target({FIELD, PARAMETER, METHOD}) @Retention(RUNTIME)
-public @interface PrivateSigningKeyConfiguration {}
+public @interface PrivateEncryptionKeys {}
