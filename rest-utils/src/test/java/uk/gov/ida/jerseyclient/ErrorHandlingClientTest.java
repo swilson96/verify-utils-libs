@@ -2,7 +2,6 @@ package uk.gov.ida.jerseyclient;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.glassfish.jersey.client.ClientResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,9 +24,7 @@ import java.util.Map;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ErrorHandlingClientTest {
@@ -69,7 +66,7 @@ public class ErrorHandlingClientTest {
 
         verify(webTargetBuilder, times(1)).cookie(cookie);
         verify(webTargetBuilder, times(1)).header(headerName, headerValue);
-        verify(webTargetBuilder, times(1)).get(Response.class);
+        verify(webTargetBuilder, times(1)).get();
     }
 
     @Test(expected = ApplicationException.class)
