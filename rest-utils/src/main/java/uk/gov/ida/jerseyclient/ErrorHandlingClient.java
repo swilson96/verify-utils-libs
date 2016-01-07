@@ -1,9 +1,8 @@
 package uk.gov.ida.jerseyclient;
 
-import javax.inject.Inject;
-import org.glassfish.jersey.client.ClientResponse;
 import uk.gov.ida.common.ExceptionType;
 
+import javax.inject.Inject;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -45,7 +44,7 @@ public class ErrorHandlingClient {
             }
             return requestBuilder
                     .accept(MediaType.APPLICATION_JSON_TYPE)
-                    .get(Response.class);
+                    .get();
         } catch (ProcessingException e) {
             throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e, uri);
         }
