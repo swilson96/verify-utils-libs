@@ -17,6 +17,9 @@ public class PrivateKeyDeserializer extends JsonDeserializer<PrivateKeyConfigura
     @Override
     public PrivateKeyConfiguration deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         PrivateKeyFactory privateKeyFactory = new PrivateKeyFactory();
+        // Setting the Codec explicitly is needed when this executes with the YAMLParser
+        // for example, when our Dropwizard apps start. The codec doesn't need to be set
+        // when the JsonParser implementation is used.
         p.setCodec(new ObjectMapper());
         JsonNode node = p.getCodec().readTree(p);
         JsonNode privateKeyNode = node.get("keyUri");
