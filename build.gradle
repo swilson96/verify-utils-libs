@@ -8,8 +8,8 @@ idaSonar {
 
 idea {
     project {
-        jdkName = '1.7'
-        languageLevel = '1.7'
+        jdkName = '1.8'
+        languageLevel = '1.8'
     }
     module {
         //if you love browsing Javadoc
