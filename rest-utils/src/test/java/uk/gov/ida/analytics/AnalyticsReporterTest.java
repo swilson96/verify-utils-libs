@@ -2,10 +2,12 @@ package uk.gov.ida.analytics;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
@@ -15,7 +17,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.configuration.AnalyticsConfiguration;
 import uk.gov.ida.configuration.AnalyticsConfigurationBuilder;
@@ -33,7 +37,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.ida.analytics.AnalyticsReporter.PIWIK_VISITOR_ID;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -190,6 +198,103 @@ public class AnalyticsReporterTest {
         }
 
         assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
+    }
+
+    @Test
+    public void simulatePageView_generatesExpectedParameters() {
+        AnalyticsConfiguration config = new AnalyticsConfigurationBuilder().build();
+        AnalyticsReporter reporter = new AnalyticsReporter(piwikClient, config);
+        ArgumentCaptor<URI> captor = ArgumentCaptor.forClass(URI.class);
+
+        reporter.reportPageView("Title", requestContext, "http://page-view");
+
+        Mockito.verify(piwikClient).report(captor.capture(), eq(requestContext));
+        URIBuilder uriBuilder = new URIBuilder(captor.getValue());
+        checkURIBase(uriBuilder.toString(), config.getPiwikServerSideUrl());
+        checkURIURL(uriBuilder, "http://page-view");
+        checkURITitle(uriBuilder, "Title");
+        checkNonFraudParams(uriBuilder, config.getSiteId().toString());
+    }
+
+    @Test
+    public void simulatePageView_includesVisitorIdIfPresent() {
+        AnalyticsReporter reporter = new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build());
+        ArgumentCaptor<URI> captor = ArgumentCaptor.forClass(URI.class);
+
+        reporter.reportPageView("Title", requestContext, "http://page-view");
+
+        Mockito.verify(piwikClient).report(captor.capture(), eq(requestContext));
+        checkVisitorId(captor.getValue().getQuery(), visitorId);
+    }
+
+    @Test
+    public void simulatePageView_handlesMissingVisitorId() {
+        when(requestContext.getCookies()).thenReturn(ImmutableMap.of());
+        AnalyticsConfiguration config = new AnalyticsConfigurationBuilder().build();
+        AnalyticsReporter reporter = new AnalyticsReporter(piwikClient, config);
+        ArgumentCaptor<URI> captor = ArgumentCaptor.forClass(URI.class);
+
+        reporter.reportPageView("Title", requestContext, "http://page-view");
+
+        Mockito.verify(piwikClient).report(captor.capture(), eq(requestContext));
+        String query = captor.getValue().getQuery();
+        checkQueryParamMissing(query, "_id");
+    }
+
+    @Test
+    public void simulatePageView_doesNotReportIfAnalyticsIsDisabled() {
+        AnalyticsConfiguration config = new AnalyticsConfigurationBuilder().setEnabled(false).build();
+        AnalyticsReporter reporter = new AnalyticsReporter(piwikClient, config);
+
+        reporter.reportPageView("Title", requestContext, "http://page-view");
+
+        Mockito.verify(piwikClient, never()).report(any(URI.class), any(ContainerRequest.class));
+    }
+
+    private void checkCommonParams(URIBuilder uriBuilder, String siteId) {
+        checkQueryParam(uriBuilder, "idsite", siteId);
+        checkQueryParam(uriBuilder, "apiv", "1");
+        checkQueryParam(uriBuilder, "rec", "1");
+    }
+
+    private void checkVisitorId(String query, String visitorId) {
+        checkQueryParam(query, "_id", visitorId);
+    }
+
+    private void checkURIURL(URIBuilder query, String expected) {
+        checkQueryParam(query, "url", expected);
+    }
+
+    private void checkURIBase(String uri, String expected) {
+        assertThat(uri.indexOf(expected)).isEqualTo(0);
+    }
+
+    private void checkURITitle(URIBuilder query, String title) {
+        checkQueryParam(query, "action_name", title);
+    }
+
+    private void checkQueryParam(String query, String name, String expected) {
+        assertThat(queryContains(query, name, expected)).as("Looking for param %s with value %s in query %s", name,
+                expected, query).isTrue();
+    }
+
+    private void checkQueryParam(URIBuilder uriBuilder, String name, String expected) {
+        assertThat(uriBuilder.getQueryParams().contains(new BasicNameValuePair(name, expected))).as("Looking for param %s with value %s", name, expected).isTrue();
+    }
+
+    private boolean queryContains(String query, String name, String expectedValue) {
+        String match = name + "=" + expectedValue;
+        return ImmutableList.copyOf(query.split("&")).stream().anyMatch(match::equals);
+    }
+
+    private void checkQueryParamMissing(String query, String name) {
+        assertThat(query.contains(name + "=")).isFalse();
+    }
+
+    private void checkNonFraudParams(URIBuilder uriBuilder, String siteId) {
+        checkCommonParams(uriBuilder, siteId);
+        checkQueryParam(uriBuilder, "cookie", "false");
+        checkQueryParam(uriBuilder, "cdt", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(DateTime.now()));
     }
 
 }
