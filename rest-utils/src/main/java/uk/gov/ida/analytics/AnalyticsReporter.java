@@ -5,7 +5,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.configuration.AnalyticsConfiguration;
@@ -44,7 +43,7 @@ public class AnalyticsReporter {
     public void reportFraud(ContainerRequest context) {
         if(analyticsConfiguration.getEnabled()) {
             try {
-                report(generateFraudURI(getVisitorId(context)), context);
+                piwikClient.report(generateFraudURI(getVisitorId(context)), context);
             }
             catch(Exception e) {
                 LOG.error("Analytics Reporting error", e);
@@ -52,12 +51,13 @@ public class AnalyticsReporter {
         }
     }
 
-    public void simulatePageView(String pageTitle, String uri, ContainerRequest context) {
-        try {
-            report(generateCustomURI(pageTitle, uri, getVisitorId(context)), context);
-        }
-        catch(Exception e) {
-            LOG.error("Analytics Reporting error", e);
+    public void reportPageView(String pageTitle, ContainerRequest context, String uri) {
+        if(analyticsConfiguration.getEnabled()) {
+            try {
+                piwikClient.report(generateCustomURI(pageTitle, uri, getVisitorId(context)), context);
+            } catch (Exception e) {
+                LOG.error("Analytics Reporting error", e);
+            }
         }
     }
 
@@ -86,26 +86,15 @@ public class AnalyticsReporter {
         return buildBaseURI(visitorId)
                 .addParameter("action_name", friendlyDescription)
                 .addParameter("url", url)
-                .addParameter("cdt", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(DateTime.now()));
-        // TODO         uriBuilder.addParameter("cookie", "false");
-
+                .addParameter("cdt", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(DateTime.now()))
+                .addParameter("cookie", "false");
     }
 
     protected URI generateURI(String friendlyDescription, ContainerRequest request, Optional<CustomVariable> customVariable, Optional<String> visitorId) throws URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
-        if(visitorId.isPresent()) {
-            uriBuilder.addParameter("_id", visitorId.get());
-        }
-        uriBuilder.addParameter("idsite", analyticsConfiguration.getSiteId().toString());
-        uriBuilder.addParameter("action_name", friendlyDescription);
-        uriBuilder.addParameter("apiv", "1");
-        uriBuilder.addParameter("rec", "1");
+        URIBuilder uriBuilder = buildNonFraudURI(friendlyDescription, request.getRequestUri().toString(), visitorId);
         if(customVariable.isPresent()) {
             uriBuilder.addParameter("_cvar", customVariable.get().getJson());
         }
-        uriBuilder.addParameter("url", request.getRequestUri().toString());
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-        uriBuilder.addParameter("cdt", fmt.print(DateTime.now()));
 
         // Only FireFox on Windows is unable to provide referrer on AJAX calls
         Optional<String> refererHeader = fromNullable(request.getHeaderString(REFERER));
@@ -113,34 +102,22 @@ public class AnalyticsReporter {
             uriBuilder.addParameter("urlref", refererHeader.get());
             uriBuilder.addParameter("ref", refererHeader.get());
         }
-        uriBuilder.addParameter("cookie", "false");
 
         return uriBuilder.build();
     }
 
     protected URI generateFraudURI(Optional<String> visitorId) throws MalformedURLException, URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(analyticsConfiguration.getPiwikServerSideUrl());
-
-        if(visitorId.isPresent()) {
-            uriBuilder.addParameter("_id", visitorId.get());
-        }
-        uriBuilder.addParameter("idsite", analyticsConfiguration.getSiteId().toString());
-        uriBuilder.addParameter("apiv", "1");
-        uriBuilder.addParameter("rec", "1");
+        URIBuilder uriBuilder = buildBaseURI(visitorId);
         uriBuilder.addParameter("e_c", "fraud_response");// event category
         uriBuilder.addParameter("e_a", "fraud_response");// event action
 
         return uriBuilder.build();
     }
 
-    private void report(URI uri, ContainerRequest context) {
-        piwikClient.report(uri, context);
-    }
-
     private void reportToPiwik(String friendlyDescription, ContainerRequest context, Optional<CustomVariable> customVariable) {
         if (analyticsConfiguration.getEnabled()) {
             try {
-                report(generateURI(friendlyDescription, context, customVariable, getVisitorId(context)), context);
+                piwikClient.report(generateURI(friendlyDescription, context, customVariable, getVisitorId(context)), context);
             }
             catch(Exception e) {
                 LOG.error("Analytics Reporting error", e);
