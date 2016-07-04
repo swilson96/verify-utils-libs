@@ -1,29 +1,23 @@
 package uk.gov.ida.jerseyclient;
 
-import javax.inject.Inject;
 import io.dropwizard.setup.Environment;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import uk.gov.ida.restclient.BaseClientProvider;
 import uk.gov.ida.restclient.RestfulClientConfiguration;
 
-import java.security.KeyStore;
+import javax.inject.Inject;
 
 public class ClientProvider extends BaseClientProvider {
 
     @Inject
     public ClientProvider(
             Environment environment,
-            RestfulClientConfiguration baseConfiguration,
-            KeyStore trustStore) {
+            RestfulClientConfiguration baseConfiguration) {
 
         super(
                 environment,
-                baseConfiguration.doesAcceptSelfSignedCerts(),
                 baseConfiguration.getJerseyClientConfiguration(),
-                trustStore,
                 baseConfiguration.getEnableRetryTimeOutConnections(),
-                "MicroServiceClient",
-                new AllowAllHostnameVerifier()
+                "MicroServiceClient"
         );
     }
 }

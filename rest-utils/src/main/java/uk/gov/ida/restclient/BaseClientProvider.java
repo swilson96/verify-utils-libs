@@ -32,31 +32,16 @@ public abstract class BaseClientProvider implements Provider<Client> {
 
     public BaseClientProvider(
             Environment environment,
-            boolean doesAcceptSelfSignedCerts,
             JerseyClientConfiguration jerseyClientConfiguration,
-            KeyStore trustStore,
             boolean enableRetryTimeOutConnections,
-            String clientName,
-            X509HostnameVerifier hostnameVerifier) {
+            String clientName) {
 
         JerseyClientBuilder jerseyClientBuilder = new JerseyClientBuilder(environment)
                 .using(jerseyClientConfiguration)
                 .using(getHttpRequestRetryHandler(jerseyClientConfiguration, enableRetryTimeOutConnections))
-                .using(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
-                .using(getConnectionSocketFactoryRegistry(doesAcceptSelfSignedCerts, trustStore, hostnameVerifier));
+                .using(new SystemDefaultRoutePlanner(ProxySelector.getDefault()));
 
         client = jerseyClientBuilder.build(clientName);
-    }
-
-    static TrustManager[] getTrustManagers(KeyStore trustStore) {
-        try {
-            final TrustManagerFactory trustManagerFactory =
-                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(trustStore);
-            return trustManagerFactory.getTrustManagers();
-        } catch (NoSuchAlgorithmException | KeyStoreException e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     private HttpRequestRetryHandler getHttpRequestRetryHandler(JerseyClientConfiguration jerseyClientConfiguration, boolean enableRetryTimeOutConnections) {
@@ -67,24 +52,6 @@ public abstract class BaseClientProvider implements Provider<Client> {
             retryHandler = new StandardHttpRequestRetryHandler(0, false);
         }
         return retryHandler;
-    }
-
-    private Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(boolean doesAcceptSelfSignedCerts, KeyStore trustStore, X509HostnameVerifier hostnameVerifier) {
-        try {
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-            if(doesAcceptSelfSignedCerts) {
-                sslContext.init(null, new TrustManager[]{new InsecureTrustManager()}, new SecureRandom());
-            } else {
-                sslContext.init(null, getTrustManagers(trustStore), new SecureRandom());
-            }
-            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-            return RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("https", sslConnectionSocketFactory)
-                    .register("http", new PlainConnectionSocketFactory())
-                    .build();
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
