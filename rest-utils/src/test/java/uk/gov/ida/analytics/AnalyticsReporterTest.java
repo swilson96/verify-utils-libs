@@ -72,14 +72,6 @@ public class AnalyticsReporterTest {
     }
 
     @Test
-    public void shouldReportFraudulentEventIfVisitorIdIsMissing() throws Exception {
-        when(requestContext.getCookies()).thenReturn(ImmutableMap.<String, Cookie>of());
-        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build());
-        analyticsReporter.reportFraud(requestContext);
-        verify(piwikClient).report(any(URI.class), any(ContainerRequest.class));
-    }
-
-    @Test
     public void shouldCallGenerateUrlAndSendToPiwikAsynchronouslyWhenReportingCustomVariable() throws Exception {
         AnalyticsReporter analyticsReporter = spy(new AnalyticsReporter(piwikClient, new AnalyticsConfigurationBuilder().build()));
         CustomVariable customVariable = new CustomVariable(2, "IDP", "Experian");
@@ -149,28 +141,6 @@ public class AnalyticsReporterTest {
     }
 
     @Test
-    public void shouldGeneratePiwikFraudUrl() throws MalformedURLException, URISyntaxException {
-        AnalyticsConfiguration analyticsConfiguration = new AnalyticsConfigurationBuilder().build();
-        URIBuilder expectedURI = new URIBuilder(format("http://piwiki-dgds.rhcloud.com/analytics?_id=123&idsite={0}&rec=1&apiv=1&e_c=fraud_response&e_a=fraud_response", analyticsConfiguration.getSiteId()));
-        AnalyticsReporter analyticsReporter = new AnalyticsReporter(piwikClient, analyticsConfiguration);
-        Optional<Cookie> piwikCookie = fromNullable(requestContext.getCookies().get(PIWIK_VISITOR_ID));
-        Optional<String> visitorId = Optional.of(piwikCookie.get().getValue());
-        URIBuilder testURI = new URIBuilder(analyticsReporter.generateFraudURI(visitorId));
-        Map<String, NameValuePair> expectedParams = Maps.uniqueIndex(expectedURI.getQueryParams(), new Function<NameValuePair, String>() {
-            public String apply(NameValuePair from) {
-                return from.getName();
-            }
-        });
-
-        for (NameValuePair param : testURI.getQueryParams()) {
-            assertThat(expectedParams).containsEntry(param.getName(), param);
-        }
-
-        assertThat(testURI.getQueryParams().size()).isEqualTo(expectedParams.size());
-
-    }
-
-    @Test
     public void shouldGeneratePiwikCustomVariableUrl() throws URISyntaxException {
         DateTime now = DateTime.now();
         String customVariable = "{\"1\":[\"RP\",\"HMRC BLA\"]}";
@@ -213,7 +183,7 @@ public class AnalyticsReporterTest {
         checkURIBase(uriBuilder.toString(), config.getPiwikServerSideUrl());
         checkURIURL(uriBuilder, "http://page-view");
         checkURITitle(uriBuilder, "Title");
-        checkNonFraudParams(uriBuilder, config.getSiteId().toString());
+        checkParams(uriBuilder, config.getSiteId().toString());
     }
 
     @Test
@@ -291,7 +261,7 @@ public class AnalyticsReporterTest {
         assertThat(query.contains(name + "=")).isFalse();
     }
 
-    private void checkNonFraudParams(URIBuilder uriBuilder, String siteId) {
+    private void checkParams(URIBuilder uriBuilder, String siteId) {
         checkCommonParams(uriBuilder, siteId);
         checkQueryParam(uriBuilder, "cookie", "false");
         checkQueryParam(uriBuilder, "cdt", DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(DateTime.now()));

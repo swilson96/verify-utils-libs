@@ -11,7 +11,6 @@ import uk.gov.ida.configuration.AnalyticsConfiguration;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Cookie;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -40,17 +39,6 @@ public class AnalyticsReporter {
         reportToPiwik(friendlyDescription, context, Optional.<CustomVariable>absent());
     }
 
-    public void reportFraud(ContainerRequest context) {
-        if(analyticsConfiguration.getEnabled()) {
-            try {
-                piwikClient.report(generateFraudURI(getVisitorId(context)), context);
-            }
-            catch(Exception e) {
-                LOG.error("Analytics Reporting error", e);
-            }
-        }
-    }
-
     public void reportPageView(String pageTitle, ContainerRequest context, String uri) {
         if(analyticsConfiguration.getEnabled()) {
             try {
@@ -67,7 +55,7 @@ public class AnalyticsReporter {
 
     private URI generateCustomURI(String friendlyDescription, String url, Optional<String> visitorId) throws
             URISyntaxException {
-        return buildNonFraudURI(friendlyDescription, url, visitorId).build();
+        return buildAnalyticsURI(friendlyDescription, url, visitorId).build();
     }
 
     private URIBuilder buildBaseURI(Optional<String> visitorId) throws URISyntaxException {
@@ -81,7 +69,7 @@ public class AnalyticsReporter {
                 .addParameter("rec", "1");
     }
 
-    private URIBuilder buildNonFraudURI(String friendlyDescription, String url, Optional<String> visitorId) throws
+    private URIBuilder buildAnalyticsURI(String friendlyDescription, String url, Optional<String> visitorId) throws
             URISyntaxException {
         return buildBaseURI(visitorId)
                 .addParameter("action_name", friendlyDescription)
@@ -91,7 +79,7 @@ public class AnalyticsReporter {
     }
 
     protected URI generateURI(String friendlyDescription, ContainerRequest request, Optional<CustomVariable> customVariable, Optional<String> visitorId) throws URISyntaxException {
-        URIBuilder uriBuilder = buildNonFraudURI(friendlyDescription, request.getRequestUri().toString(), visitorId);
+        URIBuilder uriBuilder = buildAnalyticsURI(friendlyDescription, request.getRequestUri().toString(), visitorId);
         if(customVariable.isPresent()) {
             uriBuilder.addParameter("_cvar", customVariable.get().getJson());
         }
@@ -102,14 +90,6 @@ public class AnalyticsReporter {
             uriBuilder.addParameter("urlref", refererHeader.get());
             uriBuilder.addParameter("ref", refererHeader.get());
         }
-
-        return uriBuilder.build();
-    }
-
-    protected URI generateFraudURI(Optional<String> visitorId) throws MalformedURLException, URISyntaxException {
-        URIBuilder uriBuilder = buildBaseURI(visitorId);
-        uriBuilder.addParameter("e_c", "fraud_response");// event category
-        uriBuilder.addParameter("e_a", "fraud_response");// event action
 
         return uriBuilder.build();
     }
