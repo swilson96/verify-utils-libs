@@ -1,3 +1,16 @@
+buildscript {
+    repositories {
+        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+    }
+    dependencies {
+        classpath 'uk.gov.ida:ida-gradle:1.1.0-15'
+    }
+}
+
+plugins {
+      id "org.sonarqube" version "2.2.1"
+}
+
 apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: "idaSonar"
@@ -17,15 +30,6 @@ idea {
 
         //and hate reading sources :)
         downloadSources = true
-    }
-}
-
-buildscript {
-    repositories {
-        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
-    }
-    dependencies {
-        classpath 'uk.gov.ida:ida-gradle:1.1.0-10'
     }
 }
 
@@ -66,7 +70,7 @@ subprojects {
     }
 }
 
-task sonar(dependsOn: [':clean', ':build', 'sonarRunner'])
+task sonar(dependsOn: [':clean', ':build', 'sonarqube'])
 
 defaultTasks 'jar', 'publishToMavenLocal'
 
