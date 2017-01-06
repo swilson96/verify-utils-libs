@@ -2,6 +2,7 @@ package uk.gov.ida.truststore;
 
 import com.google.common.base.Throwables;
 
+import javax.inject.Inject;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 public class KeyStoreLoader {
+
+    @Inject
+    public KeyStoreLoader() { }
+
     public KeyStore load(String uri, String password) {
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
