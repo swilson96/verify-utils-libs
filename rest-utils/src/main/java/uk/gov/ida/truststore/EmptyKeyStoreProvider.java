@@ -2,6 +2,8 @@ package uk.gov.ida.truststore;
 
 
 import com.google.common.base.Throwables;
+
+import javax.inject.Inject;
 import javax.inject.Provider;
 
 import java.io.IOException;
@@ -11,6 +13,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 public class EmptyKeyStoreProvider implements Provider<KeyStore> {
+
+    @Inject
+    public EmptyKeyStoreProvider() { }
 
     @Override
     public KeyStore get() {
