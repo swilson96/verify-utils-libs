@@ -21,14 +21,14 @@ public class RetryCommandTest {
         assertThat(retryCommand.getRetryCounter()).isEqualTo(1);
     }
 
-    @Test
+    @Test(expected = ProcessingException.class)
     public void shouldNotRetryIfRetryCountIs0() {
         RetryCommand<String> retryCommand = new RetryCommand(0);
 
-        String result = retryCommand.execute(() -> "SUCCESS");
-
-        assertThat(result).isEqualTo("SUCCESS");
-        assertThat(retryCommand.getRetryCounter()).isEqualTo(0);
+        String result = retryCommand.execute(() -> {
+            if (retryCommand.getRetryCounter() == 0) throw new RuntimeException("Command Failed");
+            else return "SUCCESS";
+        });
     }
 
     @Test

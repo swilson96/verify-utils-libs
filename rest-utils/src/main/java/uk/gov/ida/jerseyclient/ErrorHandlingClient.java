@@ -47,9 +47,14 @@ public class ErrorHandlingClient {
             requestBuilder = addHeaders(headers, requestBuilder);
 
             Invocation.Builder client = requestBuilder.accept(MediaType.APPLICATION_JSON_TYPE);
-            RetryCommand<Response> retryCommand = new RetryCommand<>(numberOfRetries);
 
-            return retryCommand.execute(client::get);
+            if (numberOfRetries!=0){
+                RetryCommand<Response> retryCommand = new RetryCommand<>(numberOfRetries);
+                return retryCommand.execute(client::get);
+            }else {
+               return client.get();
+            }
+
         } catch (ProcessingException e) {
             throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e, uri);
         }
@@ -64,9 +69,13 @@ public class ErrorHandlingClient {
             Invocation.Builder request = jerseyClient.target(uri).request(MediaType.APPLICATION_JSON_TYPE);
             final Invocation.Builder requestBuilder = addHeaders(headers, request);
 
-            RetryCommand<Response> retryCommand = new RetryCommand<>(numberOfRetries);
+            if (numberOfRetries!=0){
+                RetryCommand<Response> retryCommand = new RetryCommand<>(numberOfRetries);
+                return retryCommand.execute(() -> requestBuilder.post(Entity.json(postBody)));
+            }else {
+                return requestBuilder.post(Entity.json(postBody));
+            }
 
-            return retryCommand.execute(() -> requestBuilder.post(Entity.json(postBody)));
         } catch (ProcessingException e) {
             throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e, uri);
         }

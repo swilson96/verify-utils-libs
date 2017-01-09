@@ -13,8 +13,7 @@ public class RetryCommand<T> {
     private int retryCounter;
     private int maxRetries;
 
-    public RetryCommand(int maxRetries)
-    {
+    public RetryCommand(int maxRetries) {
         this.maxRetries = maxRetries;
     }
 
