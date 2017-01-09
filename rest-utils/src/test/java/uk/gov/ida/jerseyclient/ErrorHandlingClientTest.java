@@ -17,8 +17,8 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +39,7 @@ public class ErrorHandlingClientTest {
     private Invocation.Builder webTargetBuilder;
 
     private ErrorHandlingClient errorHandlingClient;
+
     private URI testUri;
 
     @Before
@@ -86,7 +87,27 @@ public class ErrorHandlingClientTest {
         errorHandlingClient.post(testUri, headers, postBody);
 
         verify(webTargetBuilder, times(1)).header(headerName, headerValue);
-        verify(webTargetBuilder, times(1)).post(Entity.json(postBody), Response.class);
+        verify(webTargetBuilder, times(1)).post(Entity.json(postBody));
+    }
+
+    @Test(expected = ApplicationException.class)
+    public void shouldRetryPostRequestIfConfigured() throws Exception {
+        when(webTargetBuilder.post(Entity.json(""))).thenThrow(Exception.class);
+
+        ErrorHandlingClient retryEnabledErrorHandlingClient = new ErrorHandlingClient(client, 2);
+        retryEnabledErrorHandlingClient.post(testUri, Collections.emptyMap(), "");
+
+        verify(webTargetBuilder, times(2)).post(Entity.json(""));
+    }
+
+    @Test(expected = ApplicationException.class)
+    public void shouldRetryGetRequestIfConfigured() throws Exception {
+        when(webTargetBuilder.get()).thenThrow(Exception.class);
+
+        ErrorHandlingClient retryEnabledErrorHandlingClient = new ErrorHandlingClient(client, 2);
+        retryEnabledErrorHandlingClient.get(testUri);
+
+        verify(webTargetBuilder, times(2)).get();
     }
 
     @Test(expected = ApplicationException.class)
@@ -95,5 +116,4 @@ public class ErrorHandlingClientTest {
 
         errorHandlingClient.post(testUri, "");
     }
-
 }

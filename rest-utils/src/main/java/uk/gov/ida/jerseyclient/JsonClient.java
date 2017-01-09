@@ -1,15 +1,11 @@
 package uk.gov.ida.jerseyclient;
 
 import javax.inject.Inject;
-
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.GenericType;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
-import static uk.gov.ida.exceptions.ApplicationException.createUnauditedException;
-import static uk.gov.ida.exceptions.ApplicationException.createUnauditedException;
 
 public class JsonClient {
 

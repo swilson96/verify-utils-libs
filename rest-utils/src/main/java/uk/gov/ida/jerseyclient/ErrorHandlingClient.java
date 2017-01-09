@@ -21,9 +21,16 @@ import static uk.gov.ida.exceptions.ApplicationException.createUnauditedExceptio
 public class ErrorHandlingClient {
 
     private final Client jerseyClient;
+    private Integer numberOfRetries = 0;
 
     @Inject
     public ErrorHandlingClient(Client jerseyClient) {
+        numberOfRetries = 0;
+        this.jerseyClient = jerseyClient;
+    }
+
+    public ErrorHandlingClient(Client jerseyClient, Integer numberOfRetries) {
+        this.numberOfRetries = numberOfRetries;
         this.jerseyClient = jerseyClient;
     }
 
@@ -37,14 +44,12 @@ public class ErrorHandlingClient {
             for (Cookie cookie : cookies) {
                 requestBuilder = requestBuilder.cookie(cookie);
             }
-            for (Map.Entry<String, String> headerDetail : headers.entrySet()) {
-                if (headerDetail.getValue() != null) {
-                    requestBuilder = requestBuilder.header(headerDetail.getKey(), headerDetail.getValue());
-                }
-            }
-            return requestBuilder
-                    .accept(MediaType.APPLICATION_JSON_TYPE)
-                    .get();
+            requestBuilder = addHeaders(headers, requestBuilder);
+
+            Invocation.Builder client = requestBuilder.accept(MediaType.APPLICATION_JSON_TYPE);
+            RetryCommand<Response> retryCommand = new RetryCommand<>(numberOfRetries);
+
+            return retryCommand.execute(client::get);
         } catch (ProcessingException e) {
             throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e, uri);
         }
@@ -56,16 +61,23 @@ public class ErrorHandlingClient {
 
     public Response post(final URI uri, final Map<String, String> headers, final Object postBody) {
         try {
-            Invocation.Builder requestBuilder = jerseyClient.target(uri).request(MediaType.APPLICATION_JSON_TYPE);
-            for(Map.Entry<String, String> headerDetail: headers.entrySet()){
-                if(headerDetail.getValue() != null) {
-                    requestBuilder = requestBuilder.header(headerDetail.getKey(), headerDetail.getValue());
-                }
-            }
-            return requestBuilder.post(Entity.json(postBody), Response.class);
+            Invocation.Builder request = jerseyClient.target(uri).request(MediaType.APPLICATION_JSON_TYPE);
+            final Invocation.Builder requestBuilder = addHeaders(headers, request);
+
+            RetryCommand<Response> retryCommand = new RetryCommand<>(numberOfRetries);
+
+            return retryCommand.execute(() -> requestBuilder.post(Entity.json(postBody)));
         } catch (ProcessingException e) {
             throw createUnauditedException(ExceptionType.NETWORK_ERROR, UUID.randomUUID(), e, uri);
         }
     }
 
+    private Invocation.Builder addHeaders(Map<String, String> headers, Invocation.Builder requestBuilder) {
+        for(Map.Entry<String, String> headerDetail: headers.entrySet()){
+            if(headerDetail.getValue() != null) {
+                requestBuilder = requestBuilder.header(headerDetail.getKey(), headerDetail.getValue());
+            }
+        }
+        return requestBuilder;
+    }
 }
