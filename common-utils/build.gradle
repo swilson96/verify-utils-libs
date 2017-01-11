@@ -10,5 +10,5 @@ dependencies {
             'joda-time:joda-time:2.7',
             'org.yaml:snakeyaml:1.12',
             'javax.validation:validation-api:1.1.0.Final',
-            'io.dropwizard:dropwizard-logging:0.9.3'
+            'io.dropwizard:dropwizard-logging:1.0.5'
 }
