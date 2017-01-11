@@ -2,6 +2,7 @@ package uk.gov.ida.common.shared.security;
 
 import com.google.common.base.Throwables;
 
+import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
@@ -9,6 +10,9 @@ import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 
 public class X509CertificateFactory {
+
+    @Inject
+    public X509CertificateFactory() {}
 
     public X509Certificate createCertificate(String partialCert) {
         java.security.cert.CertificateFactory certificateFactory;
