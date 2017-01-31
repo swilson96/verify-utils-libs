@@ -33,16 +33,16 @@ public class KeyStoreCacheTest {
 
     @Test
     public void shouldLoadKeyStoreIfNotAlreadyLoaded() throws Exception {
-        when(keyStoreLoader.load(configuration.getStoreFile(), configuration.getPassword())).thenReturn(keyStore);
+        when(keyStoreLoader.load(configuration.getPath(), configuration.getPassword())).thenReturn(keyStore);
         KeyStore keyStore = keyStoreCache.get(configuration);
         assertThat(keyStore).isEqualTo(this.keyStore);
     }
 
     @Test
     public void shouldOnlyHaveToLoadTheKeyStoreOnce() throws Exception {
-        when(keyStoreLoader.load(configuration.getStoreFile(), configuration.getPassword())).thenReturn(keyStore);
+        when(keyStoreLoader.load(configuration.getPath(), configuration.getPassword())).thenReturn(keyStore);
         keyStoreCache.get(configuration);
         keyStoreCache.get(configuration);
-        verify(keyStoreLoader, times(1)).load(configuration.getStoreFile(), configuration.getPassword());
+        verify(keyStoreLoader, times(1)).load(configuration.getPath(), configuration.getPassword());
     }
 }

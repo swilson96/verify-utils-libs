@@ -25,14 +25,14 @@ public class KeyStoreCache {
 
     public KeyStore get(final ClientTrustStoreConfiguration configuration) {
 
-        final String storeFile = configuration.getStoreFile();
+        final String trustStorePath = configuration.getPath();
         final String password = configuration.getPassword();
 
         try {
-            return trustStoreCache.get(storeFile, new Callable<KeyStore>() {
+            return trustStoreCache.get(trustStorePath, new Callable<KeyStore>() {
                 @Override
                 public KeyStore call() throws Exception {
-                    return keyStoreLoader.load(storeFile, password);
+                    return keyStoreLoader.load(trustStorePath, password);
                 }
             });
         } catch (ExecutionException e) {

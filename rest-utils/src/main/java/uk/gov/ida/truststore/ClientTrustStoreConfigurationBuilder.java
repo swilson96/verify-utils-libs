@@ -7,12 +7,12 @@ public class ClientTrustStoreConfigurationBuilder {
     }
 
     public ClientTrustStoreConfiguration build(){
-        return new TestClientTrustStoreConfiguration("storeFile", "password");
+        return new TestClientTrustStoreConfiguration("trustStorePath", "password");
     }
 
     private class TestClientTrustStoreConfiguration extends ClientTrustStoreConfiguration{
-        private TestClientTrustStoreConfiguration(String storeFile, String password) {
-            this.storeFile = storeFile;
+        private TestClientTrustStoreConfiguration(String trustStorePath, String password) {
+            this.path = trustStorePath;
             this.password = password;
         }
 
