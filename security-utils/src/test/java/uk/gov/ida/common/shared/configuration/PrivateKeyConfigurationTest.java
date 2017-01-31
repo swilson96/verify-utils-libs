@@ -22,14 +22,14 @@ public class PrivateKeyConfigurationTest {
     @Test
     public void should_loadPrivateKeyFromJSON() throws Exception {
         String path = getClass().getClassLoader().getResource("private_key.pk8").getPath();
-        PrivateKeyConfiguration privateKeyConfiguration = objectMapper.readValue("{\"keyUri\": \"" + path + "\"}", PrivateKeyConfiguration.class);
+        PrivateKeyConfiguration privateKeyConfiguration = objectMapper.readValue("{\"keyFile\": \"" + path + "\"}", PrivateKeyConfiguration.class);
 
         assertThat(privateKeyConfiguration.getPrivateKey().getAlgorithm()).isEqualTo("RSA");
     }
 
     @Test(expected = FileNotFoundException.class)
     public void should_ThrowFooExceptionWhenFileDoesNotExist() throws Exception {
-        objectMapper.readValue("{\"keyUri\": \"/foo/bar\"}", PrivateKeyConfiguration.class);
+        objectMapper.readValue("{\"keyFile\": \"/foo/bar\"}", PrivateKeyConfiguration.class);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class PrivateKeyConfigurationTest {
         thrown.expectCause(any(InvalidKeySpecException.class));
 
         String path = getClass().getClassLoader().getResource("empty_file").getPath();
-        objectMapper.readValue("{\"keyUri\": \"" + path + "\"}", PrivateKeyConfiguration.class);
+        objectMapper.readValue("{\"keyFile\": \"" + path + "\"}", PrivateKeyConfiguration.class);
     }
 
     @Test(expected = PrivateKeyDeserializer.PrivateKeyPathNotSpecifiedException.class)

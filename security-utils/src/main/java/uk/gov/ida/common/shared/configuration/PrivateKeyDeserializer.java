@@ -22,13 +22,13 @@ public class PrivateKeyDeserializer extends JsonDeserializer<PrivateKeyConfigura
         // when the JsonParser implementation is used.
         p.setCodec(new ObjectMapper());
         JsonNode node = p.getCodec().readTree(p);
-        JsonNode privateKeyNode = node.get("keyUri");
+        JsonNode privateKeyNode = node.get("keyFile");
         if (null==privateKeyNode) {
-            throw new PrivateKeyPathNotSpecifiedException("keyUri not specified.");
+            throw new PrivateKeyPathNotSpecifiedException("keyFile not specified.");
         }
-        String keyUri = privateKeyNode.asText();
-        PrivateKey privateKey = privateKeyFactory.createPrivateKey(Files.toByteArray(new File(keyUri)));
-        return new PrivateKeyConfiguration(privateKey, keyUri);
+        String keyFile = privateKeyNode.asText();
+        PrivateKey privateKey = privateKeyFactory.createPrivateKey(Files.toByteArray(new File(keyFile)));
+        return new PrivateKeyConfiguration(privateKey, keyFile);
     }
 
     class PrivateKeyPathNotSpecifiedException extends JsonProcessingException {
