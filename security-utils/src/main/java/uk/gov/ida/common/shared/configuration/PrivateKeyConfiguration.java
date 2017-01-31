@@ -12,9 +12,9 @@ import java.security.PrivateKey;
 @JsonDeserialize(using=PrivateKeyDeserializer.class)
 public class PrivateKeyConfiguration {
 
-    public PrivateKeyConfiguration(PrivateKey privateKey, String keyUri) {
+    public PrivateKeyConfiguration(PrivateKey privateKey, String keyFile) {
         this.privateKey = privateKey;
-        this.keyUri = keyUri;
+        this.keyFile = keyFile;
     }
 
     private PrivateKey privateKey;
@@ -23,7 +23,7 @@ public class PrivateKeyConfiguration {
     @NotNull
     @Size(min = 1)
     @JsonProperty
-    private String keyUri;
+    private String keyFile;
 
     public PrivateKey getPrivateKey() {
         return privateKey;

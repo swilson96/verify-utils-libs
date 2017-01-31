@@ -17,18 +17,18 @@ public class DeserializablePublicKeyConfiguration {
     @NotNull
     @Size(min = 1)
     @JsonProperty
-    private String keyUri;
+    private String certFile;
 
     @Valid
     @NotNull
     @Size(min = 1)
     @JsonProperty
-    private String keyName;
+    private String name;
 
-    public DeserializablePublicKeyConfiguration(PublicKey publicKey, String keyUri, String keyName, String cert) {
+    public DeserializablePublicKeyConfiguration(PublicKey publicKey, String certFile, String name, String cert) {
         this.publicKey = publicKey;
-        this.keyUri = keyUri;
-        this.keyName = keyName;
+        this.certFile = certFile;
+        this.name = name;
         this.cert = cert;
     }
 
@@ -36,15 +36,15 @@ public class DeserializablePublicKeyConfiguration {
         return publicKey;
     }
 
-    public String getKeyName() {
-        return keyName;
+    public String getName() {
+        return name;
     }
 
     public String getCert() {
         return cert;
     }
 
-    public String getKeyUri() {
-        return keyUri;
+    public String getCertFile() {
+        return certFile;
     }
 }
