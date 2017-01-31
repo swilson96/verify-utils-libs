@@ -23,20 +23,20 @@ public class PublicKeyDeserializer extends JsonDeserializer<DeserializablePublic
         p.setCodec(new ObjectMapper());
         JsonNode node = p.getCodec().readTree(p);
 
-        JsonNode keyUriNode = node.get("keyUri");
-        Preconditions.checkState(keyUriNode != null, "keyUri not specified.");
-        String keyUri = keyUriNode.asText();
+        JsonNode certFileNode = node.get("certFile");
+        Preconditions.checkState(certFileNode != null, "certFile not specified.");
+        String certFile = certFileNode.asText();
 
-        JsonNode keyNameNode = node.get("keyName");
-        Preconditions.checkState(keyNameNode != null, "keyName not specified.");
-        String keyName = keyNameNode.asText();
+        JsonNode nameNode = node.get("name");
+        Preconditions.checkState(nameNode != null, "name not specified.");
+        String name = nameNode.asText();
 
         X509CertificateFactory certificateFactory = new X509CertificateFactory();
-        String cert = new String(Files.readAllBytes(Paths.get(keyUri)));
+        String cert = new String(Files.readAllBytes(Paths.get(certFile)));
         Certificate certificate = certificateFactory.createCertificate(cert);
 
         PublicKey publicKey = certificate.getPublicKey();
 
-        return new DeserializablePublicKeyConfiguration(publicKey, keyUri, keyName, cert);
+        return new DeserializablePublicKeyConfiguration(publicKey, certFile, name, cert);
     }
 }
