@@ -11,15 +11,15 @@ public class ClientTrustStoreConfiguration {
 
     @Valid
     @NotNull
-    protected String storeUri;
+    protected String storeFile;
 
     @Valid
     @NotNull
     @Size(min = 1)
     protected String password;
 
-    public String getStoreUri() {
-        return storeUri;
+    public String getStoreFile() {
+        return storeFile;
     }
 
     public String getPassword() {
