@@ -27,6 +27,7 @@ public interface EventSinkHubEventConstants {
         String SESSION_TIMEOUT = "session_timeout";
         String USER_ACCOUNT_CREATION_REQUEST_SENT = "user_account_creation_request_sent";
         String USER_ACCOUNT_CREATED = "user_account_created";
+        String USER_ACCOUNT_CREATION_FAILED = "user_account_creation_failed";
     }
 
     interface ExternalCommunicationsTypes {
