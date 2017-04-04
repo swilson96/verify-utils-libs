@@ -1,55 +1,39 @@
 package uk.gov.ida.common.shared.security;
 
-import org.apache.commons.codec.binary.StringUtils;
-import uk.gov.ida.common.shared.configuration.PublicKeyConfiguration;
+import uk.gov.ida.common.shared.configuration.DeserializablePublicKeyConfiguration;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.common.base.Throwables.propagate;
-
 public class CertificateStore {
-    public static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
-    public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
-    private final List<PublicKeyConfiguration> publicEncryptionKeyConfigurations;
-    private final List<PublicKeyConfiguration> publicSigningKeyConfigurations;
-    private final PublicKeyInputStreamFactory publicKeyInputStreamFactory;
+    private static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
+    private static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
+
+    private final List<DeserializablePublicKeyConfiguration> publicEncryptionKeyConfigurations;
+    private final List<DeserializablePublicKeyConfiguration> publicSigningKeyConfigurations;
 
     public CertificateStore(
-            List<PublicKeyConfiguration> publicEncryptionKeyConfigurations,
-            List<PublicKeyConfiguration> publicSigningKeyConfiguration,
-            PublicKeyInputStreamFactory publicKeyInputStreamFactory) {
+            List<DeserializablePublicKeyConfiguration> publicEncryptionKeyConfigurations,
+            List<DeserializablePublicKeyConfiguration> publicSigningKeyConfiguration) {
 
         this.publicEncryptionKeyConfigurations = publicEncryptionKeyConfigurations;
         this.publicSigningKeyConfigurations = publicSigningKeyConfiguration;
-        this.publicKeyInputStreamFactory = publicKeyInputStreamFactory;
     }
 
     public List<Certificate> getEncryptionCertificates() {
         List<Certificate> certs = new ArrayList<>();
-        for (PublicKeyConfiguration certConfig : publicEncryptionKeyConfigurations) {
-            certs.add(new Certificate(certConfig.getKeyName(), getCertificate(certConfig), Certificate.KeyUse.Encryption));
+        for (DeserializablePublicKeyConfiguration certConfig : publicEncryptionKeyConfigurations) {
+            certs.add(new Certificate(certConfig.getName(), stripHeaders(certConfig.getCert()), Certificate.KeyUse.Encryption));
         }
         return certs;
     }
 
     public List<Certificate> getSigningCertificates() {
         List<Certificate> certs = new ArrayList<>();
-        for (PublicKeyConfiguration certConfig : publicSigningKeyConfigurations) {
-            certs.add(new Certificate(certConfig.getKeyName(), getCertificate(certConfig), Certificate.KeyUse.Signing));
+        for (DeserializablePublicKeyConfiguration certConfig : publicSigningKeyConfigurations) {
+            certs.add(new Certificate(certConfig.getName(), stripHeaders(certConfig.getCert()), Certificate.KeyUse.Signing));
         }
         return certs;
-    }
-
-    private String getCertificate(PublicKeyConfiguration configuration) {
-        try (InputStream inputStream = publicKeyInputStreamFactory.createInputStream(configuration.getKeyUri())) {
-            String originalCertificate = StringUtils.newStringUtf8(FileUtils.readStream(inputStream));
-            return stripHeaders(originalCertificate);
-        } catch (IOException e) {
-            throw propagate(e);
-        }
     }
 
     private String stripHeaders(final String originalCertificate) {
