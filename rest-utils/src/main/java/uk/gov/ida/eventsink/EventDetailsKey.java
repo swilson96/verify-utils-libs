@@ -21,5 +21,6 @@ public enum EventDetailsKey {
     external_communication_type,
     principal_ip_address_as_seen_by_idp,
     principal_ip_address_as_seen_by_hub,
-    request_id
+    request_id,
+    country_code
 }
